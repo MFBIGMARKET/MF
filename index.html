@@ -235,11 +235,61 @@
         .order-item-card .edit-btn svg { stroke: var(--secondary-color); }
 
         #order-grand-total { margin-top: 20px; padding: 15px; background-color: var(--primary-color); color: white; text-align: center; font-size: 1.2rem; font-weight: bold; border-radius: var(--border-radius); }
-        #item-search-container { position: relative; }
-        #item-search-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border-color); border-radius: 0 0 var(--border-radius) var(--border-radius); max-height: 250px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        
+        /* NEW: Horizontal Department Tabs Styles */
+        .department-tabs-container {
+            display: flex;
+            overflow-x: auto;
+            padding-bottom: 10px; /* space for scrollbar */
+            margin-bottom: 15px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: var(--secondary-color) var(--light-bg);
+        }
+        .department-tabs-container::-webkit-scrollbar { height: 5px; }
+        .department-tabs-container::-webkit-scrollbar-thumb { background-color: var(--secondary-color); border-radius: 10px; }
+        .department-tabs-container::-webkit-scrollbar-track { background-color: #eee; }
+
+        .department-tab {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            margin-right: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .department-tab:last-child { margin-right: 0; }
+        .department-tab.active {
+            background-color: var(--primary-color);
+            color: var(--light-text-color);
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        #item-search-container { position: relative; margin-bottom: 0; }
+        #item-search-results {
+            position: absolute;
+            top: calc(100% - 12px); /* Adjust to overlap with bottom of search bar */
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
         .search-result-item { padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .search-result-item:hover { background-color: var(--light-bg); }
         .search-result-item .item-stock { font-size: 0.85em; font-weight: 500; }
+        
         .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--primary-color); animation: spin 1s ease infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
@@ -364,7 +414,7 @@
                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
                 </button>
                 <button class="icon-button" id="settings-icon-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
             </div>
         </div>
@@ -421,8 +471,16 @@
         <div class="content">
             <div id="order-item-selection" class="card">
                 <h3>Add Item</h3>
-                <div id="item-search-container"><input type="text" id="item-search-input" placeholder="Search for an item..."><div id="item-search-results"></div></div>
-                <div id="item-details-form" style="display: none;"><input type="number" id="item-quantity" placeholder="Quantity" min="1"><div class="price-options"><div class="price-option" id="price1-option"></div><div class="price-option" id="price2-option"></div><div class="price-option" id="price3-option"></div><div class="price-option" id="custom-price-option">Custom</div></div><input type="number" id="custom-price-input" placeholder="Enter Custom Price" style="display: none;"><div id="custom-price-margin" style="text-align:center; margin-bottom: 10px; font-weight: bold;"></div><button id="add-item-btn" class="button">Add to Order</button></div>
+                <div id="department-tabs-container" class="department-tabs-container"></div>
+                <div id="item-search-container">
+                    <div class="search-bar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="item-search-input" placeholder="Search for an item...">
+                    </div>
+                    <div id="item-search-results"></div>
+                </div>
+
+                <div id="item-details-form" style="display: none; margin-top: 15px;"><input type="number" id="item-quantity" placeholder="Quantity" min="1"><div class="price-options"><div class="price-option" id="price1-option"></div><div class="price-option" id="price2-option"></div><div class="price-option" id="price3-option"></div><div class="price-option" id="custom-price-option">Custom</div></div><input type="number" id="custom-price-input" placeholder="Enter Custom Price" style="display: none;"><div id="custom-price-margin" style="text-align:center; margin-bottom: 10px; font-weight: bold;"></div><button id="add-item-btn" class="button">Add to Order</button></div>
             </div>
              <!-- NEW Previous Orders Section -->
             <div id="previous-orders-card" class="card">
@@ -560,7 +618,7 @@
             <h1>Admin Dashboard</h1>
             <div class="header-actions">
                  <button class="icon-button" id="admin-settings-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
             </div>
         </div>
@@ -633,7 +691,8 @@
             orders: {}, payments: {}, currentOrder: [], selectedItem: null, selectedPriceOption: null,
             currentPayment: {}, currentView: 'customers', editing: { type: null, id: null, itemIndex: null },
             reporting: { salesman: null, customer: null },
-            shareableImageBlob: null
+            shareableImageBlob: null,
+            activeDepartment: 'All'
         };
 
         const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc } = window.firebaseTools;
@@ -742,11 +801,26 @@
                 </div>`
             ).join('');
         };
+        
+        const renderDepartmentTabs = () => {
+            const departments = ['All', ...[...new Set(appState.items.map(item => item.Department).filter(Boolean))].sort()];
+            const container = document.getElementById('department-tabs-container');
+            container.innerHTML = departments.map(dept => `
+                <button class="department-tab ${dept === appState.activeDepartment ? 'active' : ''}" data-department="${dept}">
+                    ${dept}
+                </button>
+            `).join('');
+        };
+
         const renderItemSearchResults = (filter = '') => { 
             const cont = document.getElementById('item-search-results'); 
-            if (!filter) { cont.innerHTML = ''; return; } 
+            if (!filter) { cont.innerHTML = ''; return; }
+            
+            const deptFilter = item => appState.activeDepartment === 'All' || item.Department === appState.activeDepartment;
+            const nameFilter = item => (item.ItemName || '').toLowerCase().includes(filter.toLowerCase());
+            
             cont.innerHTML = appState.items
-                .filter(i => (i.ItemName || '').toLowerCase().includes(filter.toLowerCase()))
+                .filter(i => deptFilter(i) && nameFilter(i))
                 .slice(0, 50)
                 .map(i => `<div class="search-result-item" data-item-code="${i.Code}">
                     <span>${i.ItemName}</span>
@@ -755,18 +829,27 @@
                     </span>
                 </div>`).join('');
         };
+
         const renderSelectedItemDetails = () => { const i = appState.selectedItem; if (!i) return; const calcMargin = (price) => i.CostRate > 0 ? (((price - i.CostRate) / i.CostRate) * 100).toFixed(2) : 0; document.getElementById('price1-option').innerHTML = `<div class="price">P1 ${formatCurrency(i.Price1)}</div><div class="margin">Margin: ${calcMargin(i.Price1)}%</div>`; document.getElementById('price2-option').innerHTML = `<div class="price">P2 ${formatCurrency(i.Price2)}</div><div class="margin">Margin: ${calcMargin(i.Price2)}%</div>`; document.getElementById('price3-option').innerHTML = `<div class="price">P3 ${formatCurrency(i.Price3)}</div><div class="margin">Margin: ${calcMargin(i.Price3)}%</div>`; document.getElementById('item-details-form').style.display = 'block'; };
+        
         const renderOrderSummary = () => { 
-            const listCont = document.getElementById('order-items-list'), totalCont = document.getElementById('order-grand-total'); 
-            let grandTotal = 0; 
+            const listCont = document.getElementById('order-items-list');
+            const totalCont = document.getElementById('order-grand-total'); 
+            let grandTotalRevenue = 0;
+            let grandTotalCost = 0;
+
             if (appState.currentOrder.length === 0) { 
                 listCont.innerHTML = '<p style="text-align:center; padding: 20px 0;">No items added yet.</p>'; 
                 totalCont.style.display = 'none'; 
                 return; 
             } 
+
             listCont.innerHTML = appState.currentOrder.map((o, idx) => { 
-                const total = o.quantity * o.sellingPrice; 
-                grandTotal += total; 
+                const lineItemRevenue = o.quantity * o.sellingPrice;
+                const lineItemCost = o.quantity * (parseFloat(o.item.CostRate) || 0);
+                grandTotalRevenue += lineItemRevenue; 
+                grandTotalCost += lineItemCost;
+                
                 return `<div class="order-item-card">
                             <div class="item-info">
                                 <div class="item-name">${o.item.ItemName}</div>
@@ -776,14 +859,31 @@
                                     <small>MRP: ${formatCurrency(o.item.Mrp)}</small>
                                 </div>
                             </div>
-                            <div class="item-total">${formatCurrency(total)}</div>
+                            <div class="item-total">${formatCurrency(lineItemRevenue)}</div>
                             <button class="item-action-btn edit-btn" data-index="${idx}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
                             <button class="item-action-btn delete-btn" data-index="${idx}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                         </div>`; 
             }).join(''); 
-            totalCont.textContent = `Grand Total: ${formatCurrency(grandTotal)}`; 
+
+            let marginPercent = 0;
+            if (grandTotalCost > 0) {
+                marginPercent = ((grandTotalRevenue - grandTotalCost) / grandTotalCost) * 100;
+            }
+
+            let marginColor = 'var(--danger-color)'; // Red
+            if (marginPercent >= 5) {
+                marginColor = 'var(--success-color)'; // Green
+            } else if (marginPercent >= 4) {
+                marginColor = 'var(--accent-color)'; // Orange
+            }
+
+            totalCont.innerHTML = `Grand Total: ${formatCurrency(grandTotalRevenue)}
+                <span style="font-size: 0.9em; margin-left: 10px; color: ${marginColor}; font-weight: 600;">
+                    (Margin: ${marginPercent.toFixed(2)}%)
+                </span>`;
             totalCont.style.display = 'block'; 
         };
+
         const renderHistory = (type) => { // This is now for the general history page
             const isOrder = type === 'customers';
             const historyData = isOrder ? (appState.orders[appState.salesman] || []) : (appState.payments[appState.salesman] || []);
@@ -871,7 +971,10 @@
             appState.selectedItem = null;
             appState.selectedPriceOption = null;
             appState.editing.itemIndex = null;
+            appState.activeDepartment = 'All';
+            renderDepartmentTabs();
             document.getElementById('item-search-input').value = '';
+            document.getElementById('item-search-results').innerHTML = '';
             document.getElementById('item-quantity').value = '';
             document.getElementById('item-details-form').style.display = 'none';
             document.querySelectorAll('.price-option').forEach(el => el.classList.remove('selected'));
@@ -999,7 +1102,21 @@
         document.querySelectorAll('#back-to-main-btn-order-history, #back-to-main-btn-payment-history, #back-to-main-btn-payment, #back-to-customers-btn').forEach(btn => btn.addEventListener('click', () => { showPage('page-main-view'); }));
         document.getElementById('back-from-settings-btn').addEventListener('click', () => { if(appState.salesman === 'ADMIN') { showPage('page-admin-dashboard'); } else { showPage('page-main-view'); } });
         document.getElementById('back-to-settings-btn').addEventListener('click', () => { showPage('page-settings'); });
+        
+        // --- Department Tab & Item Search Logic ---
+        document.getElementById('department-tabs-container').addEventListener('click', e => {
+            if (e.target.matches('.department-tab')) {
+                const department = e.target.dataset.department;
+                appState.activeDepartment = department;
+                renderDepartmentTabs(); // Re-render to update active class
+                const searchInput = document.getElementById('item-search-input');
+                renderItemSearchResults(searchInput.value); // Re-filter results with current text
+                searchInput.focus();
+            }
+        });
+        
         document.getElementById('item-search-input').addEventListener('input', (e) => renderItemSearchResults(e.target.value));
+        
         document.getElementById('item-search-results').addEventListener('click', (e) => { 
             const itemElement = e.target.closest('.search-result-item');
             if (itemElement) { 
@@ -1008,8 +1125,10 @@
                 document.getElementById('item-search-input').value = appState.selectedItem.ItemName; 
                 document.getElementById('item-search-results').innerHTML = ''; 
                 renderSelectedItemDetails(); 
+                document.getElementById('item-quantity').focus();
             } 
         });
+
         document.querySelector('.price-options').addEventListener('click', e => { const opt = e.target.closest('.price-option'); if (!opt) return; document.querySelectorAll('.price-option').forEach(el => el.classList.remove('selected')); opt.classList.add('selected'); appState.selectedPriceOption = opt.id; const cIn = document.getElementById('custom-price-input'), cMar = document.getElementById('custom-price-margin'); cIn.style.display = (opt.id === 'custom-price-option') ? 'block' : 'none'; if (opt.id === 'custom-price-option') cIn.focus(); else cMar.textContent = ''; });
         document.getElementById('custom-price-input').addEventListener('input', e => { const price = parseFloat(e.target.value), cost = appState.selectedItem.CostRate, marginDisp = document.getElementById('custom-price-margin'); if (!isNaN(price) && cost > 0) { const margin = ((price - cost) / cost) * 100; marginDisp.textContent = `Margin: ${margin.toFixed(2)}%`; marginDisp.style.color = margin < 0 ? '#e63946' : '#2a9d8f'; } else { marginDisp.textContent = ''; } });
         
@@ -1032,6 +1151,7 @@
             appState.currentOrder.push({ item: appState.selectedItem, quantity: qty, sellingPrice: price });
             resetOrderForm();
             renderOrderSummary();
+            document.getElementById('item-search-input').focus();
         });
 
         document.getElementById('order-items-list').addEventListener('click', e => {
@@ -1044,6 +1164,11 @@
                 const index = parseInt(editBtn.dataset.index);
                 const itemToEdit = appState.currentOrder[index];
                 appState.selectedItem = itemToEdit.item;
+                
+                // Set active department and update tabs
+                appState.activeDepartment = itemToEdit.item.Department || 'All';
+                renderDepartmentTabs();
+
                 document.getElementById('item-search-input').value = itemToEdit.item.ItemName;
                 document.getElementById('item-quantity').value = itemToEdit.quantity;
                 document.getElementById('item-details-form').style.display = 'block';
