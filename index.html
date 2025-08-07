@@ -52,6 +52,7 @@
             --border-radius: 12px;
             --danger-color: #e63946;
             --success-color: #2a9d8f;
+            --warning-color: #fb8500;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -234,7 +235,26 @@
         .order-item-card .delete-btn svg { stroke: var(--danger-color); }
         .order-item-card .edit-btn svg { stroke: var(--secondary-color); }
 
-        #order-grand-total { margin-top: 20px; padding: 15px; background-color: var(--primary-color); color: white; text-align: center; font-size: 1.2rem; font-weight: bold; border-radius: var(--border-radius); }
+        #order-grand-total {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-margin-badge {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 50px;
+        }
         
         /* NEW: Horizontal Department Tabs Styles */
         .department-tabs-container {
@@ -870,18 +890,20 @@
                 marginPercent = ((grandTotalRevenue - grandTotalCost) / grandTotalCost) * 100;
             }
 
-            let marginColor = 'var(--danger-color)'; // Red
+            let marginBgColor = 'var(--danger-color)'; // Red
             if (marginPercent >= 5) {
-                marginColor = 'var(--success-color)'; // Green
+                marginBgColor = 'var(--success-color)'; // Green
             } else if (marginPercent >= 4) {
-                marginColor = 'var(--accent-color)'; // Orange
+                marginBgColor = 'var(--warning-color)'; // Orange
             }
 
-            totalCont.innerHTML = `Grand Total: ${formatCurrency(grandTotalRevenue)}
-                <span style="font-size: 0.9em; margin-left: 10px; color: ${marginColor}; font-weight: 600;">
-                    (Margin: ${marginPercent.toFixed(2)}%)
-                </span>`;
-            totalCont.style.display = 'block'; 
+            totalCont.innerHTML = `
+                <span>Grand Total: ${formatCurrency(grandTotalRevenue)}</span>
+                <span class="total-margin-badge" style="background-color: ${marginBgColor};">
+                    ${marginPercent.toFixed(2)}%
+                </span>
+            `;
+            totalCont.style.display = 'flex'; 
         };
 
         const renderHistory = (type) => { // This is now for the general history page
