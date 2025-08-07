@@ -10,7 +10,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#005f73">
-    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjkwIiBmb250LXdlaWdodD0iYm9sZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZiI+TUY8L3RleHQ+PC9zdmc+">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
@@ -18,9 +18,7 @@
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
       import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-      // NEW: Import Firebase Storage
-      import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
+      
       const firebaseConfig = {
         apiKey: "AIzaSyDdECOGyNKFsKtWDiArUPp0DVd_bN0BjAY",
         authDomain: "bigmarket-order-app.firebaseapp.com",
@@ -36,12 +34,7 @@
           localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
       });
 
-      // NEW: Initialize Firebase Storage
-      const storage = getStorage(app);
-
       window.firebaseDB = db;
-      // NEW: Expose storage tools to the window object
-      window.firebaseStorage = { storage, ref, uploadBytes, getDownloadURL };
       window.firebaseTools = { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc };
 
     </script>
@@ -96,6 +89,7 @@
         .button-outline:active { background-color: #f8f9fa; }
 
         input[type="text"], input[type="number"], input[type="file"], .form-group select, textarea { width: 100%; padding: 12px; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit; }
+        textarea { line-height: 1.5; }
         input:focus, .form-group select:focus, textarea:focus { outline: none; border-color: var(--secondary-color); box-shadow: 0 0 0 2px rgba(10, 147, 150, 0.2); }
         
         .search-bar { position: relative; }
@@ -280,43 +274,8 @@
             padding: 4px 10px;
             border-radius: 50px;
         }
-        
-        /* NEW: Horizontal Department Tabs Styles */
-        .department-tabs-container {
-            display: flex;
-            overflow-x: auto;
-            padding-bottom: 10px; /* space for scrollbar */
-            margin-bottom: 15px;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-            scrollbar-color: var(--secondary-color) var(--light-bg);
-        }
-        .department-tabs-container::-webkit-scrollbar { height: 5px; }
-        .department-tabs-container::-webkit-scrollbar-thumb { background-color: var(--secondary-color); border-radius: 10px; }
-        .department-tabs-container::-webkit-scrollbar-track { background-color: #eee; }
 
-        .department-tab {
-            flex-shrink: 0;
-            padding: 8px 16px;
-            margin-right: 10px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--primary-color);
-            background-color: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .department-tab:last-child { margin-right: 0; }
-        .department-tab.active {
-            background-color: var(--primary-color);
-            color: var(--light-text-color);
-            border-color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        #item-search-container { position: relative; margin-bottom: 0; }
+        #item-search-container { position: relative; }
         #item-search-results {
             position: absolute;
             top: calc(100% - 12px); /* Adjust to overlap with bottom of search bar */
@@ -360,11 +319,13 @@
         .invoice-details div:last-child, .report-details div:last-child { max-width: 40%; text-align: right; }
         .invoice-table, .report-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
         .invoice-table th, .report-table th { padding: 10px; text-align: left; border-bottom: 2px solid var(--primary-color); font-weight: 600; }
-        .invoice-table td, .report-table td { padding: 10px; vertical-align: top; }
+        .invoice-table td, .report-table td { padding: 10px; vertical-align: top; line-height: 1.5; }
         .invoice-table tr:nth-child(even) td, .report-table tr:nth-child(even) td { background-color: #f8f9fa; }
         .invoice-table td.col-item-name, .report-table td.col-customer-name { font-weight: 500; }
-        .invoice-table th.col-qty, .invoice-table th.col-price, .invoice-table th.col-total, .report-table th.col-method, .report-table th.col-amount,
-        .invoice-table td.col-qty, .invoice-table td.col-price, .invoice-table td.col-total, .report-table td.col-method, .report-table td.col-amount { text-align: right; }
+        .invoice-table th.col-qty, .invoice-table th.col-price, .invoice-table th.col-total, .invoice-table th.col-mrp,
+        .report-table th.col-method, .report-table th.col-amount,
+        .invoice-table td.col-qty, .invoice-table td.col-price, .invoice-table td.col-total, .invoice-table td.col-mrp,
+        .report-table td.col-method, .report-table td.col-amount { text-align: right; }
         .invoice-footer, .report-footer { margin-top: 25px; padding-top: 15px; text-align: right; }
         .report-footer div { margin-top: 5px; }
         .invoice-footer .grand-total, .report-footer .grand-total { font-size: 1.5rem; font-weight: bold; color: var(--primary-color); }
@@ -421,10 +382,10 @@
         .payment-summary-list .salesman-breakdown li { padding-left: 20px; font-size: 0.9rem; }
         .payment-summary-list .salesman-breakdown li:last-child { font-weight: bold; }
 
-        /* NEW CRM PAGE STYLES */
-        #crm-send-modal .modal-body { text-align: center; }
-        #crm-send-modal p { margin-bottom: 15px; line-height: 1.5; }
-        #crm-send-progress { font-size: 1.2rem; font-weight: 600; color: var(--primary-color); }
+        /* CRM Page Styles */
+        #crm-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        #crm-filters select { margin-bottom: 0; }
+        #crm-customer-count { text-align: center; font-weight: 500; color: var(--primary-color); margin-bottom: 20px; }
 
         @media (min-width: 768px) {
             .kpi-row { grid-template-columns: repeat(4, 1fr); }
@@ -463,7 +424,7 @@
                 <button class="icon-button" id="history-icon-btn">
                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
                 </button>
-                <button class="icon-button" id="settings-icon-btn">
+                <button class="icon-button" id="settings-icon-btn" style="display: none;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
             </div>
@@ -521,7 +482,10 @@
         <div class="content">
             <div id="order-item-selection" class="card">
                 <h3>Add Item</h3>
-                <div id="department-tabs-container" class="department-tabs-container"></div>
+                <div class="form-group">
+                    <label for="department-filter">Filter by Department</label>
+                    <select id="department-filter"></select>
+                </div>
                 <div id="item-search-container">
                     <div class="search-bar">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -677,45 +641,6 @@
         </div>
     </div>
 
-    <!-- NEW CRM PAGE -->
-    <div id="page-crm" class="page">
-        <div class="header">
-            <button class="icon-button" id="back-to-admin-from-crm-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            </button>
-            <h1>Bulk Messaging (CRM)</h1>
-            <div class="icon-button" style="width: 24px;"></div>
-        </div>
-        <div class="content">
-            <div class="card">
-                <h3>1. Upload Catalogue (Optional)</h3>
-                <div class="file-upload-wrapper">
-                    <div class="file-upload-area" id="catalogue-upload-area">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        <p>Upload Catalogue (PDF/Image)</p>
-                        <input type="file" id="catalogue-file-upload" accept=".pdf,image/*">
-                    </div>
-                    <div id="catalogue-file-name" style="text-align: center; margin-top: 10px; font-weight: 500;"></div>
-                </div>
-            </div>
-            <div class="card">
-                <h3>2. Compose Message</h3>
-                <textarea id="crm-message-textarea" rows="8" placeholder="Type your message here. Use [customerName] for personalization. A link to the catalogue will be added automatically if uploaded."></textarea>
-            </div>
-            <div class="card">
-                <h3>3. Select Customers</h3>
-                <div class="form-group">
-                    <label for="crm-route-filter">Filter by Route</label>
-                    <select id="crm-route-filter">
-                        <option value="ALL">All Routes</option>
-                    </select>
-                </div>
-            </div>
-            <button id="prepare-messages-btn" class="button button-accent">Prepare Messages</button>
-        </div>
-    </div>
-
-
     <div id="page-salesman-report" class="page">
         <div class="header">
             <button class="icon-button" id="back-to-admin-dashboard-btn">
@@ -742,9 +667,44 @@
         </div>
     </div>
 
+    <div id="page-crm" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-admin-from-crm-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Bulk Messaging (CRM)</h1>
+            <div class="icon-button" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+            <div class="card">
+                <h3>1. Target Customers</h3>
+                <div id="crm-filters">
+                    <div class="form-group">
+                        <label for="crm-salesman-filter">Filter by Salesman</label>
+                        <select id="crm-salesman-filter">
+                            <option value="ALL">All Salesmen</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="crm-route-filter">Filter by Route</label>
+                        <select id="crm-route-filter">
+                            <option value="ALL">All Routes</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="crm-customer-count"></div>
+            </div>
+            <div class="card">
+                <h3>2. Compose Message</h3>
+                <textarea id="crm-message-template" rows="8" placeholder="Type your promotional message here..."></textarea>
+            </div>
+             <button class="button button-accent" id="send-bulk-messages-btn">Send Messages</button>
+        </div>
+    </div>
+
 
     <!-- Hidden elements for generation -->
-    <div id="order-invoice-wrapper"><div id="order-invoice"><div class="invoice-header"><h2 >ORDER SUMMARY</h2><p id="invoice-salesman"></p></div><div class="invoice-details"><div id="invoice-customer"></div><div id="invoice-date"></div></div><table class="invoice-table"><thead><tr><th>ITEM</th><th class="col-qty">QTY</th><th class="col-price">PRICE</th><th class="col-total">TOTAL</th></tr></thead><tbody id="invoice-table-body"></tbody></table><div class="invoice-footer"><div class="grand-total" id="invoice-grand-total"></div></div></div></div>
+    <div id="order-invoice-wrapper"><div id="order-invoice"><div class="invoice-header"><h2 >ORDER SUMMARY</h2><p id="invoice-salesman"></p></div><div class="invoice-details"><div id="invoice-customer"></div><div id="invoice-date"></div></div><table class="invoice-table"><thead><tr><th>ITEM</th><th class="col-qty">QTY</th><th class="col-price">PRICE</th><th class="col-mrp">MRP</th><th class="col-total">TOTAL</th></tr></thead><tbody id="invoice-table-body"></tbody></table><div class="invoice-footer"><div class="grand-total" id="invoice-grand-total"></div></div></div></div>
     <div id="payment-receipt-wrapper"><div class="receipt-container"><div class="receipt-header"><h2>MF BIGMARKET</h2><p>Payment Receipt</p></div><div class="receipt-details"><p><strong>Date:</strong><span id="receipt-date"></span></p><p><strong>Salesman:</strong><span id="receipt-salesman"></span></p><p><strong>Customer:</strong><span id="receipt-customer"></span></p><p><strong>Pay Method:</strong><span id="receipt-method"></span></p></div><div class="receipt-amount"><div class="amount-label">Amount Received</div><div class="amount-value" id="receipt-amount"></div></div><div class="receipt-footer">Thank you for your business!</div></div></div>
     <div id="collection-report-wrapper"><div id="collection-report"><div class="report-header"><h2>MF BIGMARKET</h2><p>Daily Collection Report</p></div><div class="report-details"><div id="report-salesman"></div><div id="report-date"></div></div><table class="report-table"><thead><tr><th>CUSTOMER</th><th class="col-method">MODE</th><th class="col-amount">AMOUNT</th></tr></thead><tbody id="report-table-body"></tbody></table><div class="report-footer"><div id="report-totals"></div><div class="grand-total" id="report-grand-total"></div></div></div></div>
     
@@ -781,23 +741,6 @@
         </div>
     </div>
 
-    <!-- NEW CRM SEND MODAL -->
-    <div id="crm-send-modal" class="modal">
-        <div class="modal-content">
-            <h2>Ready to Send Messages</h2>
-            <div class="modal-body">
-                <p id="crm-send-summary"></p>
-                <p><strong>Important:</strong> A new WhatsApp Web tab will open for each customer. You must manually click 'Send' in each tab.</p>
-                <div id="crm-send-progress">Status: Idle</div>
-            </div>
-            <div class="modal-footer">
-                <button class="button button-outline" id="crm-close-btn">Close</button>
-                <button class="button" id="crm-pause-btn" style="display:none;">Pause</button>
-                <button class="button button-accent" id="crm-start-btn">Start Sending</button>
-            </div>
-        </div>
-    </div>
-
     <div id="edit-modal" class="modal"><div class="modal-content"><h2 id="edit-modal-title">Edit</h2><div class="modal-body" id="edit-modal-body"></div><div class="modal-footer"><button class="button button-outline" id="close-edit-modal-btn">Cancel</button><button class="button" id="save-edit-btn">Save Changes</button></div></div></div>
 
 <script type="module">
@@ -816,19 +759,10 @@
             reporting: { salesman: null, customer: null },
             shareableImageBlob: null,
             activeDepartment: 'All',
-            offerLanguage: 'en',
-            crm: {
-                catalogueFile: null,
-                catalogueUrl: null,
-                isSending: false,
-                sendQueue: [],
-                currentIndex: 0,
-                sendInterval: null
-            }
+            offerLanguage: 'en'
         };
 
         const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc } = window.firebaseTools;
-        const { storage, ref, uploadBytes, getDownloadURL } = window.firebaseStorage;
         const db = window.firebaseDB;
        
         const showPage = (pageId) => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); };
@@ -862,26 +796,21 @@
         };
 
         const populateRoutes = (selectElementId) => {
-            const allCustomers = appState.customers;
-            const routes = [...new Set(allCustomers.map(c => c.Route).filter(Boolean))].sort();
+            const salesmanCustomers = appState.customers.filter(c => c.Salesman && c.Salesman.toUpperCase() === appState.salesman);
+            const routes = [...new Set(salesmanCustomers.map(c => c.Route).filter(Boolean))].sort();
             const routeFilter = document.getElementById(selectElementId);
-            const currentRoute = routeFilter.value;
+            const currentRoute = routeFilter.value; 
             routeFilter.innerHTML = `<option value="ALL">All Routes</option>` + routes.map(r => `<option value="${r}" ${currentRoute === r ? 'selected' : ''}>${r}</option>`).join('');
         };
 
-
         const renderCustomerList = () => {
             const container = document.getElementById('customer-list-container');
-            const salesmanCustomers = appState.customers.filter(c => c.Salesman && c.Salesman.toUpperCase() === appState.salesman);
-            const routes = [...new Set(salesmanCustomers.map(c => c.Route).filter(Boolean))].sort();
-            const routeFilter = document.getElementById('customer-route-filter');
-            const currentRoute = routeFilter.value; 
-            routeFilter.innerHTML = `<option value="ALL">All Routes</option>` + routes.map(r => `<option value="${r}" ${currentRoute === r ? 'selected' : ''}>${r}</option>`).join('');
-
+            populateRoutes('customer-route-filter');
             const searchFilter = document.getElementById('customer-search-input').value.toLowerCase();
             const selectedRoute = document.getElementById('customer-route-filter').value;
 
-            const filteredCustomers = salesmanCustomers.filter(c => 
+            const filteredCustomers = appState.customers.filter(c => 
+                c.Salesman && c.Salesman.toUpperCase() === appState.salesman &&
                 (c.Customer || '').toLowerCase().includes(searchFilter) &&
                 (selectedRoute === 'ALL' || c.Route === selectedRoute)
             );
@@ -919,16 +848,12 @@
         };
         const renderPaymentCustomerList = () => {
             const container = document.getElementById('payment-customer-list-container');
-            const salesmanCustomers = appState.customers.filter(c => c.Salesman && c.Salesman.toUpperCase() === appState.salesman);
-            const routes = [...new Set(salesmanCustomers.map(c => c.Route).filter(Boolean))].sort();
-            const routeFilter = document.getElementById('payment-route-filter');
-            const currentRoute = routeFilter.value; 
-            routeFilter.innerHTML = `<option value="ALL">All Routes</option>` + routes.map(r => `<option value="${r}" ${currentRoute === r ? 'selected' : ''}>${r}</option>`).join('');
-
+            populateRoutes('payment-route-filter');
             const searchFilter = document.getElementById('payment-customer-search-input').value.toLowerCase();
             const selectedRoute = document.getElementById('payment-route-filter').value;
             
-            const filteredCustomers = salesmanCustomers.filter(c => 
+            const filteredCustomers = appState.customers.filter(c => 
+                c.Salesman && c.Salesman.toUpperCase() === appState.salesman && 
                 (c.Customer || '').toLowerCase().includes(searchFilter) &&
                 (selectedRoute === 'ALL' || c.Route === selectedRoute)
             );
@@ -944,13 +869,11 @@
             ).join('');
         };
         
-        const renderDepartmentTabs = () => {
+        const renderDepartmentFilter = () => {
             const departments = ['All', ...[...new Set(appState.items.map(item => item.Department).filter(Boolean))].sort()];
-            const container = document.getElementById('department-tabs-container');
+            const container = document.getElementById('department-filter');
             container.innerHTML = departments.map(dept => `
-                <button class="department-tab ${dept === appState.activeDepartment ? 'active' : ''}" data-department="${dept}">
-                    ${dept}
-                </button>
+                <option value="${dept}">${dept}</option>
             `).join('');
         };
 
@@ -1042,22 +965,69 @@
             }).join('');
         };
         
+        // --- ADMIN DASHBOARD & REPORTING LOGIC ---
         const processAdminData=()=>{const e=new Map(appState.items.map(e=>[String(e.Code),parseFloat(e.CostRate)||0])),t=Object.values(appState.orders).flat();let a=0,s=0,r=t.length;const n={},o={};t.forEach(t=>{const r=t.salesman||"N/A";n[r]||(n[r]={revenue:0,cost:0,orderCount:0}),n[r].orderCount++,(t.items||[]).forEach(t=>{const i=t.quantity*t.sellingPrice,l=e.get(String(t.item.Code))||0;a+=i,s+=t.quantity*l,n[r].revenue+=i,n[r].cost+=t.quantity*l;const c=t.item.ItemName;o[c]||(o[c]={quantity:0,revenue:0}),o[c].quantity+=t.quantity,o[c].revenue+=i})});const i=new Date().toLocaleDateString(),l={};let c=0,d=0;return Object.values(appState.payments).flat().forEach(e=>{if(new Date(e.date).toLocaleDateString()===i){const t=e.salesman||"N/A";l[t]||(l[t]={cash:0,upi:0}),"Cash"===e.method?(l[t].cash+=e.amount,c+=e.amount):"UPI"===e.method&&(l[t].upi+=e.amount,d+=e.amount)}}),{totalRevenue:a,totalProfit:a-s,totalOrders:r,salesBySalesman:n,topItems:Object.entries(o).sort((e,t)=>t[1].revenue-e[1].revenue).slice(0,10),collectionsBySalesman:l,grandTotalCash:c,grandTotalUPI:d}};
-        const renderAdminDashboard=()=>{const e=document.getElementById("admin-dashboard-content");if(0===appState.items.length)return void(e.innerHTML='<div class="card" style="text-align: center;">Loading data...</div>');const t=processAdminData(),a=t.totalRevenue>0?t.totalProfit/t.totalRevenue*100:0,s=Object.entries(t.salesBySalesman).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`<li class="data-list-item" data-salesman="${e}"><div class="item-main">${e}</div><div class="item-details"><span class="value-primary">${formatCurrency(t.revenue)}</span><span class="value-secondary"><span class="${a>=0?"profit":"loss"}">${formatCurrency(a)} (${s.toFixed(1)}%)</span></span></div></li>`}).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>',r=t.topItems.map(([e,t])=>`<li class="data-list-item" style="cursor:default;"><div class="item-main">${e}</div><div class="item-details"><span class="value-primary">${formatCurrency(t.revenue)}</span><span class="value-secondary">Qty: ${t.quantity}</span></div></li>`).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>',n=t.grandTotalCash+t.grandTotalUPI,o=Object.entries(t.collectionsBySalesman).map(([e,t])=>`<div class="salesman-header">${e}</div><ul class="salesman-breakdown"><li><span>Cash</span> <span>${formatCurrency(t.cash)}</span></li><li><span>UPI</span> <span>${formatCurrency(t.upi)}</span></li><li><span>Sub-Total</span> <span>${formatCurrency(t.cash+t.upi)}</span></li></ul>`).join(""),i=Object.keys(t.collectionsBySalesman).length>0?o:'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No collections today.</li>',l=`\n                <div class="data-list-card" id="crm-card" style="cursor:pointer;">\n                    <h3 style="display: flex; align-items: center; gap: 8px;">\n                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>\n                        Bulk Messaging (CRM)\n                    </h3>\n                    <p style="font-size: 0.9rem; color: #6c757d;">Send promotional messages and catalogues to all customers via WhatsApp.</p>\n                </div>`;e.innerHTML=`<div class="dashboard-grid"><div class="kpi-row"><div class="kpi-card-small"><div class="value">${formatCurrency(t.totalRevenue)}</div><div class="label">Total Revenue</div></div><div class="kpi-card-small"><div class="value">${formatCurrency(t.totalProfit)}</div><div class="label">Total Profit</div></div><div class="kpi-card-small"><div class="value">${t.totalOrders}</div><div class="label">Total Orders</div></div><div class="kpi-card-small"><div class="value ${a>=0?"profit":"loss"}">${a.toFixed(1)}%</div><div class="label">Overall Margin</div></div></div>${l}<div class="data-list-card"><h3>Sales by Salesman</h3><ul class="data-list-container">${s}</ul></div><div class="data-list-card"><h3>Top Selling Items</h3><ul class="data-list-container">${r}</ul></div><div class="data-list-card"><h3>Today's Collections</h3><ul class="payment-summary-list"><li><span>Total Cash</span><strong>${formatCurrency(t.grandTotalCash)}</strong></li><li><span>Total UPI</span><strong>${formatCurrency(t.grandTotalUPI)}</strong></li><li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatCurrency(n)}</strong></li>${i}</ul></div></div>`};
+        const renderAdminDashboard=()=>{const e=document.getElementById("admin-dashboard-content");if(0===appState.items.length)return void(e.innerHTML='<div class="card" style="text-align: center;">Loading data...</div>');const t=processAdminData(),a=t.totalRevenue>0?t.totalProfit/t.totalRevenue*100:0,s=Object.entries(t.salesBySalesman).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`\n                        <li class="data-list-item" data-salesman="${e}">\n                            <div class="item-main">${e}</div>\n                            <div class="item-details">\n                                <span class="value-primary">${formatCurrency(t.revenue)}</span>\n                                <span class="value-secondary">\n                                    <span class="${a>=0?"profit":"loss"}">\n                                        ${formatCurrency(a)} (${s.toFixed(1)}%)\n                                    </span>\n                                </span>\n                            </div>\n                        </li>`}).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>',r=t.topItems.map(([e,t])=>`\n                <li class="data-list-item" style="cursor:default;">\n                    <div class="item-main">${e}</div>\n                    <div class="item-details">\n                        <span class="value-primary">${formatCurrency(t.revenue)}</span>\n                        <span class="value-secondary">Qty: ${t.quantity}</span>\n                    </div>\n                </li>`).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>',n=t.grandTotalCash+t.grandTotalUPI,o=Object.entries(t.collectionsBySalesman).map(([e,t])=>`\n                <div class="salesman-header">${e}</div>\n                <ul class="salesman-breakdown">\n                    <li><span>Cash</span> <span>${formatCurrency(t.cash)}</span></li>\n                    <li><span>UPI</span> <span>${formatCurrency(t.upi)}</span></li>\n                    <li><span>Sub-Total</span> <span>${formatCurrency(t.cash+t.upi)}</span></li>\n                </ul>`).join(""),i=Object.keys(t.collectionsBySalesman).length>0?o:'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No collections today.</li>';e.innerHTML=`
+                <div class="dashboard-grid">
+                    <div class="kpi-row">
+                        <div class="kpi-card-small">
+                            <div class="value">${formatCurrency(t.totalRevenue)}</div>
+                            <div class="label">Total Revenue</div>
+                        </div>
+                        <div class="kpi-card-small">
+                            <div class="value">${formatCurrency(t.totalProfit)}</div>
+                            <div class="label">Total Profit</div>
+                        </div>
+                         <div class="kpi-card-small">
+                            <div class="value">${t.totalOrders}</div>
+                            <div class="label">Total Orders</div>
+                        </div>
+                        <div class="kpi-card-small">
+                            <div class="value ${a>=0?"profit":"loss"}">${a.toFixed(1)}%</div>
+                            <div class="label">Overall Margin</div>
+                        </div>
+                    </div>
+                    <div class="data-list-card">
+                        <h3>Sales by Salesman</h3>
+                        <ul class="data-list-container">${s}</ul>
+                    </div>
+                    <div class="data-list-card">
+                        <h3>Top Selling Items</h3>
+                        <ul class="data-list-container">${r}</ul>
+                    </div>
+                     <div class="data-list-card">
+                        <h3>Today's Collections</h3>
+                        <ul class="payment-summary-list">
+                            <li><span>Total Cash</span><strong>${formatCurrency(t.grandTotalCash)}</strong></li>
+                            <li><span>Total UPI</span><strong>${formatCurrency(t.grandTotalUPI)}</strong></li>
+                            <li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatCurrency(n)}</strong></li>
+                            ${i}
+                        </ul>
+                    </div>
+                    <div class="data-list-card">
+                        <h3>CRM Tools</h3>
+                        <button class="button button-outline" id="crm-module-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            Send Bulk Offer Message
+                        </button>
+                    </div>
+                </div>`};
         const renderSalesmanReport=e=>{appState.reporting.salesman=e,document.getElementById("salesman-report-header").textContent=`${e}'s Report`;const t=document.getElementById("salesman-report-content"),a=appState.orders[e]||[],s={},r=new Map(appState.items.map(e=>[String(e.Code),parseFloat(e.CostRate)||0]));let n=0,o=0;a.forEach(e=>{const t=e.customer.Customer||"Unknown";s[t]||(s[t]={revenue:0,cost:0,orderCount:0}),s[t].orderCount++,(e.items||[]).forEach(e=>{const a=e.quantity*e.sellingPrice,i=r.get(String(e.item.Code))||0;s[t].revenue+=a,s[t].cost+=a-e.quantity*i,n+=a,o+=a-e.quantity*i})});const i=Object.entries(s).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`\n                    <li class="data-list-item" data-customer="${e}">\n                        <div class="item-main">${e}</div>\n                        <div class="item-details">\n                            <span class="value-primary">${formatCurrency(t.revenue)}</span>\n                             <span class="value-secondary">\n                                <span class="${a>=0?"profit":"loss"}">\n                                    ${formatCurrency(a)} (${s.toFixed(1)}%)\n                                </span>\n                            </span>\n                        </div>\n                    </li>`}).join(""),l=n-o,c=n>0?l/n*100:0;t.innerHTML=`\n                <div class="report-header-card">\n                    <div><div class="label">Total Revenue</div><div class="value">${formatCurrency(n)}</div></div>\n                    <div><div class="label">Total Profit</div><div class="value ${l>=0?"profit":"loss"}">${formatCurrency(l)}</div></div>\n                    <div><div class="label">Profit Margin</div><div class="value ${c>=0?"profit":"loss"}">${c.toFixed(1)}%</div></div>\n                </div>\n                <div class="data-list-card">\n                    <h3>Sales by Customer</h3>\n                    <ul class="data-list-container">${i||'<li style="text-align:center;padding:20px;">No customers found.</li>'}</ul>\n                </div>\n            `,showPage("page-salesman-report")};
         const renderCustomerReport=(e,t)=>{appState.reporting.customer=t,document.getElementById("customer-report-header").textContent=`${t}`;const a=document.getElementById("customer-report-content"),s=new Map(appState.items.map(e=>[String(e.Code),parseFloat(e.CostRate)||0])),r=(appState.orders[e]||[]).filter(e=>e.customer.Customer===t),n={};r.forEach(e=>{(e.items||[]).forEach(e=>{const t=e.item.ItemName,a=String(e.item.Code);n[t]||(n[t]={quantity:0,revenue:0,cost:0}),n[t].quantity+=e.quantity,n[t].revenue+=e.quantity*e.sellingPrice,n[t].cost+=e.quantity*(s.get(a)||0)})});let o=0,i=0;Object.values(n).forEach(e=>{o+=e.revenue,i+=e.revenue-e.cost});const l=o>0?i/o*100:0,c=Object.entries(n).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`\n                    <tr>\n                        <td>${e}</td>\n                        <td class="numeric">${t.quantity}</td>\n                        <td class="numeric">${formatCurrency(t.revenue)}</td>\n                        <td class="numeric ${a>=0?"profit":"loss"}">${formatCurrency(a)}</td>\n                        <td class="numeric ${s>=0?"profit":"loss"}">${s.toFixed(1)}%</td>\n                    </tr>`}).join("");a.innerHTML=`\n                <div class="report-header-card">\n                    <div><div class="label">Total Revenue</div><div class="value">${formatCurrency(o)}</div></div>\n                    <div><div class="label">Total Profit</div><div class="value ${i>=0?"profit":"loss"}">${formatCurrency(i)}</div></div>\n                    <div><div class="label">Profit Margin</div><div class="value ${l>=0?"profit":"loss"}">${l.toFixed(1)}%</div></div>\n                </div>\n                <div class="card">\n                <table class="report-table">\n                    <thead>\n                        <tr><th>Product</th><th class="numeric">Qty</th><th class="numeric">Revenue</th><th class="numeric">Profit</th><th class="numeric">Margin</th></tr>\n                    </thead>\n                    <tbody>${c}</tbody>\n                </table>\n                </div>\n            `,showPage("page-customer-report")};
         document.getElementById('admin-dashboard-content').addEventListener('click', e => { 
-            const salesmanCard = e.target.closest('.data-list-item[data-salesman]'); 
-            if (salesmanCard) { renderSalesmanReport(salesmanCard.dataset.salesman); return; }
-            const crmCard = e.target.closest('#crm-card');
-            if (crmCard) { 
-                populateRoutes('crm-route-filter');
-                showPage('page-crm'); 
+            const salesmanBtn = e.target.closest('.data-list-item[data-salesman]'); 
+            if (salesmanBtn) {
+                renderSalesmanReport(salesmanBtn.dataset.salesman);
+                return;
+            }
+            const crmBtn = e.target.closest('#crm-module-btn');
+            if (crmBtn) {
+                renderCrmModule();
+                showPage('page-crm');
             }
         });
         document.getElementById('salesman-report-content').addEventListener('click', e => { const t = e.target.closest('.data-list-item[data-customer]'); t && renderCustomerReport(appState.reporting.salesman, t.dataset.customer) });
         document.getElementById('back-to-admin-dashboard-btn').addEventListener('click', () => showPage('page-admin-dashboard'));
-        document.getElementById('back-to-admin-from-crm-btn').addEventListener('click', () => showPage('page-admin-dashboard'));
         document.getElementById('back-to-salesman-report-btn').addEventListener('click', () => showPage('page-salesman-report'));
         
         // --- NEW Customer Page Logic ---
@@ -1079,10 +1049,7 @@
             const c = appState.customer;
             document.getElementById('customer-history-name').textContent = `History for ${c.Customer}`;
             const container = document.getElementById('customer-history-list');
-            const customerOrders = (appState.orders[appState.salesman] || [])
-                .filter(o => o.customer.Customer === c.Customer)
-                .sort((a,b) => new Date(b.date) - new Date(a.date));
-
+            const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === c.Customer).sort((a,b) => new Date(b.date) - new Date(a.date));
             if (customerOrders.length === 0) {
                 container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`;
             } else {
@@ -1094,17 +1061,12 @@
         };
         const renderPreviousOrders = () => {
             const container = document.getElementById('previous-orders-list');
-            const customerOrders = (appState.orders[appState.salesman] || [])
-                .filter(o => o.customer.Customer === appState.customer.Customer)
-                .sort((a,b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 2); // Show last 2 orders
-
+            const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === appState.customer.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 2);
             if (customerOrders.length === 0) {
                 document.getElementById('previous-orders-card').style.display = 'none';
                 return;
             }
             document.getElementById('previous-orders-card').style.display = 'block';
-
             container.innerHTML = customerOrders.map((order, index) => `
                 <details style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                     <summary style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-weight:500;">
@@ -1124,7 +1086,7 @@
             appState.selectedPriceOption = null;
             appState.editing.itemIndex = null;
             appState.activeDepartment = 'All';
-            renderDepartmentTabs();
+            renderDepartmentFilter();
             document.getElementById('item-search-input').value = '';
             document.getElementById('item-search-results').innerHTML = '';
             document.getElementById('item-quantity').value = '';
@@ -1144,10 +1106,12 @@
                 localStorage.setItem('lastSalesman', salesman);
                 if (salesman === 'ADMIN') {
                     document.getElementById('footer').style.display = 'none';
+                    document.getElementById('settings-icon-btn').style.display = 'flex'; // Show for Admin
                     renderAdminDashboard();
                     showPage('page-admin-dashboard');
                 } else {
                     document.getElementById('footer').style.display = 'flex';
+                    document.getElementById('settings-icon-btn').style.display = 'none'; // Hide for Salesman
                     appState.currentView = 'customers'; // Default to customers
                     document.getElementById('orders-tab-btn').classList.add('active');
                     document.getElementById('payments-tab-btn').classList.remove('active');
@@ -1251,15 +1215,11 @@
         document.getElementById('back-to-settings-btn').addEventListener('click', () => { showPage('page-settings'); });
         
         // --- Department Tab & Item Search Logic ---
-        document.getElementById('department-tabs-container').addEventListener('click', e => {
-            if (e.target.matches('.department-tab')) {
-                const department = e.target.dataset.department;
-                appState.activeDepartment = department;
-                renderDepartmentTabs(); // Re-render to update active class
-                const searchInput = document.getElementById('item-search-input');
-                renderItemSearchResults(searchInput.value); // Re-filter results with current text
-                searchInput.focus();
-            }
+        document.getElementById('department-filter').addEventListener('change', e => {
+            appState.activeDepartment = e.target.value;
+            const searchInput = document.getElementById('item-search-input');
+            renderItemSearchResults(searchInput.value);
+            searchInput.focus();
         });
         
         document.getElementById('item-search-input').addEventListener('input', (e) => renderItemSearchResults(e.target.value));
@@ -1314,7 +1274,7 @@
                 
                 // Set active department and update tabs
                 appState.activeDepartment = itemToEdit.item.Department || 'All';
-                renderDepartmentTabs();
+                document.getElementById('department-filter').value = appState.activeDepartment;
 
                 document.getElementById('item-search-input').value = itemToEdit.item.ItemName;
                 document.getElementById('item-quantity').value = itemToEdit.quantity;
@@ -1336,9 +1296,7 @@
             if (copyBtn) {
                 e.preventDefault(); // Prevent details from closing
                 const index = parseInt(copyBtn.dataset.orderIndex);
-                const customerOrders = (appState.orders[appState.salesman] || [])
-                    .filter(o => o.customer.Customer === appState.customer.Customer)
-                    .sort((a,b) => new Date(b.date) - new Date(a.date));
+                const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === appState.customer.Customer).sort((a,b) => new Date(b.date) - new Date(a.date));
                 const orderToCopy = customerOrders[index];
 
                 if (orderToCopy) {
@@ -1362,7 +1320,7 @@
             btn.disabled = true;
             btn.textContent = 'Saving...';
             const total = appState.currentOrder.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
-            const newOrder = { customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone }, items: appState.currentOrder.map(i => ({ item: { ItemName: i.item.ItemName, Code: i.item.Code }, quantity: i.quantity, sellingPrice: i.sellingPrice })), total, salesman: appState.salesman, date: new Date().toISOString() };
+            const newOrder = { customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone }, items: appState.currentOrder.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code }, quantity: i.quantity, sellingPrice: i.sellingPrice })), total, salesman: appState.salesman, date: new Date().toISOString() };
             try {
                 const orderDocRef = doc(collection(db, "orders"));
                 const stockUpdateBatch = writeBatch(db);
@@ -1414,7 +1372,7 @@
                 document.getElementById('invoice-salesman').textContent = `Salesman: ${appState.salesman}`; 
                 document.getElementById('invoice-customer').textContent = `Customer: ${appState.customer.Customer}`; 
                 document.getElementById('invoice-date').textContent = `Date: ${new Date().toLocaleString()}`; 
-                document.getElementById('invoice-table-body').innerHTML = appState.currentOrder.map(i => { const t = i.quantity * i.sellingPrice; return `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="col-qty">${i.quantity}</td><td class="col-price">${i.sellingPrice.toFixed(2)}</td><td class="col-total">${t.toFixed(2)}</td></tr>`; }).join(''); 
+                document.getElementById('invoice-table-body').innerHTML = appState.currentOrder.map(i => { const t = i.quantity * i.sellingPrice; return `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="col-qty">${i.quantity}</td><td class="col-price">${i.sellingPrice.toFixed(2)}</td><td class="col-mrp">${(i.item.Mrp || 0).toFixed(2)}</td><td class="col-total">${t.toFixed(2)}</td></tr>`; }).join(''); 
                 document.getElementById('invoice-grand-total').textContent = `Total: ${formatCurrency(appState.currentOrder.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0))}`; 
             } 
             try { 
@@ -1560,14 +1518,72 @@
             }
             const message = document.getElementById('offer-message-textarea').value;
             const encodedMessage = encodeURIComponent(message);
+            // This URL scheme works best for WhatsApp Web on desktop.
             const whatsappUrl = `https://web.whatsapp.com/send?phone=91${phone}&text=${encodedMessage}`;
             window.open(whatsappUrl, '_blank');
             offerModal.style.display = 'none';
         });
 
-        const parseCSV = (csvText) => { try { const lines = csvText.trim().split(/\r\n|\n/); if (lines.length < 2) return []; const headers = lines[0].split(',').map(h => h.trim()); return lines.slice(1).map(line => { const values = line.match(/(".*?"|[^",\r\n]+)(?=\s*,|\s*$)/g) || []; const obj = {}; headers.forEach((header, i) => { let v = (values[i] || '').trim(); if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1, -1); obj[header] = v; }); return obj; }); } catch (error) { console.error("Error parsing CSV:", error); return null; } };
+        const parseCSV = (csvText) => { 
+            try { 
+                const lines = csvText.trim().split(/\r\n|\n/); 
+                if (lines.length < 2) return []; 
+                const headers = lines[0].split(',').map(h => h.trim()); 
+                return lines.slice(1).map(line => { 
+                    // FIX: Use a more robust regex that handles quoted strings and empty fields.
+                    const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    const obj = {}; 
+                    headers.forEach((header, i) => { 
+                        let v = (values[i] || '').trim(); 
+                        if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1, -1); 
+                        obj[header] = v; 
+                    }); 
+                    return obj; 
+                }); 
+            } catch (error) { 
+                console.error("Error parsing CSV:", error); 
+                alert('There was an error parsing the CSV file. Please check the file for formatting issues.');
+                return null; 
+            } 
+        };
         const sanitizeItems = (items) => { const sanitize = (val) => parseFloat(String(val).replace(/,/g, '')) || 0; return items.map(i => ({...i, CostRate: sanitize(i.CostRate), Mrp: sanitize(i.Mrp), Price1: sanitize(i.Price1), Price2: sanitize(i.Price2), Price3: sanitize(i.Price3), Margin1: sanitize(i.Margin1), Margin2: sanitize(i.Margin2), Margin3: sanitize(i.Margin3), Clstock: sanitize(i.Clstock)})); };
-        const uploadCSV = async (file, collectionName) => { if (!file) return; const reader = new FileReader(); reader.onload = async (event) => { let data = parseCSV(event.target.result); if (data) { if (collectionName === 'items') data = sanitizeItems(data); try { const batch = writeBatch(db); data.forEach(item => { const docRef = collectionName === 'items' ? doc(db, collectionName, String(item.Code)) : doc(collection(db, collectionName)); batch.set(docRef, item); }); await batch.commit(); alert(`${data.length} ${collectionName} loaded successfully.`); } catch (err) { alert('Error uploading to database.'); console.error(err); } } else { alert(`Failed to parse ${collectionName} CSV.`); } }; reader.readAsText(file); };
+        const uploadCSV = async (file, collectionName) => { 
+            if (!file) return; 
+            const reader = new FileReader(); 
+            reader.onload = async (event) => { 
+                let data = parseCSV(event.target.result); 
+                if (data) { 
+                    if (collectionName === 'items') {
+                        data = sanitizeItems(data); 
+                    }
+                    // FIX: Check for required IDs
+                    if (collectionName === 'customers' && (!data[0] || !data[0].CustomerCode)) {
+                        alert("CSV Error: 'CustomerCode' column is missing or empty. Please add it as the first column.");
+                        return;
+                    }
+                    if (collectionName === 'items' && (!data[0] || !data[0].Code)) {
+                        alert("CSV Error: 'Code' column is missing or empty.");
+                        return;
+                    }
+
+                    try { 
+                        const batch = writeBatch(db); 
+                        data.forEach(item => { 
+                            // FIX: Use CustomerCode as the document ID for customers.
+                            const docId = collectionName === 'items' ? String(item.Code) : String(item.CustomerCode);
+                            if (!docId) return; // Skip rows without a valid ID
+                            const docRef = doc(db, collectionName, docId);
+                            batch.set(docRef, item); 
+                        }); 
+                        await batch.commit(); 
+                        alert(`${data.length} ${collectionName} records processed successfully.`); 
+                    } catch (err) { 
+                        alert('Error uploading to database.'); console.error(err); 
+                    } 
+                }
+            }; 
+            reader.readAsText(file); 
+        };
         document.getElementById('customer-file-upload').addEventListener('change', (e) => { uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
         document.getElementById('item-file-upload').addEventListener('change', (e) => { uploadCSV(e.target.files[0], 'items'); e.target.value = ''; });
         const editModal = document.getElementById('edit-modal');
@@ -1581,8 +1597,78 @@
         document.getElementById('close-edit-modal-btn').addEventListener('click', closeEditModal);
         document.getElementById('save-edit-btn').addEventListener('click', async () => { const isCustomers = appState.editing.type === 'customers'; const id = appState.editing.id; let updatedData = {}; if (isCustomers) { updatedData = { Customer: document.getElementById('edit-Customer').value, Salesman: document.getElementById('edit-Salesman').value, Phone: document.getElementById('edit-Phone').value }; } else { const fields = ['ItemName', 'CostRate', 'Price1', 'Price2', 'Price3']; fields.forEach(field => { const input = document.getElementById(`edit-${field}`); updatedData[field] = input.type === 'number' ? parseFloat(input.value) : input.value; }); } await updateDoc(doc(db, isCustomers ? 'customers' : 'items', id), updatedData); closeEditModal(); alert('Record updated successfully!'); });
         
+        // --- CRM MODULE LOGIC ---
+        document.getElementById('back-to-admin-from-crm-btn').addEventListener('click', () => showPage('page-admin-dashboard'));
+
+        const renderCrmModule = () => {
+            const salesmanFilter = document.getElementById('crm-salesman-filter');
+            const routeFilter = document.getElementById('crm-route-filter');
+
+            const salesmen = [...new Set(appState.customers.map(c => c.Salesman).filter(Boolean))].sort();
+            salesmanFilter.innerHTML = '<option value="ALL">All Salesmen</option>' + salesmen.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            const routes = [...new Set(appState.customers.map(c => c.Route).filter(Boolean))].sort();
+            routeFilter.innerHTML = '<option value="ALL">All Routes</option>' + routes.map(r => `<option value="${r}">${r}</option>`).join('');
+            
+            updateCrmCustomerCount();
+        };
+
+        const updateCrmCustomerCount = () => {
+            const selectedSalesman = document.getElementById('crm-salesman-filter').value;
+            const selectedRoute = document.getElementById('crm-route-filter').value;
+
+            const targetCustomers = appState.customers.filter(c => {
+                const hasPhone = c.Phone && c.Phone.trim().length > 5;
+                const matchesSalesman = selectedSalesman === 'ALL' || c.Salesman === selectedSalesman;
+                const matchesRoute = selectedRoute === 'ALL' || c.Route === selectedRoute;
+                return hasPhone && matchesSalesman && matchesRoute;
+            });
+
+            document.getElementById('crm-customer-count').textContent = `Targeted Customers: ${targetCustomers.length}`;
+        };
+
+        document.getElementById('crm-salesman-filter').addEventListener('change', updateCrmCustomerCount);
+        document.getElementById('crm-route-filter').addEventListener('change', updateCrmCustomerCount);
+
+        document.getElementById('send-bulk-messages-btn').addEventListener('click', () => {
+            const message = document.getElementById('crm-message-template').value.trim();
+            if (!message) {
+                alert('Please compose a message before sending.');
+                return;
+            }
+
+            const selectedSalesman = document.getElementById('crm-salesman-filter').value;
+            const selectedRoute = document.getElementById('crm-route-filter').value;
+
+            const targetCustomers = appState.customers.filter(c => {
+                const hasPhone = c.Phone && c.Phone.trim().length > 5;
+                const matchesSalesman = selectedSalesman === 'ALL' || c.Salesman === selectedSalesman;
+                const matchesRoute = selectedRoute === 'ALL' || c.Route === selectedRoute;
+                return hasPhone && matchesSalesman && matchesRoute;
+            });
+            
+            if (targetCustomers.length === 0) {
+                alert('No customers match the selected filters.');
+                return;
+            }
+
+            if (confirm(`You are about to send messages to ${targetCustomers.length} customers. Proceed?`)) {
+                let delay = 0;
+                targetCustomers.forEach(customer => {
+                    setTimeout(() => {
+                        const phone = customer.Phone.replace(/[^0-9]/g, '');
+                        const encodedMessage = encodeURIComponent(message);
+                        const whatsappUrl = `https://web.whatsapp.com/send?phone=91${phone}&text=${encodedMessage}`;
+                        window.open(whatsappUrl, '_blank');
+                    }, delay);
+                    delay += 500; // 0.5 second delay between each tab opening
+                });
+            }
+        });
+
+
         const setupPWA = () => {
-            const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjkwIiBmb250LXdlaWdodD0iYm9sZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZiI+TUY8L3RleHQ+PC9zdmc+", sizes: "192x192", type: "image/svg+xml" }]};
+            const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]};
             const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
             const manifestUrl = URL.createObjectURL(manifestBlob);
             document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`);
