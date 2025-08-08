@@ -212,7 +212,6 @@
         .modal-content h2 { text-align: center; margin-bottom: 15px; color: var(--primary-color); }
         .modal .button { margin-top: 10px; }
         .modal-body { overflow-y: auto; }
-        #offer-modal textarea { min-height: 200px; resize: vertical; }
         .form-group { margin-bottom: 10px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
         
@@ -220,23 +219,6 @@
         .modal-footer .button { margin-top: 0; }
         #share-modal p { text-align: center; }
         
-        .language-switcher { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
-        .lang-switch-btn {
-            padding: 6px 14px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            background: none;
-            border: 1px solid var(--border-color);
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .lang-switch-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
         #page-salesman-selection .content { display: flex; flex-direction: column; justify-content: center; gap: 20px; }
         #page-salesman-selection h1 { text-align: center; color: var(--primary-color); margin-bottom: 20px; font-size: 2rem; }
         #order-item-selection .price-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
@@ -386,6 +368,76 @@
         #crm-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         #crm-filters select { margin-bottom: 0; }
         #crm-customer-count { text-align: center; font-weight: 500; color: var(--primary-color); margin-bottom: 20px; }
+        
+        /* NEW: Flyer Template Styles */
+        #flyer-template-wrapper { position: absolute; left: -9999px; top: -9999px; width: 500px; }
+        #flyer-content {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            color: #fff;
+            padding: 30px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        #flyer-content::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        #flyer-header { text-align: center; margin-bottom: 25px; }
+        #flyer-logo { font-size: 2.5rem; font-weight: bold; margin: 0; }
+        #flyer-tagline { font-size: 1rem; opacity: 0.9; }
+        #flyer-offer-details { margin-bottom: 25px; }
+        #flyer-headline {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+        #flyer-item-list { list-style: none; padding: 0; margin: 0; }
+        .flyer-item {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .flyer-item-name { font-size: 1.1rem; font-weight: 600; max-width: 70%;}
+        .flyer-item-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            background-color: var(--accent-color);
+            padding: 5px 12px;
+            border-radius: 50px;
+        }
+        #flyer-footer { margin-top: 30px; text-align: center; font-size: 0.9rem; opacity: 0.8; }
+        #offer-flyer-container img { max-width: 100%; border-radius: 8px; }
+        /* END: Flyer Template Styles */
+        
+        /* NEW: Responsive Table Wrapper */
+        .table-responsive-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            box-shadow: inset -10px 0 8px -8px rgba(0,0,0,0.05);
+        }
+        .table-responsive-wrapper .report-table {
+            min-width: 600px; /* Force scroll on smaller screens */
+        }
+        .table-responsive-wrapper .report-table td, 
+        .table-responsive-wrapper .report-table th {
+            white-space: nowrap;
+        }
+
 
         @media (min-width: 768px) {
             .kpi-row { grid-template-columns: repeat(4, 1fr); }
@@ -405,6 +457,7 @@
 </head>
 <body>
 
+    <!-- ... (All other page divs remain unchanged) ... -->
     <div id="page-salesman-selection" class="page active">
         <div class="content">
             <h1>Select Role</h1>
@@ -707,6 +760,8 @@
     <div id="order-invoice-wrapper"><div id="order-invoice"><div class="invoice-header"><h2 >ORDER SUMMARY</h2><p id="invoice-salesman"></p></div><div class="invoice-details"><div id="invoice-customer"></div><div id="invoice-date"></div></div><table class="invoice-table"><thead><tr><th>ITEM</th><th class="col-qty">QTY</th><th class="col-price">PRICE</th><th class="col-mrp">MRP</th><th class="col-total">TOTAL</th></tr></thead><tbody id="invoice-table-body"></tbody></table><div class="invoice-footer"><div class="grand-total" id="invoice-grand-total"></div></div></div></div>
     <div id="payment-receipt-wrapper"><div class="receipt-container"><div class="receipt-header"><h2>MF BIGMARKET</h2><p>Payment Receipt</p></div><div class="receipt-details"><p><strong>Date:</strong><span id="receipt-date"></span></p><p><strong>Salesman:</strong><span id="receipt-salesman"></span></p><p><strong>Customer:</strong><span id="receipt-customer"></span></p><p><strong>Pay Method:</strong><span id="receipt-method"></span></p></div><div class="receipt-amount"><div class="amount-label">Amount Received</div><div class="amount-value" id="receipt-amount"></div></div><div class="receipt-footer">Thank you for your business!</div></div></div>
     <div id="collection-report-wrapper"><div id="collection-report"><div class="report-header"><h2>MF BIGMARKET</h2><p>Daily Collection Report</p></div><div class="report-details"><div id="report-salesman"></div><div id="report-date"></div></div><table class="report-table"><thead><tr><th>CUSTOMER</th><th class="col-method">MODE</th><th class="col-amount">AMOUNT</th></tr></thead><tbody id="report-table-body"></tbody></table><div class="report-footer"><div id="report-totals"></div><div class="grand-total" id="report-grand-total"></div></div></div></div>
+    <!-- NEW: Hidden flyer template -->
+    <div id="flyer-template-wrapper"></div>
     
     <div id="share-modal" class="modal">
         <div class="modal-content">
@@ -724,22 +779,23 @@
         </div>
     </div>
 
+    <!-- UPDATED: Offer Modal -->
     <div id="offer-modal" class="modal">
         <div class="modal-content">
             <h2 id="offer-modal-title">Generate Customer Offer</h2>
             <div class="modal-body">
-                <div class="language-switcher">
-                    <button class="lang-switch-btn active" data-lang="en">English</button>
-                    <button class="lang-switch-btn" data-lang="ml">മലയാളം</button>
+                <div id="offer-flyer-container" style="text-align:center; min-height: 200px; display:flex; align-items:center; justify-content:center; border: 1px solid #eee; border-radius: 8px; margin-bottom: 20px; background-color: #f8f9fa;">
+                    <p>Click "Generate" to create a personalized flyer.</p>
                 </div>
-                <textarea id="offer-message-textarea"></textarea>
             </div>
-            <div class="modal-footer">
-                <button class="button button-outline" id="close-offer-modal-btn">Cancel</button>
-                <button class="button" id="share-offer-whatsapp-btn">Share on WhatsApp</button>
+            <div class="modal-footer" style="flex-direction: column; gap: 10px;">
+                <button class="button" id="generate-flyer-btn">Generate Flyer</button>
+                <button class="button button-accent" id="share-flyer-btn" style="display:none;">Share Flyer on WhatsApp</button>
+                <button class="button button-outline" id="close-offer-modal-btn" style="margin-top:0;">Cancel</button>
             </div>
         </div>
     </div>
+
 
     <div id="edit-modal" class="modal"><div class="modal-content"><h2 id="edit-modal-title">Edit</h2><div class="modal-body" id="edit-modal-body"></div><div class="modal-footer"><button class="button button-outline" id="close-edit-modal-btn">Cancel</button><button class="button" id="save-edit-btn">Save Changes</button></div></div></div>
 
@@ -758,8 +814,8 @@
             currentPayment: {}, currentView: 'customers', editing: { type: null, id: null, itemIndex: null },
             reporting: { salesman: null, customer: null },
             shareableImageBlob: null,
+            shareableFlyerBlob: null,
             activeDepartment: 'All',
-            offerLanguage: 'en'
         };
 
         const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc } = window.firebaseTools;
@@ -967,7 +1023,7 @@
         
         // --- ADMIN DASHBOARD & REPORTING LOGIC ---
         const processAdminData=()=>{const e=new Map(appState.items.map(e=>[String(e.Code),parseFloat(e.CostRate)||0])),t=Object.values(appState.orders).flat();let a=0,s=0,r=t.length;const n={},o={};t.forEach(t=>{const r=t.salesman||"N/A";n[r]||(n[r]={revenue:0,cost:0,orderCount:0}),n[r].orderCount++,(t.items||[]).forEach(t=>{const i=t.quantity*t.sellingPrice,l=e.get(String(t.item.Code))||0;a+=i,s+=t.quantity*l,n[r].revenue+=i,n[r].cost+=t.quantity*l;const c=t.item.ItemName;o[c]||(o[c]={quantity:0,revenue:0}),o[c].quantity+=t.quantity,o[c].revenue+=i})});const i=new Date().toLocaleDateString(),l={};let c=0,d=0;return Object.values(appState.payments).flat().forEach(e=>{if(new Date(e.date).toLocaleDateString()===i){const t=e.salesman||"N/A";l[t]||(l[t]={cash:0,upi:0}),"Cash"===e.method?(l[t].cash+=e.amount,c+=e.amount):"UPI"===e.method&&(l[t].upi+=e.amount,d+=e.amount)}}),{totalRevenue:a,totalProfit:a-s,totalOrders:r,salesBySalesman:n,topItems:Object.entries(o).sort((e,t)=>t[1].revenue-e[1].revenue).slice(0,10),collectionsBySalesman:l,grandTotalCash:c,grandTotalUPI:d}};
-        const renderAdminDashboard=()=>{const e=document.getElementById("admin-dashboard-content");if(0===appState.items.length)return void(e.innerHTML='<div class="card" style="text-align: center;">Loading data...</div>');const t=processAdminData(),a=t.totalRevenue>0?t.totalProfit/t.totalRevenue*100:0,s=Object.entries(t.salesBySalesman).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`\n                        <li class="data-list-item" data-salesman="${e}">\n                            <div class="item-main">${e}</div>\n                            <div class="item-details">\n                                <span class="value-primary">${formatCurrency(t.revenue)}</span>\n                                <span class="value-secondary">\n                                    <span class="${a>=0?"profit":"loss"}">\n                                        ${formatCurrency(a)} (${s.toFixed(1)}%)\n                                    </span>\n                                </span>\n                            </div>\n                        </li>`}).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>',r=t.topItems.map(([e,t])=>`\n                <li class="data-list-item" style="cursor:default;">\n                    <div class="item-main">${e}</div>\n                    <div class="item-details">\n                        <span class="value-primary">${formatCurrency(t.revenue)}</span>\n                        <span class="value-secondary">Qty: ${t.quantity}</span>\n                    </div>\n                </li>`).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>',n=t.grandTotalCash+t.grandTotalUPI,o=Object.entries(t.collectionsBySalesman).map(([e,t])=>`\n                <div class="salesman-header">${e}</div>\n                <ul class="salesman-breakdown">\n                    <li><span>Cash</span> <span>${formatCurrency(t.cash)}</span></li>\n                    <li><span>UPI</span> <span>${formatCurrency(t.upi)}</span></li>\n                    <li><span>Sub-Total</span> <span>${formatCurrency(t.cash+t.upi)}</span></li>\n                </ul>`).join(""),i=Object.keys(t.collectionsBySalesman).length>0?o:'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No collections today.</li>';e.innerHTML=`
+        const renderAdminDashboard=()=>{const e=document.getElementById("admin-dashboard-content");if(0===appState.items.length)return void(e.innerHTML='<div class="card" style="text-align: center;">Loading data...</div>');const t=processAdminData(),a=t.totalRevenue>0?(t.totalProfit/t.totalRevenue*100):0,s=Object.entries(t.salesBySalesman).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`\n                        <li class="data-list-item" data-salesman="${e}">\n                            <div class="item-main">${e}</div>\n                            <div class="item-details">\n                                <span class="value-primary">${formatCurrency(t.revenue)}</span>\n                                <span class="value-secondary">\n                                    <span class="${a>=0?"profit":"loss"}">\n                                        ${formatCurrency(a)} (${s.toFixed(1)}%)\n                                    </span>\n                                </span>\n                            </div>\n                        </li>`}).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>',r=t.topItems.map(([e,t])=>`\n                <li class="data-list-item" style="cursor:default;">\n                    <div class="item-main">${e}</div>\n                    <div class="item-details">\n                        <span class="value-primary">${formatCurrency(t.revenue)}</span>\n                        <span class="value-secondary">Qty: ${t.quantity}</span>\n                    </div>\n                </li>`).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>',n=t.grandTotalCash+t.grandTotalUPI,o=Object.entries(t.collectionsBySalesman).map(([e,t])=>`\n                <div class="salesman-header">${e}</div>\n                <ul class="salesman-breakdown">\n                    <li><span>Cash</span> <span>${formatCurrency(t.cash)}</span></li>\n                    <li><span>UPI</span> <span>${formatCurrency(t.upi)}</span></li>\n                    <li><span>Sub-Total</span> <span>${formatCurrency(t.cash+t.upi)}</span></li>\n                </ul>`).join(""),i=Object.keys(t.collectionsBySalesman).length>0?o:'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No collections today.</li>';e.innerHTML=`
                 <div class="dashboard-grid">
                     <div class="kpi-row">
                         <div class="kpi-card-small">
@@ -1012,8 +1068,73 @@
                         </button>
                     </div>
                 </div>`};
-        const renderSalesmanReport=e=>{appState.reporting.salesman=e,document.getElementById("salesman-report-header").textContent=`${e}'s Report`;const t=document.getElementById("salesman-report-content"),a=appState.orders[e]||[],s={},r=new Map(appState.items.map(e=>[String(e.Code),parseFloat(e.CostRate)||0]));let n=0,o=0;a.forEach(e=>{const t=e.customer.Customer||"Unknown";s[t]||(s[t]={revenue:0,cost:0,orderCount:0}),s[t].orderCount++,(e.items||[]).forEach(e=>{const a=e.quantity*e.sellingPrice,i=r.get(String(e.item.Code))||0;s[t].revenue+=a,s[t].cost+=a-e.quantity*i,n+=a,o+=a-e.quantity*i})});const i=Object.entries(s).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`\n                    <li class="data-list-item" data-customer="${e}">\n                        <div class="item-main">${e}</div>\n                        <div class="item-details">\n                            <span class="value-primary">${formatCurrency(t.revenue)}</span>\n                             <span class="value-secondary">\n                                <span class="${a>=0?"profit":"loss"}">\n                                    ${formatCurrency(a)} (${s.toFixed(1)}%)\n                                </span>\n                            </span>\n                        </div>\n                    </li>`}).join(""),l=n-o,c=n>0?l/n*100:0;t.innerHTML=`\n                <div class="report-header-card">\n                    <div><div class="label">Total Revenue</div><div class="value">${formatCurrency(n)}</div></div>\n                    <div><div class="label">Total Profit</div><div class="value ${l>=0?"profit":"loss"}">${formatCurrency(l)}</div></div>\n                    <div><div class="label">Profit Margin</div><div class="value ${c>=0?"profit":"loss"}">${c.toFixed(1)}%</div></div>\n                </div>\n                <div class="data-list-card">\n                    <h3>Sales by Customer</h3>\n                    <ul class="data-list-container">${i||'<li style="text-align:center;padding:20px;">No customers found.</li>'}</ul>\n                </div>\n            `,showPage("page-salesman-report")};
-        const renderCustomerReport=(e,t)=>{appState.reporting.customer=t,document.getElementById("customer-report-header").textContent=`${t}`;const a=document.getElementById("customer-report-content"),s=new Map(appState.items.map(e=>[String(e.Code),parseFloat(e.CostRate)||0])),r=(appState.orders[e]||[]).filter(e=>e.customer.Customer===t),n={};r.forEach(e=>{(e.items||[]).forEach(e=>{const t=e.item.ItemName,a=String(e.item.Code);n[t]||(n[t]={quantity:0,revenue:0,cost:0}),n[t].quantity+=e.quantity,n[t].revenue+=e.quantity*e.sellingPrice,n[t].cost+=e.quantity*(s.get(a)||0)})});let o=0,i=0;Object.values(n).forEach(e=>{o+=e.revenue,i+=e.revenue-e.cost});const l=o>0?i/o*100:0,c=Object.entries(n).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`\n                    <tr>\n                        <td>${e}</td>\n                        <td class="numeric">${t.quantity}</td>\n                        <td class="numeric">${formatCurrency(t.revenue)}</td>\n                        <td class="numeric ${a>=0?"profit":"loss"}">${formatCurrency(a)}</td>\n                        <td class="numeric ${s>=0?"profit":"loss"}">${s.toFixed(1)}%</td>\n                    </tr>`}).join("");a.innerHTML=`\n                <div class="report-header-card">\n                    <div><div class="label">Total Revenue</div><div class="value">${formatCurrency(o)}</div></div>\n                    <div><div class="label">Total Profit</div><div class="value ${i>=0?"profit":"loss"}">${formatCurrency(i)}</div></div>\n                    <div><div class="label">Profit Margin</div><div class="value ${l>=0?"profit":"loss"}">${l.toFixed(1)}%</div></div>\n                </div>\n                <div class="card">\n                <table class="report-table">\n                    <thead>\n                        <tr><th>Product</th><th class="numeric">Qty</th><th class="numeric">Revenue</th><th class="numeric">Profit</th><th class="numeric">Margin</th></tr>\n                    </thead>\n                    <tbody>${c}</tbody>\n                </table>\n                </div>\n            `,showPage("page-customer-report")};
+        
+        const renderSalesmanReport = e => {
+            appState.reporting.salesman = e, document.getElementById("salesman-report-header").textContent = `${e}'s Report`;
+            const t = document.getElementById("salesman-report-content"),
+                a = appState.orders[e] || [],
+                s = {},
+                r = new Map(appState.items.map(e => [String(e.Code), parseFloat(e.CostRate) || 0]));
+            let n = 0, o = 0;
+            a.forEach(e => {
+                const t = e.customer.Customer || "Unknown";
+                s[t] || (s[t] = { revenue: 0, profit: 0, orderCount: 0 }), s[t].orderCount++;
+                (e.items || []).forEach(e => {
+                    const a = e.quantity * e.sellingPrice,
+                          i = e.quantity * (r.get(String(e.item.Code)) || 0);
+                    s[t].revenue += a;
+                    s[t].profit += a - i;
+                    n += a;
+                    o += a - i;
+                })
+            });
+            const i = Object.entries(s).sort((e, t) => t[1].revenue - e[1].revenue).map(([e, t]) => {
+                const a = t.profit,
+                      s = t.revenue > 0 ? a / t.revenue * 100 : 0;
+                return `
+                    <li class="data-list-item" data-customer="${e}">
+                        <div class="item-main">${e}</div>
+                        <div class="item-details">
+                            <span class="value-primary">${formatCurrency(t.revenue)}</span>
+                             <span class="value-secondary">
+                                <span class="${a >= 0 ? "profit" : "loss"}">
+                                    ${formatCurrency(a)} (${s.toFixed(1)}%)
+                                </span>
+                            </span>
+                        </div>
+                    </li>`}).join(""),
+                l = o,
+                c = n > 0 ? l / n * 100 : 0;
+            t.innerHTML = `
+                <div class="report-header-card">
+                    <div><div class="label">Total Revenue</div><div class="value">${formatCurrency(n)}</div></div>
+                    <div><div class="label">Total Profit</div><div class="value ${l >= 0 ? "profit" : "loss"}">${formatCurrency(l)}</div></div>
+                    <div><div class="label">Profit Margin</div><div class="value ${c >= 0 ? "profit" : "loss"}">${c.toFixed(1)}%</div></div>
+                </div>
+                <div class="data-list-card">
+                    <h3>Sales by Customer</h3>
+                    <ul class="data-list-container">${i || '<li style="text-align:center;padding:20px;">No customers found.</li>'}</ul>
+                </div>
+            `, showPage("page-salesman-report")
+        };
+        
+        const renderCustomerReport=(e,t)=>{appState.reporting.customer=t,document.getElementById("customer-report-header").textContent=`${t}`;const a=document.getElementById("customer-report-content"),s=new Map(appState.items.map(e=>[String(e.Code),parseFloat(e.CostRate)||0])),r=(appState.orders[e]||[]).filter(e=>e.customer.Customer===t),n={};r.forEach(e=>{(e.items||[]).forEach(e=>{const t=e.item.ItemName,a=String(e.item.Code);n[t]||(n[t]={quantity:0,revenue:0,cost:0}),n[t].quantity+=e.quantity,n[t].revenue+=e.quantity*e.sellingPrice,n[t].cost+=e.quantity*(s.get(a)||0)})});let o=0,i=0;Object.values(n).forEach(e=>{o+=e.revenue,i+=e.revenue-e.cost});const l=o>0?i/o*100:0,c=Object.entries(n).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`\n                    <tr>\n                        <td>${e}</td>\n                        <td class="numeric">${t.quantity}</td>\n                        <td class="numeric">${formatCurrency(t.revenue)}</td>\n                        <td class="numeric ${a>=0?"profit":"loss"}">${formatCurrency(a)}</td>\n                        <td class="numeric ${s>=0?"profit":"loss"}">${s.toFixed(1)}%</td>\n                    </tr>`}).join("");a.innerHTML=`
+                <div class="report-header-card">
+                    <div><div class="label">Total Revenue</div><div class="value">${formatCurrency(o)}</div></div>
+                    <div><div class="label">Total Profit</div><div class="value ${i>=0?"profit":"loss"}">${formatCurrency(i)}</div></div>
+                    <div><div class="label">Profit Margin</div><div class="value ${l>=0?"profit":"loss"}">${l.toFixed(1)}%</div></div>
+                </div>
+                <div class="card">
+                    <div class="table-responsive-wrapper">
+                        <table class="report-table">
+                            <thead>
+                                <tr><th>Product</th><th class="numeric">Qty</th><th class="numeric">Revenue</th><th class="numeric">Profit</th><th class="numeric">Margin %</th></tr>
+                            </thead>
+                            <tbody>${c}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `,showPage("page-customer-report")};
         document.getElementById('admin-dashboard-content').addEventListener('click', e => { 
             const salesmanBtn = e.target.closest('.data-list-item[data-salesman]'); 
             if (salesmanBtn) {
@@ -1460,67 +1581,108 @@
         document.getElementById('payment-history-list').addEventListener('click', handleDelete);
         document.getElementById('customer-history-list').addEventListener('click', handleDelete);
         
-        // --- OFFER MODAL LOGIC ---
+        // --- NEW/UPDATED: OFFER FLYER LOGIC ---
         const offerModal = document.getElementById('offer-modal');
-        const generateOfferMessage = (customer, language) => {
-            const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === customer.Customer);
-            if (customerOrders.length === 0) {
-                return language === 'ml' 
-                    ? `നമസ്കാരം ${customer.Customer},\n\nഎംഎഫ് ബിഗ്മാർക്കറ്റിൽ ഇപ്പോൾ മികച്ച ഓഫറുകൾ ലഭ്യമാണ്. ഇന്ന് ഒരു ഓർഡർ നൽകാൻ താല്പര്യമുണ്ടോ?\n\nബഹുമാനപൂർവ്വം,\n${appState.salesman}`
-                    : `Hello ${customer.Customer},\n\nWe have some exciting new offers at MF BigMarket. Would you be interested in placing an order today?\n\nBest regards,\n${appState.salesman}`;
-            }
-
-            const itemCounts = new Map();
-            customerOrders.forEach(order => {(order.items || []).forEach(item => itemCounts.set(item.item.ItemName, (itemCounts.get(item.item.ItemName) || 0) + 1));});
-            const topItems = [...itemCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(entry => {
-                const itemName = entry[0];
-                const fullItem = appState.items.find(i => i.ItemName === itemName);
-                const price = fullItem ? formatCurrency(fullItem.Price2) : '';
-                return `- *${itemName}* @ ${price}`;
-            });
-
-            if(language === 'ml') {
-                return `നമസ്കാരം ${customer.Customer},\n\nസുഖമാണെന്ന് കരുതുന്നു. നിങ്ങൾ സാധാരണയായി വാങ്ങാറുള്ള ചില ഉൽപ്പന്നങ്ങൾ ഓർമ്മിപ്പിക്കുന്നു:\n${topItems.join('\n')}\n\nഇവ ഓർഡർ ചെയ്യാൻ താല്പര്യമുണ്ടെങ്കിൽ അറിയിക്കുക.\n\nബഹുമാനപൂർവ്വം,\nഎംഎഫ് ബിഗ്മാർക്കറ്റ് (${appState.salesman})`;
-            } else { // English as default
-                return `Hello ${customer.Customer},\n\nHope you are doing well. Just a friendly reminder about some of your usual items:\n${topItems.join('\n')}\n\nPlease let us know if you'd like to place an order for these or anything else.\n\nBest regards,\nMF BigMarket (${appState.salesman})`;
-            }
-        };
-
+        
         const handleGenerateOffer = (customer) => {
-            appState.offerLanguage = 'en'; // Default to English when opening
-            document.querySelectorAll('.lang-switch-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === 'en'));
-            const message = generateOfferMessage(customer, appState.offerLanguage);
-            document.getElementById('offer-message-textarea').value = message;
+            appState.customer = customer;
+            document.getElementById('offer-modal-title').textContent = `Offer for ${customer.Customer}`;
+            
+            const flyerContainer = document.getElementById('offer-flyer-container');
+            flyerContainer.innerHTML = `<p>Click "Generate" to create a personalized flyer.</p>`;
+            document.getElementById('generate-flyer-btn').style.display = 'block';
+            document.getElementById('share-flyer-btn').style.display = 'none';
+            appState.shareableFlyerBlob = null;
+
             offerModal.style.display = 'flex';
         };
 
-        offerModal.querySelector('.language-switcher').addEventListener('click', (e) => {
-            if (e.target.matches('.lang-switch-btn')) {
-                const lang = e.target.dataset.lang;
-                if (appState.offerLanguage === lang) return;
-                appState.offerLanguage = lang;
-                document.querySelectorAll('.lang-switch-btn').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                const newMessage = generateOfferMessage(appState.customer, appState.offerLanguage);
-                document.getElementById('offer-message-textarea').value = newMessage;
+        const generateFlyer = async () => {
+            const generateBtn = document.getElementById('generate-flyer-btn');
+            const flyerContainer = document.getElementById('offer-flyer-container');
+            const customer = appState.customer;
+
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<div class="spinner" style="width:20px; height:20px; border-width:2px; margin: 0 auto;"></div>';
+            flyerContainer.innerHTML = '<div class="spinner"></div>';
+
+            const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === customer.Customer);
+            let topItems = [];
+            let headline = `A Special Offer Just For You, ${customer.Customer}!`;
+
+            if (customerOrders.length > 0) {
+                const itemCounts = new Map();
+                customerOrders.forEach(order => {(order.items || []).forEach(item => itemCounts.set(item.item.ItemName, (itemCounts.get(item.item.ItemName) || 0) + 1));});
+                topItems = [...itemCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(entry => {
+                    const itemName = entry[0];
+                    const fullItem = appState.items.find(i => i.ItemName === itemName);
+                    return { name: itemName, price: fullItem ? formatCurrency(fullItem.Price2) : '' };
+                });
+                headline = `We Miss You, ${customer.Customer}! Here Are Your Favorites.`;
+            } else {
+                 const allItems = appState.items.filter(i => i.Price2 > 0 && i.Clstock > 0).sort((a,b) => (Math.random() - 0.5)).slice(0, 3);
+                 topItems = allItems.map(item => ({ name: item.ItemName, price: formatCurrency(item.Price2) }));
+                 headline = `Welcome, ${customer.Customer}! Check Out Our Best Sellers.`;
+            }
+
+            const itemsHtml = topItems.map(item => `<li class="flyer-item"><span class="flyer-item-name">${item.name}</span><span class="flyer-item-price">${item.price}</span></li>`).join('');
+
+            document.getElementById('flyer-template-wrapper').innerHTML = `
+                <div id="flyer-content">
+                    <div id="flyer-header"><h2 id="flyer-logo">MF BIGMARKET</h2><p id="flyer-tagline">Quality Products, Delivered.</p></div>
+                    <div id="flyer-offer-details"><h3 id="flyer-headline">${headline}</h3><ul id="flyer-item-list">${itemsHtml}</ul></div>
+                    <div id="flyer-footer"><p>Contact your salesman, ${appState.salesman}, to order today!</p></div>
+                </div>`;
+            
+            try {
+                const canvas = await html2canvas(document.getElementById('flyer-template-wrapper'), { scale: 2, useCORS: true, backgroundColor: null });
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+                appState.shareableFlyerBlob = blob;
+
+                const imgEl = document.createElement('img');
+                imgEl.src = URL.createObjectURL(blob);
+                
+                flyerContainer.innerHTML = '';
+                flyerContainer.appendChild(imgEl);
+
+                generateBtn.style.display = 'none';
+                document.getElementById('share-flyer-btn').style.display = 'block';
+            } catch (error) {
+                console.error("Flyer generation error:", error);
+                flyerContainer.innerHTML = '<p style="color:red;">Error generating flyer image.</p>';
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = 'Generate Flyer';
+            }
+        };
+        
+        document.getElementById('generate-flyer-btn').addEventListener('click', generateFlyer);
+
+        document.getElementById('share-flyer-btn').addEventListener('click', async () => {
+            const flyerBlob = appState.shareableFlyerBlob;
+            if (!flyerBlob) { alert('Flyer image is not available.'); return; }
+
+            try {
+                const file = new File([flyerBlob], 'MF-BigMarket-Offer.jpg', { type: 'image/jpeg' });
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                     await navigator.share({ files: [file], title: 'Special Offer for ' + appState.customer.Customer });
+                } else {
+                    const phone = (appState.customer.Phone || '').replace(/[^0-9]/g, '');
+                    if(phone){
+                         const whatsappUrl = `https://api.whatsapp.com/send?phone=91${phone}`;
+                         window.open(whatsappUrl, '_blank');
+                         alert("The flyer image has been generated. Please attach it manually in the new WhatsApp tab and write your message.");
+                    } else {
+                        alert("Sharing not supported. You can save the image by long-pressing it and share manually.");
+                    }
+                }
+            } catch (error) {
+                console.error('Share failed:', error);
+                alert("Could not share automatically. Please save the image and send it manually.");
             }
         });
 
         document.getElementById('close-offer-modal-btn').addEventListener('click', () => {
-            offerModal.style.display = 'none';
-        });
-
-        document.getElementById('share-offer-whatsapp-btn').addEventListener('click', () => {
-            const phone = (appState.customer.Phone || '').replace(/[^0-9]/g, '');
-            if (!phone) {
-                alert('No phone number available for this customer.');
-                return;
-            }
-            const message = document.getElementById('offer-message-textarea').value;
-            const encodedMessage = encodeURIComponent(message);
-            // This URL scheme works best for WhatsApp Web on desktop.
-            const whatsappUrl = `https://web.whatsapp.com/send?phone=91${phone}&text=${encodedMessage}`;
-            window.open(whatsappUrl, '_blank');
             offerModal.style.display = 'none';
         });
 
@@ -1530,7 +1692,6 @@
                 if (lines.length < 2) return []; 
                 const headers = lines[0].split(',').map(h => h.trim()); 
                 return lines.slice(1).map(line => { 
-                    // FIX: Use a more robust regex that handles quoted strings and empty fields.
                     const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     const obj = {}; 
                     headers.forEach((header, i) => { 
@@ -1556,7 +1717,6 @@
                     if (collectionName === 'items') {
                         data = sanitizeItems(data); 
                     }
-                    // FIX: Check for required IDs
                     if (collectionName === 'customers' && (!data[0] || !data[0].CustomerCode)) {
                         alert("CSV Error: 'CustomerCode' column is missing or empty. Please add it as the first column.");
                         return;
@@ -1569,9 +1729,8 @@
                     try { 
                         const batch = writeBatch(db); 
                         data.forEach(item => { 
-                            // FIX: Use CustomerCode as the document ID for customers.
                             const docId = collectionName === 'items' ? String(item.Code) : String(item.CustomerCode);
-                            if (!docId) return; // Skip rows without a valid ID
+                            if (!docId) return;
                             const docRef = doc(db, collectionName, docId);
                             batch.set(docRef, item); 
                         }); 
