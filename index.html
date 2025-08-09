@@ -57,7 +57,7 @@
             /* New Flyer Colors */
             --flyer-green: #84CC16;
             --flyer-green-dark: #65A30D;
-            --flyer-yellow: #FEFE00; /* UPDATED to lighter yellow */
+            --flyer-yellow: #FEFE00;
             --flyer-dark-text: #27272A;
         }
 
@@ -94,7 +94,7 @@
         .button-outline { background: #fff; color: var(--primary-color); border: 2px solid var(--border-color); box-shadow: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .button-outline:active { background-color: #f8f9fa; }
 
-        input[type="text"], input[type="number"], input[type="file"], .form-group select, textarea { width: 100%; padding: 12px; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit; }
+        input[type="text"], input[type="number"], input[type="date"], input[type="file"], .form-group select, textarea { width: 100%; padding: 12px; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit; }
         textarea { line-height: 1.5; }
         input:focus, .form-group select:focus, textarea:focus { outline: none; border-color: var(--secondary-color); box-shadow: 0 0 0 2px rgba(10, 147, 150, 0.2); }
         
@@ -205,8 +205,23 @@
             stroke-width: 2;
         }
 
-        .history-item-actions { display: flex; align-items: center; }
-        .delete-history-btn { background: none; border: none; cursor: pointer; padding: 5px; }
+        /* NEW History Page Styles */
+        .history-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; align-items: center; }
+        .history-filters .button { margin-top: 10px; }
+        .history-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); margin-bottom: 15px; overflow: hidden; }
+        .history-card-header { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .history-card-header .info { flex-grow: 1; }
+        .history-card-header .actions { flex-shrink: 0; margin-left: 10px; }
+        .history-card-header p { margin: 0 0 5px; }
+        .history-card-header p strong { font-weight: 600; color: var(--primary-color); }
+        .history-card .toggle-details { font-size: 0.9rem; font-weight: 500; color: var(--secondary-color); cursor: pointer; padding: 10px 15px; display: block; background: #f8f9fa; border-top: 1px solid #f0f0f0; }
+        .history-card-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .history-card-body.visible { max-height: 500px; transition: max-height 0.4s ease-in; }
+        .history-item-table { width: 100%; border-collapse: collapse; }
+        .history-item-table th, .history-item-table td { padding: 8px 15px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+        .history-item-table th { font-size: 0.8rem; color: #888; text-transform: uppercase; }
+        .history-item-table td.numeric, .history-item-table th.numeric { text-align: right; }
+        .delete-history-btn { background: none; border: none; cursor: pointer; padding: 0; }
         .delete-history-btn svg { width: 20px; height: 20px; stroke: var(--danger-color); }
 
         .payment-method-options { display: flex; gap: 10px; margin: 15px 0; }
@@ -264,7 +279,7 @@
         }
 
         #item-search-container { position: relative; }
-        #item-search-results, #offer-item-search-results {
+        #item-search-results, #offer-item-search-results, #offer-item-search-results-bulk {
             position: absolute;
             top: 100%;
             left: 0;
@@ -376,9 +391,11 @@
         #crm-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         #crm-filters select { margin-bottom: 0; }
         #crm-customer-count { text-align: center; font-weight: 500; color: var(--primary-color); margin-bottom: 20px; }
+        #crm-flyer-preview-container { text-align: center; min-height: 150px; display:flex; align-items:center; justify-content:center; border: 1px solid #eee; border-radius: 8px; margin-top: 15px; background-color: #f8f9fa; }
+        #crm-flyer-preview-container img { max-width: 100%; border-radius: var(--border-radius); }
         
         /* --- OFFER FLYER BUILDER STYLES --- */
-        #offer-builder-item-list { max-height: 250px; overflow-y: auto; margin-bottom: 20px; }
+        #offer-builder-item-list, #crm-flyer-item-list { max-height: 250px; overflow-y: auto; margin-bottom: 20px; }
         .offer-builder-item { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #f0f0f0; }
         .offer-builder-item .item-info .item-name { font-weight: 500; }
         .offer-builder-item .item-info .item-price { font-size: 0.9rem; color: #666; }
@@ -391,9 +408,12 @@
         #flyer-template-wrapper { position: absolute; left: -9999px; top: -9999px; width: 500px; }
         #flyer-content {
             font-family: 'Segoe UI', Roboto, sans-serif;
-            color: #fff; /* White text as requested */
+            color: #fff;
             padding: 30px;
-            background: linear-gradient(145deg, var(--flyer-green) 0%, var(--flyer-green-dark) 100%);
+            background-color: var(--flyer-green-dark);
+            background-image: 
+                radial-gradient(circle at 10% 10%, var(--flyer-green) 0%, transparent 50%),
+                linear-gradient(145deg, var(--flyer-green) 0%, var(--flyer-green-dark) 100%);
             position: relative;
             overflow: hidden;
         }
@@ -404,24 +424,24 @@
             border-radius: 50%;
         }
         #flyer-header { text-align: center; margin-bottom: 25px; }
-        #flyer-logo { font-size: 2.5rem; font-weight: bold; margin: 0; }
+        #flyer-logo { font-size: 2.8rem; font-weight: 800; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
         #flyer-tagline { font-size: 1rem; opacity: 0.9; }
         #flyer-offer-details { margin-bottom: 25px; }
         #flyer-headline {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 2.2rem;
+            font-weight: 800;
             text-align: center;
             color: #fff;
             margin-bottom: 25px;
             line-height: 1.3;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.25);
         }
         #flyer-headline .customer-name-highlight {
             color: var(--flyer-yellow);
         }
         #flyer-item-list { list-style: none; padding: 0; margin: 0; }
         .flyer-item {
-            background: rgba(0, 0, 0, 0.15);
+            background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             padding: 15px;
@@ -434,7 +454,7 @@
             font-size: 1.1rem; 
             font-weight: 600; 
             max-width: 70%;
-            color: var(--flyer-dark-text); /* UPDATED */
+            color: var(--flyer-dark-text);
         }
         .flyer-item-price {
             font-size: 1.2rem;
@@ -503,7 +523,7 @@
                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
                 </button>
                 <button class="icon-button" id="settings-icon-btn" style="display: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
             </div>
         </div>
@@ -603,7 +623,19 @@
             <h1>Order History</h1>
             <div class="icon-button" style="width: 24px;"></div>
         </div>
-        <div class="content"><div id="order-history-list"></div></div>
+        <div class="content">
+            <div class="history-filters">
+                <div class="form-group">
+                    <label for="order-history-start">Start Date</label>
+                    <input type="date" id="order-history-start">
+                </div>
+                <div class="form-group">
+                    <label for="order-history-end">End Date</label>
+                    <input type="date" id="order-history-end">
+                </div>
+            </div>
+            <div id="order-history-list"></div>
+        </div>
     </div>
     
     <div id="page-payment-history" class="page">
@@ -616,6 +648,16 @@
         </div>
         <div class="content">
             <button id="share-collection-report-btn" class="button" style="margin-bottom: 20px;">Share Today's Report</button>
+            <div class="history-filters">
+                <div class="form-group">
+                    <label for="payment-history-start">Start Date</label>
+                    <input type="date" id="payment-history-start">
+                </div>
+                <div class="form-group">
+                    <label for="payment-history-end">End Date</label>
+                    <input type="date" id="payment-history-end">
+                </div>
+            </div>
             <div id="payment-history-list"></div>
         </div>
     </div>
@@ -636,7 +678,7 @@
     <div id="page-customer-history" class="page">
         <div class="header">
              <button class="icon-button" data-action="back-to-main">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="customer-history-name">Order History</h1>
             <div class="icon-button" style="width: 24px;"></div>
@@ -772,11 +814,27 @@
                 </div>
                 <div id="crm-customer-count"></div>
             </div>
-            <div class="card">
-                <h3>2. Compose Message</h3>
-                <textarea id="crm-message-template" rows="8" placeholder="Type your promotional message here..."></textarea>
+             <div class="card">
+                <h3>2. Build Your Flyer</h3>
+                <div id="crm-flyer-builder-content">
+                    <div class="form-group">
+                        <label for="crm-flyer-headline">Flyer Headline</label>
+                        <input type="text" id="crm-flyer-headline" placeholder="e.g., Weekend Super Sale!">
+                    </div>
+                    <hr style="border: 1px solid #f0f0f0; margin: 20px 0;">
+                    <h4 style="margin-bottom:10px;">Add Items to Offer</h4>
+                    <div id="crm-flyer-item-list"></div>
+                    <div id="offer-item-search-container-bulk" style="position: relative;">
+                        <input type="text" id="offer-item-search-input-bulk" placeholder="Search for products...">
+                        <div id="offer-item-search-results-bulk"></div>
+                    </div>
+                </div>
+                <div id="crm-flyer-preview-container">
+                     <p style="color:#888;">Flyer preview will appear here.</p>
+                </div>
             </div>
-             <button class="button button-accent" id="send-bulk-messages-btn">Send Messages</button>
+             <button class="button" id="generate-bulk-flyer-btn">Generate Flyer Preview</button>
+             <button class="button button-accent" id="share-bulk-flyer-btn" style="display:none; margin-top:10px;">Share Flyer with Customers</button>
         </div>
     </div>
 
@@ -837,6 +895,7 @@
             reporting: { salesman: null, customer: null },
             shareableImageBlob: null,
             shareableFlyerBlob: null,
+            bulkFlyerBlob: null,
             activeDepartment: 'All',
             flyerBuilder: { items: [], editingIndex: null },
         };
@@ -902,7 +961,7 @@
                 <div class="customer-item-container" data-customer='${JSON.stringify(c)}'>
                     <div class="customer-item-header">
                         <span class="info">${c.Customer}</span>
-                        <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
                     <div class="customer-actions-panel">
                         <button class="action-button" data-action="profile">
@@ -964,7 +1023,7 @@
             const nameFilter = item => (item.ItemName || '').toLowerCase().includes(filter.toLowerCase());
             
             cont.innerHTML = appState.items
-                .filter(i => (resultsContainerId === 'offer-item-search-results' ? nameFilter(i) : deptFilter(i) && nameFilter(i)))
+                .filter(i => (resultsContainerId !== 'item-search-results' ? nameFilter(i) : deptFilter(i) && nameFilter(i)))
                 .slice(0, 50)
                 .map(i => `<div class="search-result-item" data-item-code="${i.Code}">
                     <span>${i.ItemName}</span>
@@ -1004,7 +1063,7 @@
                                 </div>
                             </div>
                             <div class="item-total">${formatCurrency(lineItemRevenue)}</div>
-                            <button class="item-action-btn edit-btn" data-index="${idx}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                            <button class="item-action-btn edit-btn" data-index="${idx}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
                             <button class="item-action-btn delete-btn" data-index="${idx}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                         </div>`; 
             }).join(''); 
@@ -1030,17 +1089,56 @@
             totalCont.style.display = 'flex'; 
         };
 
-        const renderHistory = (type) => { // This is now for the general history page
+        const renderHistory = (type) => {
             const isOrder = type === 'customers';
-            const historyData = isOrder ? (appState.orders[appState.salesman] || []) : (appState.payments[appState.salesman] || []);
             const container = document.getElementById(isOrder ? 'order-history-list' : 'payment-history-list');
-            if (historyData.length === 0) { container.innerHTML = `<p style="text-align:center; padding: 20px 0;">No history found.</p>`; return; }
-            container.innerHTML = [...historyData].sort((a,b) => new Date(b.date) - new Date(a.date)).map((item) => {
-                if (isOrder) {
-                    return `<div class="card"><div style="display: flex; justify-content: space-between; align-items: flex-start;"><div><p><strong>Customer:</strong> ${item.customer.Customer}</p><p><strong>Date:</strong> ${new Date(item.date).toLocaleString()}</p><p><strong>Total:</strong> ${formatCurrency(item.total)}</p></div><div class="history-item-actions"><button class="delete-history-btn" data-type="orders" data-id="${item.id}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><details><summary style="cursor:pointer; margin-top:10px; color:var(--primary-color);">View Details</summary><ul style="list-style-position: inside; padding-top: 5px;">${(item.items || []).map(i => `<li>${i.item.ItemName} (Qty: ${i.quantity}, Price: ${formatCurrency(i.sellingPrice)})</li>`).join('')}</ul></details></div>`;
-                } else { // Payments history remains unchanged
-                    return `<div class="card"><div style="display: flex; justify-content: space-between; align-items: flex-start;"><div><p><strong>Customer:</strong> ${item.customer.Customer}</p><p><strong>Date:</strong> ${new Date(item.date).toLocaleString()}</p><p><strong>Amount:</strong> ${formatCurrency(item.amount)}</p><p><strong>Method:</strong> ${item.method}</p></div><div class="history-item-actions"><button class="delete-history-btn" data-type="payments" data-id="${item.id}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div></div>`;
-                }
+            const startInput = document.getElementById(isOrder ? 'order-history-start' : 'payment-history-start').value;
+            const endInput = document.getElementById(isOrder ? 'order-history-end' : 'payment-history-end').value;
+
+            let historyData = isOrder ? (appState.orders[appState.salesman] || []) : (appState.payments[appState.salesman] || []);
+
+            if (startInput) {
+                const startDate = new Date(startInput);
+                startDate.setHours(0, 0, 0, 0);
+                historyData = historyData.filter(item => new Date(item.date) >= startDate);
+            }
+            if (endInput) {
+                const endDate = new Date(endInput);
+                endDate.setHours(23, 59, 59, 999);
+                historyData = historyData.filter(item => new Date(item.date) <= endDate);
+            }
+
+            if (historyData.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No history found for the selected dates.</p>`; return; }
+
+            container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => {
+                const itemDetailsHtml = isOrder ? (item.items || []).map(i => `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td></tr>`).join('') : '';
+                return `
+                    <div class="history-card">
+                        <div class="history-card-header">
+                            <div class="info">
+                                <p><strong>${isOrder ? 'Customer' : 'Customer'}:</strong> ${item.customer.Customer}</p>
+                                <p><strong>${isOrder ? 'Total' : 'Amount'}:</strong> ${formatCurrency(isOrder ? item.total : item.amount)}</p>
+                                <p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p>
+                            </div>
+                            <div class="actions">
+                                <button class="delete-history-btn" data-type="${isOrder ? 'orders' : 'payments'}" data-id="${item.id}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        ${isOrder ? `
+                        <div class="history-card-body" id="details-${item.id}">
+                            <div class="table-responsive-wrapper">
+                                <table class="history-item-table">
+                                    <thead><tr><th>Item</th><th class="numeric">Qty</th><th class="numeric">Price</th></tr></thead>
+                                    <tbody>${itemDetailsHtml}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <a class="toggle-details" data-target="details-${item.id}">View Details</a>
+                        ` : ''}
+                    </div>
+                `;
             }).join('');
         };
         
@@ -1158,6 +1256,8 @@
                     </div>
                 </div>
             `,showPage("page-customer-report")};
+        
+        // Ensure Dashboard listeners are active
         document.getElementById('admin-dashboard-content').addEventListener('click', e => { 
             const salesmanBtn = e.target.closest('.data-list-item[data-salesman]'); 
             if (salesmanBtn) {
@@ -1170,6 +1270,7 @@
                 showPage('page-crm');
             }
         });
+
         document.getElementById('salesman-report-content').addEventListener('click', e => { const t = e.target.closest('.data-list-item[data-customer]'); t && renderCustomerReport(appState.reporting.salesman, t.dataset.customer) });
         document.getElementById('back-to-admin-dashboard-btn').addEventListener('click', () => showPage('page-admin-dashboard'));
         document.getElementById('back-to-salesman-report-btn').addEventListener('click', () => showPage('page-salesman-report'));
@@ -1198,7 +1299,7 @@
                 container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`;
             } else {
                 container.innerHTML = customerOrders.map(item => {
-                    return `<div class="card"><div style="display: flex; justify-content: space-between; align-items: flex-start;"><div><p><strong>Date:</strong> ${new Date(item.date).toLocaleString()}</p><p><strong>Total:</strong> ${formatCurrency(item.total)}</p></div><div class="history-item-actions"><button class="delete-history-btn" data-type="orders" data-id="${item.id}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><details><summary style="cursor:pointer; margin-top:10px; color:var(--primary-color);">View Details</summary><ul style="list-style-position: inside; padding-top: 5px;">${(item.items || []).map(i => `<li>${i.item.ItemName} (Qty: ${i.quantity}, Price: ${formatCurrency(i.sellingPrice)})</li>`).join('')}</ul></details></div>`;
+                    return `<div class="card"><div style="display: flex; justify-content: space-between; align-items: flex-start;"><div><p><strong>Date:</strong> ${new Date(item.date).toLocaleString()}</p><p><strong>Total:</strong> ${formatCurrency(item.total)}</p></div><div class="history-item-actions"><button class="delete-history-btn" data-type="orders" data-id="${item.id}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><details><summary style="cursor:pointer; margin-top:10px; color:var(--primary-color);">View Details</summary><ul style="list-style-position: inside; padding-top: 5px;">${(item.items || []).map(i => `<li>${i.item.ItemName} (Qty: ${i.quantity}, Price: ${formatCurrency(i.sellingPrice)})</li>`).join('')}</ul></details></div>`;
                 }).join('');
             }
             showPage('page-customer-history');
@@ -1300,6 +1401,27 @@
             if (appState.currentView === 'customers') { renderHistory('customers'); showPage('page-order-history'); } 
             else { renderHistory('payments'); showPage('page-payment-history'); }
         });
+
+        // Date filter listeners
+        document.getElementById('order-history-start').addEventListener('change', () => renderHistory('customers'));
+        document.getElementById('order-history-end').addEventListener('change', () => renderHistory('customers'));
+        document.getElementById('payment-history-start').addEventListener('change', () => renderHistory('payments'));
+        document.getElementById('payment-history-end').addEventListener('change', () => renderHistory('payments'));
+
+        // History Card Toggle Listener
+        document.body.addEventListener('click', e => {
+            const toggle = e.target.closest('.toggle-details');
+            if(toggle) {
+                e.preventDefault();
+                const targetId = toggle.dataset.target;
+                const body = document.getElementById(targetId);
+                if(body) {
+                    body.classList.toggle('visible');
+                    toggle.textContent = body.classList.contains('visible') ? 'Hide Details' : 'View Details';
+                }
+            }
+        });
+
 
         document.getElementById('customer-list-container').addEventListener('click', e => {
             const header = e.target.closest('.customer-item-header');
@@ -1592,7 +1714,7 @@
                     } else { // type === 'payments'
                         await deleteDoc(doc(db, "payments", id));
                     }
-                    alert('Entry deleted successfully!');
+                    renderHistory(type === 'orders' ? 'customers' : 'payments');
                 } catch (error) {
                     console.error("Error deleting entry:", error);
                     alert("Failed to delete entry. Please try again.");
@@ -1852,73 +1974,157 @@
         document.getElementById('save-edit-btn').addEventListener('click', async () => { const isCustomers = appState.editing.type === 'customers'; const id = appState.editing.id; let updatedData = {}; if (isCustomers) { updatedData = { Customer: document.getElementById('edit-Customer').value, Salesman: document.getElementById('edit-Salesman').value, Phone: document.getElementById('edit-Phone').value }; } else { const fields = ['ItemName', 'CostRate', 'Price1', 'Price2', 'Price3']; fields.forEach(field => { const input = document.getElementById(`edit-${field}`); updatedData[field] = input.type === 'number' ? parseFloat(input.value) : input.value; }); } await updateDoc(doc(db, isCustomers ? 'customers' : 'items', id), updatedData); closeEditModal(); alert('Record updated successfully!'); });
         
         // --- CRM MODULE LOGIC ---
-        document.getElementById('back-to-admin-from-crm-btn').addEventListener('click', () => showPage('page-admin-dashboard'));
+        const pageCrm = document.getElementById('page-crm');
 
         const renderCrmModule = () => {
+            appState.flyerBuilder.items = []; // Clear previous bulk flyer items
             const salesmanFilter = document.getElementById('crm-salesman-filter');
             const routeFilter = document.getElementById('crm-route-filter');
-
             const salesmen = [...new Set(appState.customers.map(c => c.Salesman).filter(Boolean))].sort();
             salesmanFilter.innerHTML = '<option value="ALL">All Salesmen</option>' + salesmen.map(s => `<option value="${s}">${s}</option>`).join('');
-
             const routes = [...new Set(appState.customers.map(c => c.Route).filter(Boolean))].sort();
             routeFilter.innerHTML = '<option value="ALL">All Routes</option>' + routes.map(r => `<option value="${r}">${r}</option>`).join('');
-            
             updateCrmCustomerCount();
+            document.getElementById('crm-flyer-headline').value = '';
+            document.getElementById('crm-flyer-preview-container').innerHTML = `<p style="color:#888;">Flyer preview will appear here.</p>`;
+            document.getElementById('share-bulk-flyer-btn').style.display = 'none';
+            document.getElementById('generate-bulk-flyer-btn').style.display = 'block';
+            document.getElementById('crm-flyer-builder-content').style.display = 'block';
+            renderCrmFlyerItems();
         };
+
+        const renderCrmFlyerItems = () => {
+            const listContainer = document.getElementById('crm-flyer-item-list');
+            if (appState.flyerBuilder.items.length === 0) {
+                 listContainer.innerHTML = `<p style="text-align:center; color:#888;">No items added to flyer yet.</p>`;
+                 return;
+            }
+            listContainer.innerHTML = appState.flyerBuilder.items.map((flyerItem, index) => `
+                 <div class="offer-builder-item">
+                    <div class="item-info">
+                        <div class="item-name">${flyerItem.item.ItemName}</div>
+                        <div class="item-price">Offer Price: ${formatCurrency(flyerItem.price)}</div>
+                    </div>
+                    <button class="item-action-btn edit-btn" data-index="${index}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                    <button class="item-action-btn delete-btn" data-index="${index}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                </div>
+            `).join('');
+        };
+
+        pageCrm.addEventListener('input', e => {
+            if(e.target.id === 'offer-item-search-input-bulk') {
+                renderItemSearchResults(e.target.value, 'offer-item-search-results-bulk');
+            }
+        });
+
+        pageCrm.addEventListener('click', e => {
+            const resultItem = e.target.closest('#offer-item-search-results-bulk .search-result-item');
+            if(resultItem) {
+                const code = resultItem.dataset.itemCode;
+                const fullItem = appState.items.find(i => i.Code == code);
+                if (fullItem && !appState.flyerBuilder.items.some(fi => fi.item.Code === fullItem.Code)) {
+                    appState.flyerBuilder.items.push({ item: fullItem, price: fullItem.Price2 });
+                    renderCrmFlyerItems();
+                }
+                document.getElementById('offer-item-search-input-bulk').value = '';
+                document.getElementById('offer-item-search-results-bulk').innerHTML = '';
+            }
+            const deleteBtn = e.target.closest('#crm-flyer-item-list .delete-btn');
+            if(deleteBtn) {
+                appState.flyerBuilder.items.splice(parseInt(deleteBtn.dataset.index), 1);
+                renderCrmFlyerItems();
+            }
+            const editBtn = e.target.closest('#crm-flyer-item-list .edit-btn');
+            if (editBtn) {
+                const index = parseInt(editBtn.dataset.index);
+                const flyerItem = appState.flyerBuilder.items[index];
+                const newPrice = prompt(`Enter new offer price for ${flyerItem.item.ItemName}:`, flyerItem.price);
+                if (newPrice !== null && !isNaN(parseFloat(newPrice))) {
+                    flyerItem.price = parseFloat(newPrice);
+                    renderCrmFlyerItems();
+                }
+            }
+        });
 
         const updateCrmCustomerCount = () => {
             const selectedSalesman = document.getElementById('crm-salesman-filter').value;
             const selectedRoute = document.getElementById('crm-route-filter').value;
-
             const targetCustomers = appState.customers.filter(c => {
                 const hasPhone = c.Phone && c.Phone.trim().length > 5;
                 const matchesSalesman = selectedSalesman === 'ALL' || c.Salesman === selectedSalesman;
                 const matchesRoute = selectedRoute === 'ALL' || c.Route === selectedRoute;
                 return hasPhone && matchesSalesman && matchesRoute;
             });
-
             document.getElementById('crm-customer-count').textContent = `Targeted Customers: ${targetCustomers.length}`;
         };
 
-        document.getElementById('crm-salesman-filter').addEventListener('change', updateCrmCustomerCount);
-        document.getElementById('crm-route-filter').addEventListener('change', updateCrmCustomerCount);
-
-        document.getElementById('send-bulk-messages-btn').addEventListener('click', () => {
-            const message = document.getElementById('crm-message-template').value.trim();
-            if (!message) {
-                alert('Please compose a message before sending.');
+        const generateBulkFlyer = async () => {
+            const generateBtn = document.getElementById('generate-bulk-flyer-btn');
+            const previewContainer = document.getElementById('crm-flyer-preview-container');
+            if (appState.flyerBuilder.items.length === 0) {
+                alert("Please add at least one item to the flyer.");
                 return;
             }
-
-            const selectedSalesman = document.getElementById('crm-salesman-filter').value;
-            const selectedRoute = document.getElementById('crm-route-filter').value;
-
-            const targetCustomers = appState.customers.filter(c => {
-                const hasPhone = c.Phone && c.Phone.trim().length > 5;
-                const matchesSalesman = selectedSalesman === 'ALL' || c.Salesman === selectedSalesman;
-                const matchesRoute = selectedRoute === 'ALL' || c.Route === selectedRoute;
-                return hasPhone && matchesSalesman && matchesRoute;
-            });
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<div class="spinner" style="width:20px; height:20px; border-width:2px; margin: 0 auto;"></div>';
+            previewContainer.innerHTML = '<div class="spinner"></div>';
             
-            if (targetCustomers.length === 0) {
-                alert('No customers match the selected filters.');
+            const headline = document.getElementById('crm-flyer-headline').value.trim() || 'A Special Offer For You!';
+            const itemsHtml = appState.flyerBuilder.items.map(item => `<li class="flyer-item"><span class="flyer-item-name">${item.item.ItemName}</span><span class="flyer-item-price">${formatCurrency(item.price)}</span></li>`).join('');
+
+            document.getElementById('flyer-template-wrapper').innerHTML = `
+                <div id="flyer-content">
+                    <div id="flyer-header"><h2 id="flyer-logo">MF BIGMARKET</h2><p id="flyer-tagline">Quality Products, Delivered.</p></div>
+                    <div id="flyer-offer-details"><h3 id="flyer-headline">${headline}</h3><ul id="flyer-item-list">${itemsHtml}</ul></div>
+                    <div id="flyer-footer"><p>Contact your salesman to order today!</p></div>
+                </div>`;
+            
+            try {
+                const canvas = await html2canvas(document.getElementById('flyer-template-wrapper'), { scale: 2, useCORS: true, backgroundColor: null });
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+                appState.bulkFlyerBlob = blob;
+                const imgEl = document.createElement('img');
+                imgEl.src = URL.createObjectURL(blob);
+                previewContainer.innerHTML = '';
+                previewContainer.appendChild(imgEl);
+                document.getElementById('share-bulk-flyer-btn').style.display = 'block';
+            } catch (error) {
+                console.error("Bulk flyer generation error:", error);
+                previewContainer.innerHTML = '<p style="color:red;">Error generating flyer image.</p>';
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = 'Generate Flyer Preview';
+            }
+        };
+
+        document.getElementById('generate-bulk-flyer-btn').addEventListener('click', generateBulkFlyer);
+
+        document.getElementById('share-bulk-flyer-btn').addEventListener('click', async () => {
+            const flyerBlob = appState.bulkFlyerBlob;
+            if (!flyerBlob) { alert('Please generate a flyer first.'); return; }
+
+            const targetCount = document.getElementById('crm-customer-count').textContent;
+            if(!confirm(`Your flyer is ready. You will now be prompted to share it with your selected ${targetCount}. Continue?`)){
                 return;
             }
 
-            if (confirm(`You are about to send messages to ${targetCustomers.length} customers. Proceed?`)) {
-                let delay = 0;
-                targetCustomers.forEach(customer => {
-                    setTimeout(() => {
-                        const phone = customer.Phone.replace(/[^0-9]/g, '');
-                        const encodedMessage = encodeURIComponent(message);
-                        const whatsappUrl = `https://web.whatsapp.com/send?phone=91${phone}&text=${encodedMessage}`;
-                        window.open(whatsappUrl, '_blank');
-                    }, delay);
-                    delay += 500; // 0.5 second delay between each tab opening
-                });
+            try {
+                const file = new File([flyerBlob], 'MF-BigMarket-Offer.jpg', { type: 'image/jpeg' });
+                const shareText = document.getElementById('crm-flyer-headline').value.trim() || 'Check out our latest deals!';
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                     await navigator.share({ files: [file], title: 'MF BigMarket Offer', text: shareText });
+                } else {
+                    alert("Sharing not supported on this browser. You can save the image by long-pressing it and share manually.");
+                }
+            } catch (error) {
+                console.error('Bulk Share failed:', error);
+                alert("Could not share automatically. Please save the image and send it manually.");
             }
         });
+
+        document.getElementById('back-to-admin-from-crm-btn').addEventListener('click', () => showPage('page-admin-dashboard'));
+        document.getElementById('crm-salesman-filter').addEventListener('change', updateCrmCustomerCount);
+        document.getElementById('crm-route-filter').addEventListener('change', updateCrmCustomerCount);
 
 
         const setupPWA = () => {
