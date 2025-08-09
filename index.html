@@ -215,8 +215,16 @@
         .history-card-header p { margin: 0 0 5px; }
         .history-card-header p strong { font-weight: 600; color: var(--primary-color); }
         .history-card .toggle-details { font-size: 0.9rem; font-weight: 500; color: var(--secondary-color); cursor: pointer; padding: 10px 15px; display: block; background: #f8f9fa; border-top: 1px solid #f0f0f0; }
-        .history-card-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .history-card-body.visible { max-height: 500px; transition: max-height 0.4s ease-in; }
+        .history-card-body { 
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.4s ease-out;
+        }
+        .history-card-body > div { overflow: hidden; }
+        .history-card-body.visible { 
+            grid-template-rows: 1fr;
+            transition: grid-template-rows 0.4s ease-in;
+        }
         .history-item-table { width: 100%; border-collapse: collapse; }
         .history-item-table th, .history-item-table td { padding: 8px 15px; text-align: left; border-bottom: 1px solid #f0f0f0; }
         .history-item-table th { font-size: 0.8rem; color: #888; text-transform: uppercase; }
@@ -523,7 +531,7 @@
                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
                 </button>
                 <button class="icon-button" id="settings-icon-btn" style="display: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
             </div>
         </div>
@@ -666,7 +674,7 @@
     <div id="page-customer-profile" class="page">
         <div class="header">
              <button class="icon-button" data-action="back-to-main">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="customer-profile-name">Customer Profile</h1>
             <div class="icon-button" style="width: 24px;"></div>
@@ -678,7 +686,7 @@
     <div id="page-customer-history" class="page">
         <div class="header">
              <button class="icon-button" data-action="back-to-main">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="customer-history-name">Order History</h1>
             <div class="icon-button" style="width: 24px;"></div>
@@ -692,7 +700,7 @@
     <div id="page-settings" class="page">
         <div class="header">
             <button class="icon-button" id="back-from-settings-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1>Manage Data</h1>
             <div class="icon-button" style="width: 24px;"></div>
@@ -703,7 +711,7 @@
                 <p style="margin-bottom: 15px; font-style: italic; color: #555;">Uploading will replace existing data.</p>
                 <div class="file-upload-wrapper">
                     <div class="file-upload-area">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                         <p>Upload Customer CSV</p>
                         <input type="file" id="customer-file-upload" accept=".csv">
                     </div>
@@ -1063,7 +1071,7 @@
                                 </div>
                             </div>
                             <div class="item-total">${formatCurrency(lineItemRevenue)}</div>
-                            <button class="item-action-btn edit-btn" data-index="${idx}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                            <button class="item-action-btn edit-btn" data-index="${idx}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
                             <button class="item-action-btn delete-btn" data-index="${idx}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                         </div>`; 
             }).join(''); 
@@ -1128,7 +1136,7 @@
                         </div>
                         ${isOrder ? `
                         <div class="history-card-body" id="details-${item.id}">
-                            <div class="table-responsive-wrapper">
+                            <div>
                                 <table class="history-item-table">
                                     <thead><tr><th>Item</th><th class="numeric">Qty</th><th class="numeric">Price</th></tr></thead>
                                     <tbody>${itemDetailsHtml}</tbody>
@@ -1257,7 +1265,6 @@
                 </div>
             `,showPage("page-customer-report")};
         
-        // Ensure Dashboard listeners are active
         document.getElementById('admin-dashboard-content').addEventListener('click', e => { 
             const salesmanBtn = e.target.closest('.data-list-item[data-salesman]'); 
             if (salesmanBtn) {
@@ -1299,7 +1306,7 @@
                 container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`;
             } else {
                 container.innerHTML = customerOrders.map(item => {
-                    return `<div class="card"><div style="display: flex; justify-content: space-between; align-items: flex-start;"><div><p><strong>Date:</strong> ${new Date(item.date).toLocaleString()}</p><p><strong>Total:</strong> ${formatCurrency(item.total)}</p></div><div class="history-item-actions"><button class="delete-history-btn" data-type="orders" data-id="${item.id}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><details><summary style="cursor:pointer; margin-top:10px; color:var(--primary-color);">View Details</summary><ul style="list-style-position: inside; padding-top: 5px;">${(item.items || []).map(i => `<li>${i.item.ItemName} (Qty: ${i.quantity}, Price: ${formatCurrency(i.sellingPrice)})</li>`).join('')}</ul></details></div>`;
+                    return `<div class="card"><div style="display: flex; justify-content: space-between; align-items: flex-start;"><div><p><strong>Date:</strong> ${new Date(item.date).toLocaleString()}</p><p><strong>Total:</strong> ${formatCurrency(item.total)}</p></div><div class="history-item-actions"><button class="delete-history-btn" data-type="orders" data-id="${item.id}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><details><summary style="cursor:pointer; margin-top:10px; color:var(--primary-color);">View Details</summary><ul style="list-style-position: inside; padding-top: 5px;">${(item.items || []).map(i => `<li>${i.item.ItemName} (Qty: ${i.quantity}, Price: ${formatCurrency(i.sellingPrice)})</li>`).join('')}</ul></details></div>`;
                 }).join('');
             }
             showPage('page-customer-history');
