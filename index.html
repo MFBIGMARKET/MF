@@ -207,30 +207,26 @@
 
         /* NEW History Page Styles */
         .history-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; align-items: center; }
-        .history-filters .button { margin-top: 10px; }
+        .history-filters .form-group { margin-bottom: 0; }
         .history-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); margin-bottom: 15px; overflow: hidden; }
         .history-card-header { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
         .history-card-header .info { flex-grow: 1; }
-        .history-card-header .actions { flex-shrink: 0; margin-left: 10px; }
+        .history-card-header .actions { display: flex; gap: 15px; flex-shrink: 0; margin-left: 10px; }
         .history-card-header p { margin: 0 0 5px; }
         .history-card-header p strong { font-weight: 600; color: var(--primary-color); }
         .history-card .toggle-details { font-size: 0.9rem; font-weight: 500; color: var(--secondary-color); cursor: pointer; padding: 10px 15px; display: block; background: #f8f9fa; border-top: 1px solid #f0f0f0; }
-        .history-card-body { 
-            display: grid;
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 0.4s ease-out;
-        }
-        .history-card-body > div { overflow: hidden; }
-        .history-card-body.visible { 
-            grid-template-rows: 1fr;
-            transition: grid-template-rows 0.4s ease-in;
-        }
+        .history-card-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .history-card-body.visible { max-height: 500px; transition: max-height 0.4s ease-in; }
         .history-item-table { width: 100%; border-collapse: collapse; }
         .history-item-table th, .history-item-table td { padding: 8px 15px; text-align: left; border-bottom: 1px solid #f0f0f0; }
         .history-item-table th { font-size: 0.8rem; color: #888; text-transform: uppercase; }
         .history-item-table td.numeric, .history-item-table th.numeric { text-align: right; }
-        .delete-history-btn { background: none; border: none; cursor: pointer; padding: 0; }
-        .delete-history-btn svg { width: 20px; height: 20px; stroke: var(--danger-color); }
+        .history-item-table tr:last-child td { border-bottom: none; }
+        .history-action-btn { background: none; border: none; cursor: pointer; padding: 0; }
+        .history-action-btn svg { width: 20px; height: 20px; }
+        .delete-history-btn svg { stroke: var(--danger-color); }
+        .print-history-btn svg { stroke: var(--secondary-color); }
+
 
         .payment-method-options { display: flex; gap: 10px; margin: 15px 0; }
         .payment-method-option { flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
@@ -246,7 +242,6 @@
         
         .modal-footer { display: flex; gap: 10px; margin-top: 20px; }
         .modal-footer .button { margin-top: 0; }
-        #share-modal p { text-align: center; }
         
         #page-salesman-selection .content { display: flex; flex-direction: column; justify-content: center; gap: 20px; }
         #page-salesman-selection h1 { text-align: center; color: var(--primary-color); margin-bottom: 20px; font-size: 2rem; }
@@ -319,31 +314,28 @@
         .file-upload-area svg { width: 40px; height: 40px; stroke: var(--secondary-color); margin-bottom: 10px; }
         .file-upload-area p { font-weight: 500; color: var(--primary-color); }
         .file-upload-area input[type="file"] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        #generated-image-container img { max-width: 100%; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; }
-
-        #order-invoice-wrapper, #collection-report-wrapper { position: absolute; left: -9999px; top: -9999px; background-color: white; width: 500px; font-size: 16px; }
-        #order-invoice, #collection-report { font-family: Calibri, 'Segoe UI', Roboto, sans-serif; color: #333; background: #fff; padding: 40px; }
-        .invoice-header, .report-header { text-align: center; margin-bottom: 25px; }
-        .invoice-header h2, .report-header h2 { margin: 0; font-size: 1.8rem; font-weight: 600; color: var(--primary-color); }
-        .invoice-header p, .report-header p { font-size: 0.9rem; color: #666; margin-top: 5px; }
-        .invoice-details, .report-details { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 12px 0; font-size: 1rem; }
-        .invoice-details div, .report-details div { font-weight: bold; white-space: normal; word-break: break-word; text-align: left; }
-        .invoice-details div:first-child, .report-details div:first-child { max-width: 60%; }
-        .invoice-details div:last-child, .report-details div:last-child { max-width: 40%; text-align: right; }
-        .invoice-table, .report-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
-        .invoice-table th, .report-table th { padding: 10px; text-align: left; border-bottom: 2px solid var(--primary-color); font-weight: 600; }
-        .invoice-table td, .report-table td { padding: 10px; vertical-align: top; line-height: 1.5; }
-        .invoice-table tr:nth-child(even) td, .report-table tr:nth-child(even) td { background-color: #f8f9fa; }
-        .invoice-table td.col-item-name, .report-table td.col-customer-name { font-weight: 500; }
-        .invoice-table th.col-qty, .invoice-table th.col-price, .invoice-table th.col-total, .invoice-table th.col-mrp,
-        .report-table th.col-method, .report-table th.col-amount,
-        .invoice-table td.col-qty, .invoice-table td.col-price, .invoice-table td.col-total, .invoice-table td.col-mrp,
-        .report-table td.col-method, .report-table td.col-amount { text-align: right; }
-        .invoice-footer, .report-footer { margin-top: 25px; padding-top: 15px; text-align: right; }
-        .report-footer div { margin-top: 5px; }
-        .invoice-footer .grand-total, .report-footer .grand-total { font-size: 1.5rem; font-weight: bold; color: var(--primary-color); }
         
-        #payment-receipt-wrapper { display: none; }
+        /* Hidden Printable Documents */
+        #packing-slip-wrapper, #payment-receipt-wrapper { display: none; }
+        #collection-report-wrapper { position: absolute; left: -9999px; top: -9999px; }
+        #collection-report { background: #fff; padding: 40px; }
+
+        /* Packing Slip Styles */
+        #packing-slip-content { font-family: 'Segoe UI', sans-serif; color: #333; padding: 20px; }
+        .slip-header { text-align: center; margin-bottom: 25px; }
+        .slip-header h2 { margin: 0; font-size: 1.8rem; color: #000; }
+        .slip-header p { font-size: 1rem; color: #555; margin: 5px 0 0; }
+        .slip-details { display: flex; justify-content: space-between; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #333; font-size: 0.95rem; }
+        .slip-details div { line-height: 1.5; }
+        .slip-details div strong { font-weight: 600; }
+        .slip-table { width: 100%; border-collapse: collapse; }
+        .slip-table th, .slip-table td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        .slip-table th { background-color: #f2f2f2; font-weight: 600; }
+        .slip-table td.col-item-name { white-space: nowrap; max-width: 300px; overflow: hidden; text-overflow: ellipsis; }
+        .slip-table td.col-qty, .slip-table th.col-qty,
+        .slip-table td.col-mrp, .slip-table th.col-mrp { text-align: right; }
+
+        /* Receipt Styles */
         .receipt-container { font-family: Calibri, sans-serif; color: black; padding: 20px; width: 100%;}
         .receipt-header { text-align: center; margin-bottom: 25px; }
         .receipt-header h2 { font-size: 2rem; font-weight: bold; margin: 0; }
@@ -500,11 +492,21 @@
         /* End of Admin Styles */
 
         @media print {
-            @page { margin: 0; }
-            body { -webkit-print-color-adjust: exact; }
-            body * { visibility: hidden; }
-            #payment-receipt-wrapper, #payment-receipt-wrapper * { visibility: visible; }
-            #payment-receipt-wrapper { visibility: visible !important; display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+            @page { 
+                size: A4;
+                margin: 20mm;
+            }
+            body > *:not(.printing) {
+                display: none !important;
+            }
+            body.printing-packing-slip #packing-slip-wrapper,
+            body.printing-receipt #payment-receipt-wrapper {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -523,15 +525,15 @@
     <div id="page-main-view" class="page">
         <div class="header">
             <button class="icon-button" id="logout-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
             </button>
             <h1 id="main-view-header">Customers</h1>
             <div class="header-actions">
                 <button class="icon-button" id="history-icon-btn">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
                 </button>
                 <button class="icon-button" id="settings-icon-btn" style="display: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
             </div>
         </div>
@@ -674,7 +676,7 @@
     <div id="page-customer-profile" class="page">
         <div class="header">
              <button class="icon-button" data-action="back-to-main">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="customer-profile-name">Customer Profile</h1>
             <div class="icon-button" style="width: 24px;"></div>
@@ -686,7 +688,7 @@
     <div id="page-customer-history" class="page">
         <div class="header">
              <button class="icon-button" data-action="back-to-main">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="customer-history-name">Order History</h1>
             <div class="icon-button" style="width: 24px;"></div>
@@ -700,7 +702,7 @@
     <div id="page-settings" class="page">
         <div class="header">
             <button class="icon-button" id="back-from-settings-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1>Manage Data</h1>
             <div class="icon-button" style="width: 24px;"></div>
@@ -711,7 +713,7 @@
                 <p style="margin-bottom: 15px; font-style: italic; color: #555;">Uploading will replace existing data.</p>
                 <div class="file-upload-wrapper">
                     <div class="file-upload-area">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                         <p>Upload Customer CSV</p>
                         <input type="file" id="customer-file-upload" accept=".csv">
                     </div>
@@ -848,27 +850,32 @@
 
 
     <!-- Hidden elements for generation -->
-    <div id="order-invoice-wrapper"><div id="order-invoice"><div class="invoice-header"><h2 >ORDER SUMMARY</h2><p id="invoice-salesman"></p></div><div class="invoice-details"><div id="invoice-customer"></div><div id="invoice-date"></div></div><table class="invoice-table"><thead><tr><th>ITEM</th><th class="col-qty">QTY</th><th class="col-price">PRICE</th><th class="col-mrp">MRP</th><th class="col-total">TOTAL</th></tr></thead><tbody id="invoice-table-body"></tbody></table><div class="invoice-footer"><div class="grand-total" id="invoice-grand-total"></div></div></div></div>
+    <div id="packing-slip-wrapper">
+        <div id="packing-slip-content">
+            <div class="slip-header">
+                <h2>MF BIGMARKET</h2>
+                <p>Packing Slip</p>
+            </div>
+            <div class="slip-details">
+                <div id="slip-customer-details"></div>
+                <div id="slip-date-details" style="text-align: right;"></div>
+            </div>
+            <table class="slip-table">
+                <thead>
+                    <tr>
+                        <th>ITEM</th>
+                        <th class="col-qty">QTY</th>
+                        <th class="col-mrp">MRP</th>
+                    </tr>
+                </thead>
+                <tbody id="slip-table-body"></tbody>
+            </table>
+        </div>
+    </div>
     <div id="payment-receipt-wrapper"><div class="receipt-container"><div class="receipt-header"><h2>MF BIGMARKET</h2><p>Payment Receipt</p></div><div class="receipt-details"><p><strong>Date:</strong><span id="receipt-date"></span></p><p><strong>Salesman:</strong><span id="receipt-salesman"></span></p><p><strong>Customer:</strong><span id="receipt-customer"></span></p><p><strong>Pay Method:</strong><span id="receipt-method"></span></p></div><div class="receipt-amount"><div class="amount-label">Amount Received</div><div class="amount-value" id="receipt-amount"></div></div><div class="receipt-footer">Thank you for your business!</div></div></div>
     <div id="collection-report-wrapper"><div id="collection-report"><div class="report-header"><h2>MF BIGMARKET</h2><p>Daily Collection Report</p></div><div class="report-details"><div id="report-salesman"></div><div id="report-date"></div></div><table class="report-table"><thead><tr><th>CUSTOMER</th><th class="col-method">MODE</th><th class="col-amount">AMOUNT</th></tr></thead><tbody id="report-table-body"></tbody></table><div class="report-footer"><div id="report-totals"></div><div class="grand-total" id="report-grand-total"></div></div></div></div>
     <div id="flyer-template-wrapper"></div>
     
-    <div id="share-modal" class="modal">
-        <div class="modal-content">
-            <h2 id="share-modal-title">Order Saved!</h2>
-            <p id="share-modal-text">Share the order summary with the customer.</p>
-            <div id="share-options-container" style="margin-top: 20px;">
-                <button class="button" id="share-text-btn">Share as Text (Fast)</button>
-                <button class="button button-outline" id="share-as-image-btn" style="margin-top: 10px;">Share as Image</button>
-            </div>
-            <div id="generated-image-container"></div>
-            <div class="modal-footer" style="margin-top: 10px;">
-                <button class="button button-outline" id="close-modal-btn" style="flex:1;">Close</button>
-                <button class="button button-accent" id="share-image-btn" style="display:none; flex:2;">Send JPG</button>
-            </div>
-        </div>
-    </div>
-
     <!-- RE-ENGINEERED: Offer Modal is now a Flyer Builder -->
     <div id="offer-modal" class="modal">
         <div class="modal-content">
@@ -901,7 +908,6 @@
             orders: {}, payments: {}, currentOrder: [], selectedItem: null, selectedPriceOption: null,
             currentPayment: {}, currentView: 'customers', editing: { type: null, id: null, itemIndex: null },
             reporting: { salesman: null, customer: null },
-            shareableImageBlob: null,
             shareableFlyerBlob: null,
             bulkFlyerBlob: null,
             activeDepartment: 'All',
@@ -969,7 +975,7 @@
                 <div class="customer-item-container" data-customer='${JSON.stringify(c)}'>
                     <div class="customer-item-header">
                         <span class="info">${c.Customer}</span>
-                        <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
                     <div class="customer-actions-panel">
                         <button class="action-button" data-action="profile">
@@ -1129,14 +1135,15 @@
                                 <p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p>
                             </div>
                             <div class="actions">
-                                <button class="delete-history-btn" data-type="${isOrder ? 'orders' : 'payments'}" data-id="${item.id}">
+                                ${isOrder ? `<button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>` : ''}
+                                <button class="history-action-btn delete-history-btn" data-type="${isOrder ? 'orders' : 'payments'}" data-id="${item.id}" title="Delete">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                 </button>
                             </div>
                         </div>
                         ${isOrder ? `
                         <div class="history-card-body" id="details-${item.id}">
-                            <div>
+                            <div class="table-responsive-wrapper">
                                 <table class="history-item-table">
                                     <thead><tr><th>Item</th><th class="numeric">Qty</th><th class="numeric">Price</th></tr></thead>
                                     <tbody>${itemDetailsHtml}</tbody>
@@ -1265,6 +1272,7 @@
                 </div>
             `,showPage("page-customer-report")};
         
+        // Ensure Dashboard listeners are active
         document.getElementById('admin-dashboard-content').addEventListener('click', e => { 
             const salesmanBtn = e.target.closest('.data-list-item[data-salesman]'); 
             if (salesmanBtn) {
@@ -1305,8 +1313,31 @@
             if (customerOrders.length === 0) {
                 container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`;
             } else {
-                container.innerHTML = customerOrders.map(item => {
-                    return `<div class="card"><div style="display: flex; justify-content: space-between; align-items: flex-start;"><div><p><strong>Date:</strong> ${new Date(item.date).toLocaleString()}</p><p><strong>Total:</strong> ${formatCurrency(item.total)}</p></div><div class="history-item-actions"><button class="delete-history-btn" data-type="orders" data-id="${item.id}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><details><summary style="cursor:pointer; margin-top:10px; color:var(--primary-color);">View Details</summary><ul style="list-style-position: inside; padding-top: 5px;">${(item.items || []).map(i => `<li>${i.item.ItemName} (Qty: ${i.quantity}, Price: ${formatCurrency(i.sellingPrice)})</li>`).join('')}</ul></details></div>`;
+                 container.innerHTML = customerOrders.map(item => {
+                    const itemDetailsHtml = (item.items || []).map(i => `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td></tr>`).join('');
+                    return `
+                        <div class="history-card">
+                            <div class="history-card-header">
+                                <div class="info">
+                                    <p><strong>Total:</strong> ${formatCurrency(item.total)}</p>
+                                    <p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p>
+                                </div>
+                                <div class="actions">
+                                     <button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+                                     <button class="history-action-btn delete-history-btn" data-type="orders" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                                </div>
+                            </div>
+                            <div class="history-card-body" id="details-${item.id}">
+                                <div class="table-responsive-wrapper">
+                                <table class="history-item-table">
+                                    <thead><tr><th>Item</th><th class="numeric">Qty</th><th class="numeric">Price</th></tr></thead>
+                                    <tbody>${itemDetailsHtml}</tbody>
+                                </table>
+                                </div>
+                            </div>
+                            <a class="toggle-details" data-target="details-${item.id}">View Details</a>
+                        </div>
+                    `;
                 }).join('');
             }
             showPage('page-customer-history');
@@ -1408,27 +1439,6 @@
             if (appState.currentView === 'customers') { renderHistory('customers'); showPage('page-order-history'); } 
             else { renderHistory('payments'); showPage('page-payment-history'); }
         });
-
-        // Date filter listeners
-        document.getElementById('order-history-start').addEventListener('change', () => renderHistory('customers'));
-        document.getElementById('order-history-end').addEventListener('change', () => renderHistory('customers'));
-        document.getElementById('payment-history-start').addEventListener('change', () => renderHistory('payments'));
-        document.getElementById('payment-history-end').addEventListener('change', () => renderHistory('payments'));
-
-        // History Card Toggle Listener
-        document.body.addEventListener('click', e => {
-            const toggle = e.target.closest('.toggle-details');
-            if(toggle) {
-                e.preventDefault();
-                const targetId = toggle.dataset.target;
-                const body = document.getElementById(targetId);
-                if(body) {
-                    body.classList.toggle('visible');
-                    toggle.textContent = body.classList.contains('visible') ? 'Hide Details' : 'View Details';
-                }
-            }
-        });
-
 
         document.getElementById('customer-list-container').addEventListener('click', e => {
             const header = e.target.closest('.customer-item-header');
@@ -1606,7 +1616,8 @@
                     stockUpdateBatch.update(itemRef, { Clstock: newStock });
                 });
                 await stockUpdateBatch.commit();
-                showShareModal('Order Saved!', 'Share the order summary with the customer.');
+                alert('Order Saved Successfully!');
+                showPage('page-main-view');
             } catch (error) {
                 console.error("Error confirming order and updating stock: ", error);
                 alert("Failed to save order. Please try again.");
@@ -1618,120 +1629,91 @@
 
         document.querySelector('.payment-method-options').addEventListener('click', e => { if (e.target.matches('.payment-method-option')) { document.querySelectorAll('.payment-method-option').forEach(el => el.classList.remove('selected')); e.target.classList.add('selected'); } });
         document.getElementById('confirm-payment-btn').addEventListener('click', async () => { const amount = parseFloat(document.getElementById('payment-amount').value); if (isNaN(amount) || amount <= 0) { alert('Please enter a valid amount.'); return; } const method = document.querySelector('.payment-method-option.selected').dataset.method; const newPayment = { customer: { Customer: appState.currentPayment.customer.Customer }, amount, method, salesman: appState.salesman, date: new Date().toISOString() }; await setDoc(doc(collection(db, "payments")), newPayment); appState.currentPayment = newPayment; document.getElementById('confirm-payment-btn').style.display = 'none'; document.getElementById('print-receipt-btn').style.display = 'block'; alert('Payment saved!'); });
-        document.getElementById('print-receipt-btn').addEventListener('click', () => { const p = appState.currentPayment; document.getElementById('receipt-date').textContent = new Date(p.date).toLocaleString(); document.getElementById('receipt-salesman').textContent = appState.salesman; document.getElementById('receipt-customer').textContent = p.customer.Customer; document.getElementById('receipt-amount').textContent = formatCurrency(p.amount); document.getElementById('receipt-method').textContent = p.method; window.print(); });
         
-        const shareModal = document.getElementById('share-modal');
-        const showShareModal = (title, text) => {
-            document.getElementById('share-modal-title').textContent = title;
-            document.getElementById('share-modal-text').textContent = text;
-            document.getElementById('share-options-container').style.display = 'block';
-            document.getElementById('generated-image-container').innerHTML = '';
-            document.getElementById('share-image-btn').style.display = 'none';
-            document.getElementById('share-as-image-btn').disabled = false;
-            document.getElementById('share-as-image-btn').innerHTML = 'Share as Image';
-            shareModal.style.display = 'flex';
+        document.getElementById('print-receipt-btn').addEventListener('click', () => { 
+            const p = appState.currentPayment; 
+            document.getElementById('receipt-date').textContent = new Date(p.date).toLocaleString(); 
+            document.getElementById('receipt-salesman').textContent = appState.salesman; 
+            document.getElementById('receipt-customer').textContent = p.customer.Customer; 
+            document.getElementById('receipt-amount').textContent = formatCurrency(p.amount); 
+            document.getElementById('receipt-method').textContent = p.method; 
+            
+            document.body.classList.add('printing', 'printing-receipt');
+            setTimeout(() => window.print(), 100);
+        });
+
+        window.onafterprint = () => {
+             document.body.classList.remove('printing', 'printing-receipt', 'printing-packing-slip');
         };
 
-        const closeShareModal = () => { shareModal.style.display = 'none'; showPage('page-main-view'); };
-        document.getElementById('close-modal-btn').addEventListener('click', closeShareModal);
-        
-        const generateShareableImage = async (elementId) => { 
-            const shareAsImageBtn = document.getElementById('share-as-image-btn');
-            shareAsImageBtn.disabled = true;
-            shareAsImageBtn.innerHTML = `<div class="spinner" style="width:20px; height:20px; border-width:2px; margin: 0 auto;"></div>`;
-            document.getElementById('share-options-container').style.display = 'none';
-
-            if (elementId === 'order-invoice') { 
-                document.getElementById('invoice-salesman').textContent = `Salesman: ${appState.salesman}`; 
-                document.getElementById('invoice-customer').textContent = `Customer: ${appState.customer.Customer}`; 
-                document.getElementById('invoice-date').textContent = `Date: ${new Date().toLocaleString()}`; 
-                document.getElementById('invoice-table-body').innerHTML = appState.currentOrder.map(i => { const t = i.quantity * i.sellingPrice; return `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="col-qty">${i.quantity}</td><td class="col-price">${i.sellingPrice.toFixed(2)}</td><td class="col-mrp">${(i.item.Mrp || 0).toFixed(2)}</td><td class="col-total">${t.toFixed(2)}</td></tr>`; }).join(''); 
-                document.getElementById('invoice-grand-total').textContent = `Total: ${formatCurrency(appState.currentOrder.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0))}`; 
-            } 
-            try { 
-                const canvas = await html2canvas(document.getElementById(elementId), { scale: 2 }); 
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
-                appState.shareableImageBlob = blob;
-                const imgCont = document.getElementById('generated-image-container'); 
-                imgCont.innerHTML = ''; 
-                const imgEl = document.createElement('img'); 
-                imgEl.src = URL.createObjectURL(blob); 
-                imgCont.appendChild(imgEl); 
-                document.getElementById('share-image-btn').style.display = 'flex'; 
-            } catch (error) { 
-                console.error("Img gen error:", error); 
-                document.getElementById('generated-image-container').innerHTML = '<p style="color:red;">Error generating image.</p>'; 
-            } finally {
-                shareAsImageBtn.disabled = false;
-                shareAsImageBtn.innerHTML = 'Share as Image';
+        const printPackingSlip = (orderId) => {
+            const allOrders = Object.values(appState.orders).flat();
+            const orderToPrint = allOrders.find(o => o.id === orderId);
+            if (!orderToPrint) {
+                alert('Could not find order to print.');
+                return;
             }
+
+            document.getElementById('slip-customer-details').innerHTML = `
+                <strong>Customer:</strong> ${orderToPrint.customer.Customer}<br>
+                <strong>Salesman:</strong> ${orderToPrint.salesman}
+            `;
+            document.getElementById('slip-date-details').innerHTML = `
+                <strong>Date:</strong> ${new Date(orderToPrint.date).toLocaleDateString()}<br>
+                <strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString()}
+            `;
+            document.getElementById('slip-table-body').innerHTML = orderToPrint.items.map(i => `
+                <tr>
+                    <td class="col-item-name">${i.item.ItemName}</td>
+                    <td class="col-qty numeric">${i.quantity}</td>
+                    <td class="col-mrp numeric">${formatCurrency(i.item.Mrp)}</td>
+                </tr>
+            `).join('');
+
+            document.body.classList.add('printing', 'printing-packing-slip');
+            setTimeout(() => window.print(), 100);
         };
         
-        const shareOrderAsText = async () => {
-            const lines = [ `*MF BIGMARKET - ORDER SUMMARY*`, `------------------------------------`, `*Customer:* ${appState.customer.Customer}`, `*Salesman:* ${appState.salesman}`, `*Date:* ${new Date().toLocaleString()}`, `------------------------------------` ];
-            appState.currentOrder.forEach(i => { lines.push(`${i.item.ItemName}\nQty: ${i.quantity} x ${formatCurrency(i.sellingPrice)} = ${formatCurrency(i.quantity * i.sellingPrice)}`); });
-            const grandTotal = appState.currentOrder.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
-            lines.push(`------------------------------------`, `*GRAND TOTAL: ${formatCurrency(grandTotal)}*`, `\nThank you!`);
-            const textPayload = lines.join('\n');
-            try { if (navigator.share) { await navigator.share({ title: 'Order Summary', text: textPayload }); closeShareModal(); } else { alert("Web Share not supported. Please use the image option."); } } catch(err) { console.error("Share failed:", err); }
-        };
+        const handleHistoryClick = (e) => {
+             const deleteBtn = e.target.closest('.delete-history-btn');
+             const printBtn = e.target.closest('.print-history-btn');
 
-        document.getElementById('share-text-btn').addEventListener('click', shareOrderAsText);
-        document.getElementById('share-as-image-btn').addEventListener('click', () => generateShareableImage('order-invoice'));
-        document.getElementById('share-image-btn').addEventListener('click', async () => {
-            if (!appState.shareableImageBlob) { alert('Image not ready.'); return; }
-            try { const file = new File([appState.shareableImageBlob], 'order.jpg', { type: 'image/jpeg' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Order Summary' }); } else { alert("Web Share not supported. You can long-press the image to save/share."); } } catch (error) { console.error('Share failed:', error); alert("Could not share."); }
-        });
-
-        document.getElementById('share-collection-report-btn').addEventListener('click', () => { 
-            const btn = document.getElementById('share-collection-report-btn');
-            btn.disabled = true;
-            btn.textContent = "Generating...";
-            const today = new Date().toLocaleDateString(); 
-            const paymentsToday = (appState.payments[appState.salesman] || []).filter(p => new Date(p.date).toLocaleDateString() === today); 
-            if (paymentsToday.length === 0) { alert("No collections made today."); btn.disabled = false; btn.textContent = "Share Today's Report"; return; } 
-            let totalCash = 0, totalUPI = 0; document.getElementById('report-salesman').textContent = `Salesman: ${appState.salesman}`; document.getElementById('report-date').textContent = `Date: ${today}`; document.getElementById('report-table-body').innerHTML = paymentsToday.map(p => { if (p.method.toLowerCase() === 'cash') totalCash += p.amount; else if (p.method.toLowerCase() === 'upi') totalUPI += p.amount; return `<tr><td class="col-customer-name">${p.customer.Customer}</td><td class="col-method">${p.method}</td><td class="col-amount">${formatCurrency(p.amount)}</td></tr>`; }).join(''); document.getElementById('report-totals').innerHTML = `<div>Total Cash: ${formatCurrency(totalCash)}</div><div>Total UPI: ${formatCurrency(totalUPI)}</div>`; document.getElementById('report-grand-total').textContent = `Grand Total: ${formatCurrency(totalCash + totalUPI)}`; 
-            showShareModal("Today's Report", "Share the daily collection summary."); 
-            generateShareableImage('collection-report');
-            btn.disabled = false;
-            btn.textContent = "Share Today's Report";
-        });
-        
-        const handleDelete = async (e) => {
-            const btn = e.target.closest('.delete-history-btn');
-            if (!btn) return;
-            const type = btn.dataset.type;
-            const id = btn.dataset.id;
-            if (confirm('Are you sure you want to delete this entry? This will also update stock levels. This cannot be undone.')) {
-                try {
-                    if (type === 'orders') {
-                        const orderToDelete = Object.values(appState.orders).flat().find(o => o.id === id);
-                        if (!orderToDelete) { alert("Could not find the order to delete."); return; }
-                        const batch = writeBatch(db);
-                        batch.delete(doc(db, "orders", id));
-                        for (const orderItem of orderToDelete.items) {
-                            const itemRef = doc(db, "items", String(orderItem.item.Code));
-                            const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
-                            if (currentItem) {
-                                const restoredStock = Number(currentItem.Clstock) + Number(orderItem.quantity);
-                                batch.update(itemRef, { Clstock: restoredStock });
+             if (deleteBtn) {
+                const type = deleteBtn.dataset.type;
+                const id = deleteBtn.dataset.id;
+                if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
+                    try {
+                        if (type === 'orders') {
+                            const orderToDelete = Object.values(appState.orders).flat().find(o => o.id === id);
+                            if (!orderToDelete) { alert("Could not find the order to delete."); return; }
+                            const batch = writeBatch(db);
+                            batch.delete(doc(db, "orders", id));
+                            for (const orderItem of orderToDelete.items) {
+                                const itemRef = doc(db, "items", String(orderItem.item.Code));
+                                const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
+                                if (currentItem) {
+                                    const restoredStock = Number(currentItem.Clstock) + Number(orderItem.quantity);
+                                    batch.update(itemRef, { Clstock: restoredStock });
+                                }
                             }
+                             batch.commit();
+                        } else { // type === 'payments'
+                            deleteDoc(doc(db, "payments", id));
                         }
-                        await batch.commit();
-                    } else { // type === 'payments'
-                        await deleteDoc(doc(db, "payments", id));
+                        renderHistory(type === 'orders' ? 'customers' : 'payments');
+                    } catch (error) {
+                        console.error("Error deleting entry:", error);
+                        alert("Failed to delete entry. Please try again.");
                     }
-                    renderHistory(type === 'orders' ? 'customers' : 'payments');
-                } catch (error) {
-                    console.error("Error deleting entry:", error);
-                    alert("Failed to delete entry. Please try again.");
                 }
+            } else if (printBtn) {
+                printPackingSlip(printBtn.dataset.id);
             }
         };
         
-        document.getElementById('order-history-list').addEventListener('click', handleDelete);
-        document.getElementById('payment-history-list').addEventListener('click', handleDelete);
-        document.getElementById('customer-history-list').addEventListener('click', handleDelete);
+        document.getElementById('order-history-list').addEventListener('click', handleHistoryClick);
+        document.getElementById('payment-history-list').addEventListener('click', handleHistoryClick);
+        document.getElementById('customer-history-list').addEventListener('click', handleHistoryClick);
         
         // --- RE-ENGINEERED OFFER FLYER BUILDER LOGIC ---
         const offerModal = document.getElementById('offer-modal');
