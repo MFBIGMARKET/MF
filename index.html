@@ -206,8 +206,6 @@
         }
 
         /* NEW History Page Styles */
-        .history-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; align-items: center; }
-        .history-filters .form-group { margin-bottom: 0; }
         .history-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); margin-bottom: 15px; overflow: hidden; }
         .history-card-header { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
         .history-card-header .info { flex-grow: 1; }
@@ -218,7 +216,7 @@
         .history-card-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
         .history-card-body.visible { max-height: 500px; transition: max-height 0.4s ease-in; }
         .history-item-table { width: 100%; border-collapse: collapse; }
-        .history-item-table th, .history-item-table td { padding: 8px 15px; text-align: left; border-bottom: 1px solid #f0f0f0; word-break: break-word; } /* Allow text wrapping */
+        .history-item-table th, .history-item-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
         .history-item-table th { font-size: 0.8rem; color: #888; text-transform: uppercase; }
         .history-item-table td.numeric, .history-item-table th.numeric { text-align: right; }
         .history-item-table tr:last-child td { border-bottom: none; }
@@ -226,6 +224,34 @@
         .history-action-btn svg { width: 20px; height: 20px; }
         .delete-history-btn svg { stroke: var(--danger-color); }
         .print-history-btn svg { stroke: var(--secondary-color); }
+        /* START: Modern Date Filter Styles */
+        .date-range-filter {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 8px; /* For scrollbar */
+            -webkit-overflow-scrolling: touch;
+        }
+        .date-range-filter button {
+            flex-shrink: 0;
+            background-color: #fff;
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .date-range-filter button.active {
+            background-color: var(--secondary-color);
+            color: #fff;
+            border-color: var(--secondary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        /* END: Modern Date Filter Styles */
 
 
         .payment-method-options { display: flex; gap: 10px; margin: 15px 0; }
@@ -467,11 +493,9 @@
         #flyer-footer { margin-top: 30px; text-align: center; font-size: 0.9rem; opacity: 0.8; }
         #offer-flyer-preview-container img { max-width: 100%; border-radius: 8px; }
         
-        /* RESPONSIVE TABLE WRAPPER */
         .table-responsive-wrapper {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            box-shadow: inset -10px 0 8px -8px rgba(0,0,0,0.05);
         }
         .table-responsive-wrapper .report-table {
             min-width: 600px;
@@ -481,7 +505,6 @@
             white-space: nowrap;
         }
         
-        /* START: Styles for new payment summary page */
         .summary-totals-card {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -490,19 +513,18 @@
         }
         .summary-totals-card .kpi-card-small { margin-bottom: 0; }
         .summary-totals-card .grand-total { grid-column: 1 / -1; }
-        .summary-transaction-list { list-style: none; padding: 0; margin-top: 20px; }
+        .summary-transaction-list { list-style: none; padding: 0; }
         .summary-transaction-item {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            padding: 15px 0;
+            padding: 15px 5px;
             border-bottom: 1px solid var(--border-color);
         }
         .summary-transaction-item:last-child { border-bottom: none; }
         .summary-transaction-item .info .customer { font-weight: 500; }
         .summary-transaction-item .info .details { font-size: 0.85rem; color: #666; margin-top: 4px; }
         .summary-transaction-item .amount { font-weight: 600; font-size: 1.1rem; color: var(--primary-color); flex-shrink: 0; margin-left: 15px; }
-        /* END: Styles for new payment summary page */
 
 
         @media (max-width: 767px) {
@@ -658,16 +680,14 @@
             <div class="icon-button" style="width: 24px;"></div>
         </div>
         <div class="content">
-            <div class="history-filters">
-                <div class="form-group">
-                    <label for="order-history-start">Start Date</label>
-                    <input type="date" id="order-history-start">
-                </div>
-                <div class="form-group">
-                    <label for="order-history-end">End Date</label>
-                    <input type="date" id="order-history-end">
-                </div>
+            <div class="date-range-filter" id="order-history-date-filter">
+                <button data-range="today" class="active">Today</button>
+                <button data-range="yesterday">Yesterday</button>
+                <button data-range="week">This Week</button>
+                <button data-range="month">This Month</button>
             </div>
+            <input type="date" id="order-history-start" style="display:none;">
+            <input type="date" id="order-history-end" style="display:none;">
             <div id="order-history-list"></div>
         </div>
     </div>
@@ -681,17 +701,15 @@
             <div class="icon-button" style="width: 24px;"></div>
         </div>
         <div class="content">
-            <button id="view-collection-summary-btn" class="button" style="margin-bottom: 20px;">View Summary Report</button>
-            <div class="history-filters">
-                <div class="form-group">
-                    <label for="payment-history-start">Start Date</label>
-                    <input type="date" id="payment-history-start">
-                </div>
-                <div class="form-group">
-                    <label for="payment-history-end">End Date</label>
-                    <input type="date" id="payment-history-end">
-                </div>
+            <button id="view-collection-summary-btn" class="button" style="margin-bottom: 20px;">View Collection Summary</button>
+            <div class="date-range-filter" id="payment-history-date-filter">
+                <button data-range="today" class="active">Today</button>
+                <button data-range="yesterday">Yesterday</button>
+                <button data-range="week">This Week</button>
+                <button data-range="month">This Month</button>
             </div>
+            <input type="date" id="payment-history-start" style="display:none;">
+            <input type="date" id="payment-history-end" style="display:none;">
             <div id="payment-history-list"></div>
         </div>
     </div>
@@ -702,7 +720,7 @@
              <button class="icon-button" id="back-to-payment-history-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
-            <h1>Collection Summary</h1>
+            <h1>Collection Summary <span id="summary-date-range" style="font-size: 0.9rem; font-weight: 400; opacity: 0.8;"></span></h1>
             <div class="icon-button" style="width: 24px;"></div>
         </div>
         <div class="content" id="payment-summary-content">
@@ -946,7 +964,7 @@
             salesman: null, customer: null, items: [], customers: [],
             orders: {}, payments: {}, currentOrder: [], selectedItem: null, selectedPriceOption: null,
             currentPayment: {}, currentView: 'customers', editing: { type: null, id: null, itemIndex: null },
-            reporting: { salesman: null, customer: null },
+            reporting: { salesman: null, customer: null, dateRange: 'today' },
             shareableFlyerBlob: null,
             bulkFlyerBlob: null,
             activeDepartment: 'All',
@@ -1150,21 +1168,19 @@
 
             let historyData = isOrder ? (appState.orders[appState.salesman] || []) : (appState.payments[appState.salesman] || []);
 
-            if (startInput) {
+            if (startInput && endInput) {
                 const startDate = new Date(startInput);
-                startDate.setHours(0, 0, 0, 0);
-                historyData = historyData.filter(item => new Date(item.date) >= startDate);
-            }
-            if (endInput) {
                 const endDate = new Date(endInput);
                 endDate.setHours(23, 59, 59, 999);
-                historyData = historyData.filter(item => new Date(item.date) <= endDate);
+                historyData = historyData.filter(item => {
+                    const itemDate = new Date(item.date);
+                    return itemDate >= startDate && itemDate <= endDate;
+                });
             }
 
             if (historyData.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No history found for the selected dates.</p>`; return; }
 
             container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => {
-                // --- START OF CHANGE: Add total calculation to order history items ---
                 const itemDetailsHtml = isOrder ? (item.items || []).map(i => {
                     const total = i.quantity * i.sellingPrice;
                     return `<tr>
@@ -1174,7 +1190,6 @@
                                 <td class="numeric"><strong>${formatCurrency(total)}</strong></td>
                             </tr>`
                 }).join('') : '';
-                // --- END OF CHANGE ---
                 return `
                     <div class="history-card">
                         <div class="history-card-header">
@@ -1192,7 +1207,7 @@
                         </div>
                         ${isOrder ? `
                         <div class="history-card-body" id="details-${item.id}">
-                            <div class="table-responsive-wrapper" style="box-shadow:none; overflow-x:hidden;">
+                             <div class="table-responsive-wrapper">
                                 <table class="history-item-table">
                                     <thead>
                                         <tr>
@@ -1214,52 +1229,144 @@
         };
         
         // --- ADMIN DASHBOARD & REPORTING LOGIC ---
-        const processAdminData=()=>{const e=new Map(appState.items.map(e=>[String(e.Code),parseFloat(e.CostRate)||0])),t=Object.values(appState.orders).flat();let a=0,s=0,r=t.length;const n={},o={};t.forEach(t=>{const r=t.salesman||"N/A";n[r]||(n[r]={revenue:0,cost:0,orderCount:0}),n[r].orderCount++,(t.items||[]).forEach(t=>{const i=t.quantity*t.sellingPrice,l=e.get(String(t.item.Code))||0;a+=i,s+=t.quantity*l,n[r].revenue+=i,n[r].cost+=t.quantity*l;const c=t.item.ItemName;o[c]||(o[c]={quantity:0,revenue:0}),o[c].quantity+=t.quantity,o[c].revenue+=i})});const i=new Date().toLocaleDateString(),l={};let c=0,d=0;return Object.values(appState.payments).flat().forEach(e=>{if(new Date(e.date).toLocaleDateString()===i){const t=e.salesman||"N/A";l[t]||(l[t]={cash:0,upi:0}),"Cash"===e.method?(l[t].cash+=e.amount,c+=e.amount):"UPI"===e.method&&(l[t].upi+=e.amount,d+=e.amount)}}),{totalRevenue:a,totalProfit:a-s,totalOrders:r,salesBySalesman:n,topItems:Object.entries(o).sort((e,t)=>t[1].revenue-e[1].revenue).slice(0,10),collectionsBySalesman:l,grandTotalCash:c,grandTotalUPI:d}};
-        const renderAdminDashboard=()=>{const e=document.getElementById("admin-dashboard-content");if(0===appState.items.length)return void(e.innerHTML='<div class="card" style="text-align: center;">Loading data...</div>');const t=processAdminData(),a=t.totalRevenue>0?(t.totalProfit/t.totalRevenue*100):0,s=Object.entries(t.salesBySalesman).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`\n                        <li class="data-list-item" data-salesman="${e}">\n                            <div class="item-main">${e}</div>\n                            <div class="item-details">\n                                <span class="value-primary">${formatCurrency(t.revenue)}</span>\n                                <span class="value-secondary">\n                                    <span class="${a>=0?"profit":"loss"}">\n                                        ${formatCurrency(a)} (${s.toFixed(1)}%)\n                                    </span>\n                                </span>\n                            </div>\n                        </li>`}).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>',r=t.topItems.map(([e,t])=>`\n                <li class="data-list-item" style="cursor:default;">\n                    <div class="item-main">${e}</div>\n                    <div class="item-details">\n                        <span class="value-primary">${formatCurrency(t.revenue)}</span>\n                        <span class="value-secondary">Qty: ${t.quantity}</span>\n                    </div>\n                </li>`).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>',n=t.grandTotalCash+t.grandTotalUPI,o=Object.entries(t.collectionsBySalesman).map(([e,t])=>`\n                <div class="salesman-header">${e}</div>\n                <ul class="salesman-breakdown">\n                    <li><span>Cash</span> <span>${formatCurrency(t.cash)}</span></li>\n                    <li><span>UPI</span> <span>${formatCurrency(t.upi)}</span></li>\n                    <li><span>Sub-Total</span> <span>${formatCurrency(t.cash+t.upi)}</span></li>\n                </ul>`).join(""),i=Object.keys(t.collectionsBySalesman).length>0?o:'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No collections today.</li>';e.innerHTML=`
+        const getDateRange = (rangeKey) => {
+            const now = new Date();
+            const start = new Date(now);
+            const end = new Date(now);
+
+            switch(rangeKey) {
+                case 'today':
+                    start.setHours(0, 0, 0, 0);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'yesterday':
+                    start.setDate(start.getDate() - 1);
+                    start.setHours(0, 0, 0, 0);
+                    end.setDate(end.getDate() - 1);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'week':
+                    start.setDate(start.getDate() - start.getDay()); // Start of week (Sunday)
+                    start.setHours(0, 0, 0, 0);
+                    break;
+                case 'month':
+                    start.setDate(1);
+                    start.setHours(0, 0, 0, 0);
+                    break;
+                case 'all':
+                    return { start: null, end: null };
+            }
+            return { start, end };
+        };
+
+        const processAdminData = (rangeKey) => {
+            const { start, end } = getDateRange(rangeKey);
+
+            const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
+
+            let orders = Object.values(appState.orders).flat();
+            let payments = Object.values(appState.payments).flat();
+
+            if (start && end) {
+                orders = orders.filter(o => {
+                    const orderDate = new Date(o.date);
+                    return orderDate >= start && orderDate <= end;
+                });
+                payments = payments.filter(p => {
+                    const paymentDate = new Date(p.date);
+                    return paymentDate >= start && paymentDate <= end;
+                });
+            }
+
+            let totalRevenue = 0, totalCost = 0, totalOrders = orders.length;
+            const salesBySalesman = {};
+            const topItems = {};
+
+            orders.forEach(order => {
+                const salesman = order.salesman || 'N/A';
+                if (!salesBySalesman[salesman]) salesBySalesman[salesman] = { revenue: 0, cost: 0, orderCount: 0 };
+                salesBySalesman[salesman].orderCount++;
+
+                (order.items || []).forEach(item => {
+                    const revenue = item.quantity * item.sellingPrice;
+                    const cost = item.quantity * (costMap.get(String(item.item.Code)) || 0);
+                    totalRevenue += revenue;
+                    totalCost += cost;
+                    salesBySalesman[salesman].revenue += revenue;
+                    salesBySalesman[salesman].cost += cost;
+
+                    const itemName = item.item.ItemName;
+                    if (!topItems[itemName]) topItems[itemName] = { quantity: 0, revenue: 0 };
+                    topItems[itemName].quantity += item.quantity;
+                    topItems[itemName].revenue += revenue;
+                });
+            });
+
+            const collectionsBySalesman = {};
+            let grandTotalCash = 0, grandTotalUPI = 0;
+            const todayStr = new Date().toLocaleDateString();
+
+            Object.values(appState.payments).flat().forEach(p => {
+                 if (new Date(p.date).toLocaleDateString() === todayStr) {
+                    const salesman = p.salesman || 'N/A';
+                    if (!collectionsBySalesman[salesman]) collectionsBySalesman[salesman] = { cash: 0, upi: 0 };
+                    if (p.method === 'Cash') {
+                        collectionsBySalesman[salesman].cash += p.amount;
+                        grandTotalCash += p.amount;
+                    } else if (p.method === 'UPI') {
+                        collectionsBySalesman[salesman].upi += p.amount;
+                        grandTotalUPI += p.amount;
+                    }
+                }
+            });
+
+            return {
+                totalRevenue: totalRevenue,
+                totalProfit: totalRevenue - totalCost,
+                totalOrders: totalOrders,
+                salesBySalesman,
+                topItems: Object.entries(topItems).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 10),
+                collectionsBySalesman,
+                grandTotalCash,
+                grandTotalUPI,
+            };
+        };
+
+        const renderAdminDashboard=()=>{
+            const contentEl=document.getElementById("admin-dashboard-content");
+            if(appState.items.length===0){contentEl.innerHTML='<div class="card" style="text-align: center;">Loading data...</div>';return}
+            const data=processAdminData(appState.reporting.dateRange);
+            const overallMargin=data.totalRevenue>0?(data.totalProfit/data.totalRevenue*100):0;
+            const salesListHtml=Object.entries(data.salesBySalesman).sort((a,b)=>b[1].revenue-a[1].revenue).map(([salesman,d])=>{const profit=d.revenue-d.cost;const margin=d.revenue>0?profit/d.revenue*100:0;return`<li class="data-list-item" data-salesman="${salesman}"><div class="item-main">${salesman}</div><div class="item-details"><span class="value-primary">${formatCurrency(d.revenue)}</span><span class="value-secondary"><span class="${profit>=0?"profit":"loss"}">${formatCurrency(profit)} (${margin.toFixed(1)}%)</span></span></div></li>`}).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>';
+            const topItemsHtml=data.topItems.map(([name,d])=>`<li class="data-list-item" style="cursor:default;"><div class="item-main">${name}</div><div class="item-details"><span class="value-primary">${formatCurrency(d.revenue)}</span><span class="value-secondary">Qty: ${d.quantity}</span></div></li>`).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>';
+            const totalCollectionsToday=data.grandTotalCash+data.grandTotalUPI;
+            const collectionsBreakdownHtml=Object.entries(data.collectionsBySalesman).map(([salesman,d])=>`<div class="salesman-header">${salesman}</div><ul class="salesman-breakdown"><li><span>Cash</span> <span>${formatCurrency(d.cash)}</span></li><li><span>UPI</span> <span>${formatCurrency(d.upi)}</span></li><li><span>Sub-Total</span> <span>${formatCurrency(d.cash+d.upi)}</span></li></ul>`).join("");
+            const collectionsHtml=Object.keys(data.collectionsBySalesman).length>0?collectionsBreakdownHtml:'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No collections today.</li>';
+
+            contentEl.innerHTML=`
+                <div class="date-range-filter" id="admin-date-filter">
+                    <button data-range="today" ${appState.reporting.dateRange==='today'?'class="active"':''}>Today</button>
+                    <button data-range="week" ${appState.reporting.dateRange==='week'?'class="active"':''}>This Week</button>
+                    <button data-range="month" ${appState.reporting.dateRange==='month'?'class="active"':''}>This Month</button>
+                    <button data-range="all" ${appState.reporting.dateRange==='all'?'class="active"':''}>All Time</button>
+                </div>
                 <div class="dashboard-grid">
                     <div class="kpi-row">
-                        <div class="kpi-card-small">
-                            <div class="value">${formatCurrency(t.totalRevenue)}</div>
-                            <div class="label">Total Revenue</div>
-                        </div>
-                        <div class="kpi-card-small">
-                            <div class="value">${formatCurrency(t.totalProfit)}</div>
-                            <div class="label">Total Profit</div>
-                        </div>
-                         <div class="kpi-card-small">
-                            <div class="value">${t.totalOrders}</div>
-                            <div class="label">Total Orders</div>
-                        </div>
-                        <div class="kpi-card-small">
-                            <div class="value ${a>=0?"profit":"loss"}">${a.toFixed(1)}%</div>
-                            <div class="label">Overall Margin</div>
-                        </div>
+                        <div class="kpi-card-small"><div class="value">${formatCurrency(data.totalRevenue)}</div><div class="label">Total Revenue</div></div>
+                        <div class="kpi-card-small"><div class="value">${formatCurrency(data.totalProfit)}</div><div class="label">Total Profit</div></div>
+                        <div class="kpi-card-small"><div class="value">${data.totalOrders}</div><div class="label">Total Orders</div></div>
+                        <div class="kpi-card-small"><div class="value ${overallMargin>=0?"profit":"loss"}">${overallMargin.toFixed(1)}%</div><div class="label">Overall Margin</div></div>
                     </div>
-                    <div class="data-list-card">
-                        <h3>Sales by Salesman</h3>
-                        <ul class="data-list-container">${s}</ul>
-                    </div>
-                    <div class="data-list-card">
-                        <h3>Top Selling Items</h3>
-                        <ul class="data-list-container">${r}</ul>
-                    </div>
-                     <div class="data-list-card">
-                        <h3>Today's Collections</h3>
-                        <ul class="payment-summary-list">
-                            <li><span>Total Cash</span><strong>${formatCurrency(t.grandTotalCash)}</strong></li>
-                            <li><span>Total UPI</span><strong>${formatCurrency(t.grandTotalUPI)}</strong></li>
-                            <li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatCurrency(n)}</strong></li>
-                            ${i}
-                        </ul>
-                    </div>
-                    <div class="data-list-card">
-                        <h3>CRM Tools</h3>
-                        <button class="button button-outline" id="crm-module-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                            Send Bulk Offer Message
-                        </button>
-                    </div>
-                </div>`};
+                    <div class="data-list-card"><h3>Sales by Salesman</h3><ul class="data-list-container">${salesListHtml}</ul></div>
+                    <div class="data-list-card"><h3>Top Selling Items</h3><ul class="data-list-container">${topItemsHtml}</ul></div>
+                    <div class="data-list-card"><h3>Today's Collections</h3><ul class="payment-summary-list">
+                        <li><span>Total Cash</span><strong>${formatCurrency(data.grandTotalCash)}</strong></li>
+                        <li><span>Total UPI</span><strong>${formatCurrency(data.grandTotalUPI)}</strong></li>
+                        <li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatCurrency(totalCollectionsToday)}</strong></li>
+                        ${collectionsHtml}</ul></div>
+                    <div class="data-list-card"><h3>CRM Tools</h3><button class="button button-outline" id="crm-module-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Send Bulk Offer Message</button></div>
+                </div>`;
+        };
         
         const renderSalesmanReport = e => {
             appState.reporting.salesman = e, document.getElementById("salesman-report-header").textContent = `${e}'s Report`;
@@ -1340,6 +1447,11 @@
                 renderCrmModule();
                 showPage('page-crm');
             }
+            const filterBtn = e.target.closest('#admin-date-filter button');
+            if(filterBtn) {
+                appState.reporting.dateRange = filterBtn.dataset.range;
+                renderAdminDashboard();
+            }
         });
 
         document.getElementById('salesman-report-content').addEventListener('click', e => { const t = e.target.closest('.data-list-item[data-customer]'); t && renderCustomerReport(appState.reporting.salesman, t.dataset.customer) });
@@ -1392,7 +1504,7 @@
                                 </div>
                             </div>
                             <div class="history-card-body" id="details-${item.id}">
-                                <div class="table-responsive-wrapper" style="box-shadow:none; overflow-x:hidden;">
+                                <div class="table-responsive-wrapper">
                                 <table class="history-item-table">
                                     <thead>
                                         <tr>
@@ -1507,8 +1619,13 @@
         }));
         
         document.getElementById('history-icon-btn').addEventListener('click', () => {
-            if (appState.currentView === 'customers') { renderHistory('customers'); showPage('page-order-history'); } 
-            else { renderHistory('payments'); showPage('page-payment-history'); }
+            const isOrder = appState.currentView === 'customers';
+            const pageId = isOrder ? 'page-order-history' : 'page-payment-history';
+            const filterId = isOrder ? 'order-history-date-filter' : 'payment-history-date-filter';
+            
+            // Set default date range on the correct hidden inputs and render
+            handleDateRangeClick(document.querySelector(`#${filterId} button[data-range="today"]`), isOrder);
+            showPage(pageId);
         });
 
         document.getElementById('customer-list-container').addEventListener('click', e => {
@@ -1568,9 +1685,7 @@
         document.getElementById('back-from-settings-btn').addEventListener('click', () => { if(appState.salesman === 'ADMIN') { showPage('page-admin-dashboard'); } else { showPage('page-main-view'); } });
         document.getElementById('back-to-settings-btn').addEventListener('click', () => { showPage('page-settings'); });
         
-        // --- START: New back button listener ---
         document.getElementById('back-to-payment-history-btn').addEventListener('click', () => showPage('page-payment-history'));
-        // --- END: New back button listener ---
 
         // --- Department Tab & Item Search Logic ---
         document.getElementById('department-filter').addEventListener('change', e => {
@@ -1797,6 +1912,90 @@
         document.getElementById('payment-history-list').addEventListener('click', handleHistoryClick);
         document.getElementById('customer-history-list').addEventListener('click', handleHistoryClick);
         
+        // --- START: New Date Range Filter Logic ---
+        const handleDateRangeClick = (btn, isOrder) => {
+            const range = btn.dataset.range;
+            const { start, end } = getDateRange(range);
+            const startInput = document.getElementById(isOrder ? 'order-history-start' : 'payment-history-start');
+            const endInput = document.getElementById(isOrder ? 'order-history-end' : 'payment-history-end');
+
+            startInput.valueAsDate = start;
+            endInput.valueAsDate = end;
+
+            btn.parentElement.querySelector('.active').classList.remove('active');
+            btn.classList.add('active');
+
+            renderHistory(isOrder ? 'customers' : 'payments');
+        };
+
+        document.getElementById('order-history-date-filter').addEventListener('click', e => {
+            if (e.target.tagName === 'BUTTON') handleDateRangeClick(e.target, true);
+        });
+        document.getElementById('payment-history-date-filter').addEventListener('click', e => {
+            if (e.target.tagName === 'BUTTON') handleDateRangeClick(e.target, false);
+        });
+        // --- END: New Date Range Filter Logic ---
+        
+        // --- START: New Payment Summary Logic ---
+        const renderSalesmanSummaryPage = () => {
+            const rangeKey = document.querySelector('#payment-history-date-filter .active').dataset.range;
+            const { start, end } = getDateRange(rangeKey);
+            
+            let salesmanPayments = appState.payments[appState.salesman] || [];
+
+            if (start && end) {
+                salesmanPayments = salesmanPayments.filter(p => {
+                    const pDate = new Date(p.date);
+                    return pDate >= start && pDate <= end;
+                });
+            }
+
+            if (salesmanPayments.length === 0) {
+                alert('No payments found for the selected period.');
+                return;
+            }
+
+            let totalCash = 0;
+            let totalUPI = 0;
+            salesmanPayments.forEach(p => {
+                if (p.method === 'Cash') totalCash += p.amount;
+                else if (p.method === 'UPI') totalUPI += p.amount;
+            });
+            const grandTotal = totalCash + totalUPI;
+            
+            salesmanPayments.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            const transactionListHtml = salesmanPayments.map(p => `
+                <li class="summary-transaction-item">
+                    <div class="info">
+                        <div class="customer">${p.customer.Customer}</div>
+                        <div class="details">${p.method} &bull; ${new Date(p.date).toLocaleString()}</div>
+                    </div>
+                    <div class="amount">${formatCurrency(p.amount)}</div>
+                </li>
+            `).join('');
+
+            const summaryPageContent = document.getElementById('payment-summary-content');
+            summaryPageContent.innerHTML = `
+                <div class="card">
+                    <div class="summary-totals-card">
+                        <div class="kpi-card-small grand-total"><div class="value">${formatCurrency(grandTotal)}</div><div class="label">Total Collected</div></div>
+                        <div class="kpi-card-small"><div class="value">${formatCurrency(totalCash)}</div><div class="label">Total Cash</div></div>
+                        <div class="kpi-card-small"><div class="value">${formatCurrency(totalUPI)}</div><div class="label">Total UPI</div></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>All Transactions</h3>
+                    <ul class="summary-transaction-list">${transactionListHtml}</ul>
+                </div>
+            `;
+            document.getElementById('summary-date-range').textContent = `(${rangeKey.charAt(0).toUpperCase() + rangeKey.slice(1)})`;
+            showPage('page-payment-summary');
+        };
+        document.getElementById('view-collection-summary-btn').addEventListener('click', renderSalesmanSummaryPage);
+        // --- END: New Payment Summary Logic ---
+
+
         // --- RE-ENGINEERED OFFER FLYER BUILDER LOGIC ---
         const offerModal = document.getElementById('offer-modal');
         const offerModalBody = document.getElementById('offer-modal-body');
@@ -2041,90 +2240,10 @@
         document.getElementById('edit-data-list').addEventListener('click', (e) => { if(e.target.matches('.list-item-action')) { appState.editing.id = e.target.dataset.id; openEditModal(); } });
         const openEditModal = () => { const isCustomers = appState.editing.type === 'customers'; const item = (isCustomers ? appState.customers : appState.items).find(i => i.id === appState.editing.id); if (!item) return; const modalBody = document.getElementById('edit-modal-body'); document.getElementById('edit-modal-title').textContent = `Edit ${isCustomers ? 'Customer' : 'Item'}`; if (isCustomers) { modalBody.innerHTML = `<div class="form-group"><label>Customer Name</label><input type="text" id="edit-Customer" value="${item.Customer}"></div><div class="form-group"><label>Salesman</label><select id="edit-Salesman"><option>UNNI</option><option>RIYAS</option></select></div><div class="form-group"><label>Phone</label><input type="text" id="edit-Phone" value="${item.Phone || ''}"></div>`; document.getElementById('edit-Salesman').value = item.Salesman; } else { modalBody.innerHTML = `<div class="form-group"><label>Item Name</label><input type="text" id="edit-ItemName" value="${item.ItemName}"></div><div class="form-group"><label>Cost Rate</label><input type="number" id="edit-CostRate" value="${item.CostRate}"></div><div class="form-group"><label>Price 1</label><input type="number" id="edit-Price1" value="${item.Price1}"></div><div class="form-group"><label>Price 2</label><input type="number" id="edit-Price2" value="${item.Price2}"></div><div class="form-group"><label>Price 3</label><input type="number" id="edit-Price3" value="${item.Price3}"></div>`; } editModal.style.display = 'flex'; };
         
-        // --- START OF CHANGE: New Function for Summary Page ---
-        const renderSalesmanSummaryPage = () => {
-            const startInput = document.getElementById('payment-history-start').value;
-            const endInput = document.getElementById('payment-history-end').value;
-            
-            let salesmanPayments = appState.payments[appState.salesman] || [];
-
-            if (startInput) {
-                const startDate = new Date(startInput);
-                startDate.setHours(0, 0, 0, 0);
-                salesmanPayments = salesmanPayments.filter(item => new Date(item.date) >= startDate);
-            }
-            if (endInput) {
-                const endDate = new Date(endInput);
-                endDate.setHours(23, 59, 59, 999);
-                salesmanPayments = salesmanPayments.filter(item => new Date(item.date) <= endDate);
-            }
-
-            if (salesmanPayments.length === 0) {
-                alert('No payments found for the selected date range.');
-                return;
-            }
-
-            let totalCash = 0;
-            let totalUPI = 0;
-
-            salesmanPayments.forEach(p => {
-                if (p.method === 'Cash') {
-                    totalCash += p.amount;
-                } else if (p.method === 'UPI') {
-                    totalUPI += p.amount;
-                }
-            });
-            const grandTotal = totalCash + totalUPI;
-            
-            salesmanPayments.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-            const transactionListHtml = salesmanPayments.map(p => `
-                <li class="summary-transaction-item">
-                    <div class="info">
-                        <div class="customer">${p.customer.Customer}</div>
-                        <div class="details">${p.method} &bull; ${new Date(p.date).toLocaleString()}</div>
-                    </div>
-                    <div class="amount">${formatCurrency(p.amount)}</div>
-                </li>
-            `).join('');
-
-            const summaryPageContent = document.getElementById('payment-summary-content');
-            summaryPageContent.innerHTML = `
-                <div class="card">
-                    <div class="summary-totals-card">
-                        <div class="kpi-card-small grand-total">
-                            <div class="value">${formatCurrency(grandTotal)}</div>
-                            <div class="label">Total Collected</div>
-                        </div>
-                        <div class="kpi-card-small">
-                            <div class="value">${formatCurrency(totalCash)}</div>
-                            <div class="label">Total Cash</div>
-                        </div>
-                        <div class="kpi-card-small">
-                            <div class="value">${formatCurrency(totalUPI)}</div>
-                            <div class="label">Total UPI</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <h3>All Transactions</h3>
-                    <ul class="summary-transaction-list">
-                        ${transactionListHtml}
-                    </ul>
-                </div>
-            `;
-            
-            showPage('page-payment-summary');
-        };
-
         const closeEditModal = () => { 
             editModal.style.display = 'none';
         };
         document.getElementById('close-edit-modal-btn').addEventListener('click', closeEditModal);
-
-        document.getElementById('view-collection-summary-btn').addEventListener('click', renderSalesmanSummaryPage);
-        // --- END OF CHANGE ---
-
         document.getElementById('save-edit-btn').addEventListener('click', async () => { const isCustomers = appState.editing.type === 'customers'; const id = appState.editing.id; let updatedData = {}; if (isCustomers) { updatedData = { Customer: document.getElementById('edit-Customer').value, Salesman: document.getElementById('edit-Salesman').value, Phone: document.getElementById('edit-Phone').value }; } else { const fields = ['ItemName', 'CostRate', 'Price1', 'Price2', 'Price3']; fields.forEach(field => { const input = document.getElementById(`edit-${field}`); updatedData[field] = input.type === 'number' ? parseFloat(input.value) : input.value; }); } await updateDoc(doc(db, isCustomers ? 'customers' : 'items', id), updatedData); closeEditModal(); alert('Record updated successfully!'); });
         
         // --- CRM MODULE LOGIC ---
