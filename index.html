@@ -706,8 +706,21 @@
                     </div>
                     <div id="item-search-results"></div>
                 </div>
-
-                <div id="item-details-form" style="display: none; margin-top: 15px;"><input type="number" id="item-quantity" placeholder="Quantity" min="1"><div class="price-options"><div class="price-option" id="price1-option"></div><div class="price-option" id="price2-option"></div><div class="price-option" id="price3-option"></div><div class="price-option" id="custom-price-option">Custom</div></div><input type="number" id="custom-price-input" placeholder="Enter Custom Price" style="display: none;"><div id="custom-price-margin" style="text-align:center; margin-bottom: 10px; font-weight: bold;"></div><button id="add-item-btn" class="button">Add to Order</button></div>
+                <div id="item-details-form" style="display: none; margin-top: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="number" id="item-quantity" placeholder="Quantity" min="1" style="flex-grow: 1; margin-bottom: 0;">
+                        <span id="item-unit-display" style="font-weight: 500; color: #555; white-space: nowrap;"></span>
+                    </div>
+                    <div class="price-options">
+                        <div class="price-option" id="price1-option"></div>
+                        <div class="price-option" id="price2-option"></div>
+                        <div class="price-option" id="price3-option"></div>
+                        <div class="price-option" id="custom-price-option">Custom</div>
+                    </div>
+                    <input type="number" id="custom-price-input" placeholder="Enter Custom Price" style="display: none;">
+                    <div id="custom-price-margin" style="text-align:center; margin-bottom: 10px; font-weight: bold;"></div>
+                    <button id="add-item-btn" class="button">Add to Order</button>
+                </div>
             </div>
              <!-- NEW Previous Orders Section -->
             <div id="previous-orders-card" class="card">
@@ -833,7 +846,7 @@
                         <input type="file" id="customer-file-upload" accept=".csv">
                     </div>
                 </div>
-                <div class="file-upload-wrapper">
+                 <div class="file-upload-wrapper">
                     <div class="file-upload-area">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                         <p>Upload Item CSV</p>
@@ -978,8 +991,9 @@
             <table class="slip-table">
                 <thead>
                     <tr>
+                        <th>S.No.</th>
                         <th class="col-item-name">ITEM</th>
-                        <th class="col-qty">QTY</th>
+                        <th class="col-qty">QTY / UNIT</th>
                         <th class="col-mrp">MRP</th>
                     </tr>
                 </thead>
@@ -1170,7 +1184,7 @@
                 </div>`).join('');
         };
 
-        const renderSelectedItemDetails = () => { const i = appState.selectedItem; if (!i) return; const calcMargin = (price) => i.CostRate > 0 ? (((price - i.CostRate) / i.CostRate) * 100).toFixed(2) : 0; document.getElementById('price1-option').innerHTML = `<div class="price">P1 ${formatCurrency(i.Price1)}</div><div class="margin">Margin: ${calcMargin(i.Price1)}%</div>`; document.getElementById('price2-option').innerHTML = `<div class="price">P2 ${formatCurrency(i.Price2)}</div><div class="margin">Margin: ${calcMargin(i.Price2)}%</div>`; document.getElementById('price3-option').innerHTML = `<div class="price">P3 ${formatCurrency(i.Price3)}</div><div class="margin">Margin: ${calcMargin(i.Price3)}%</div>`; document.getElementById('item-details-form').style.display = 'block'; };
+        const renderSelectedItemDetails = () => { const i = appState.selectedItem; if (!i) return; const calcMargin = (price) => i.CostRate > 0 ? (((price - i.CostRate) / i.CostRate) * 100).toFixed(2) : 0; document.getElementById('price1-option').innerHTML = `<div class="price">P1 ${formatCurrency(i.Price1)}</div><div class="margin">Margin: ${calcMargin(i.Price1)}%</div>`; document.getElementById('price2-option').innerHTML = `<div class="price">P2 ${formatCurrency(i.Price2)}</div><div class="margin">Margin: ${calcMargin(i.Price2)}%</div>`; document.getElementById('price3-option').innerHTML = `<div class="price">P3 ${formatCurrency(i.Price3)}</div><div class="margin">Margin: ${calcMargin(i.Price3)}%</div>`; document.getElementById('item-details-form').style.display = 'block'; document.getElementById('item-unit-display').textContent = i.Unit || ''; };
         
         const renderOrderSummary = () => { 
             const listCont = document.getElementById('order-items-list');
@@ -1194,7 +1208,7 @@
                             <div class="item-info">
                                 <div class="item-name">${o.item.ItemName}</div>
                                 <div class="item-details">
-                                    ${o.quantity} &times; ${formatCurrency(o.sellingPrice)}
+                                    ${o.quantity} ${o.item.Unit || ''} &times; ${formatCurrency(o.sellingPrice)}
                                     <br>
                                     <small>MRP: ${formatCurrency(o.item.Mrp)}</small>
                                 </div>
@@ -1251,7 +1265,7 @@
                     const total = i.quantity * i.sellingPrice;
                     return `<tr>
                                 <td>${i.item.ItemName}</td>
-                                <td class="numeric">${i.quantity}</td>
+                                <td class="numeric">${i.quantity} ${i.item.Unit || ''}</td>
                                 <td class="numeric">${formatCurrency(i.sellingPrice)}</td>
                                 <td class="numeric"><strong>${formatCurrency(total)}</strong></td>
                             </tr>`
@@ -1278,7 +1292,7 @@
                                     <thead>
                                         <tr>
                                             <th>Item</th>
-                                            <th class="numeric">Qty</th>
+                                            <th class="numeric">Qty / Unit</th>
                                             <th class="numeric">Price</th>
                                             <th class="numeric">Total</th>
                                         </tr>
@@ -1483,7 +1497,14 @@
             `, showPage("page-salesman-report")
         };
         
-        const renderCustomerReport=(e,t)=>{appState.reporting.customer=t,document.getElementById("customer-report-header").textContent=`${t}`;const a=document.getElementById("customer-report-content"),s=new Map(appState.items.map(e=>[String(e.Code),parseFloat(e.CostRate)||0])),r=(appState.orders[e]||[]).filter(e=>e.customer.Customer===t),n={};r.forEach(e=>{(e.items||[]).forEach(e=>{const t=e.item.ItemName,a=String(e.item.Code);n[t]||(n[t]={quantity:0,revenue:0,cost:0}),n[t].quantity+=e.quantity,n[t].revenue+=e.quantity*e.sellingPrice,n[t].cost+=e.quantity*(s.get(a)||0)})});let o=0,i=0;Object.values(n).forEach(e=>{o+=e.revenue,i+=e.revenue-e.cost});const l=o>0?i/o*100:0,c=Object.entries(n).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`\n                    <tr>\n                        <td>${e}</td>\n                        <td class="numeric">${t.quantity}</td>\n                        <td class="numeric">${formatCurrency(t.revenue)}</td>\n                        <td class="numeric ${a>=0?"profit":"loss"}">${formatCurrency(a)}</td>\n                        <td class="numeric ${s>=0?"profit":"loss"}">${s.toFixed(1)}%</td>\n                    </tr>`}).join("");a.innerHTML=`
+        const renderCustomerReport=(e,t)=>{appState.reporting.customer=t,document.getElementById("customer-report-header").textContent=`${t}`;const a=document.getElementById("customer-report-content"),s=new Map(appState.items.map(e=>[String(e.Code),parseFloat(e.CostRate)||0])),r=(appState.orders[e]||[]).filter(e=>e.customer.Customer===t),n={};r.forEach(e=>{(e.items||[]).forEach(e=>{const t=e.item.ItemName,a=String(e.item.Code);n[t]||(n[t]={quantity:0,revenue:0,cost:0,unit:e.item.Unit}),n[t].quantity+=e.quantity,n[t].revenue+=e.quantity*e.sellingPrice,n[t].cost+=e.quantity*(s.get(a)||0)})});let o=0,i=0;Object.values(n).forEach(e=>{o+=e.revenue,i+=e.revenue-e.cost});const l=o>0?i/o*100:0,c=Object.entries(n).sort((e,t)=>t[1].revenue-e[1].revenue).map(([e,t])=>{const a=t.revenue-t.cost,s=t.revenue>0?a/t.revenue*100:0;return`
+                    <tr>
+                        <td>${e}</td>
+                        <td class="numeric">${t.quantity} ${t.unit || ''}</td>
+                        <td class="numeric">${formatCurrency(t.revenue)}</td>
+                        <td class="numeric ${a>=0?"profit":"loss"}">${formatCurrency(a)}</td>
+                        <td class="numeric ${s>=0?"profit":"loss"}">${s.toFixed(1)}%</td>
+                    </tr>`}).join("");a.innerHTML=`
                 <div class="report-header-card">
                     <div><div class="label">Total Revenue</div><div class="value">${formatCurrency(o)}</div></div>
                     <div><div class="label">Total Profit</div><div class="value ${i>=0?"profit":"loss"}">${formatCurrency(i)}</div></div>
@@ -1493,7 +1514,7 @@
                     <div class="table-responsive-wrapper">
                         <table class="report-table">
                             <thead>
-                                <tr><th>Product</th><th class="numeric">Qty</th><th class="numeric">Revenue</th><th class="numeric">Profit</th><th class="numeric">Margin %</th></tr>
+                                <tr><th>Product</th><th class="numeric">Qty / Unit</th><th class="numeric">Revenue</th><th class="numeric">Profit</th><th class="numeric">Margin %</th></tr>
                             </thead>
                             <tbody>${c}</tbody>
                         </table>
@@ -1552,7 +1573,7 @@
                         const total = i.quantity * i.sellingPrice;
                         return `<tr>
                                     <td>${i.item.ItemName}</td>
-                                    <td class="numeric">${i.quantity}</td>
+                                    <td class="numeric">${i.quantity} ${i.item.Unit || ''}</td>
                                     <td class="numeric">${formatCurrency(i.sellingPrice)}</td>
                                     <td class="numeric"><strong>${formatCurrency(total)}</strong></td>
                                 </tr>`
@@ -1575,7 +1596,7 @@
                                     <thead>
                                         <tr>
                                             <th>Item</th>
-                                            <th class="numeric">Qty</th>
+                                            <th class="numeric">Qty / Unit</th>
                                             <th class="numeric">Price</th>
                                             <th class="numeric">Total</th>
                                         </tr>
@@ -1608,7 +1629,7 @@
                         </button>
                     </summary>
                     <ul style="list-style-position: inside; padding: 10px 0 0 15px; font-size: 0.9rem; color: #555;">
-                        ${order.items.map(i => `<li>${i.item.ItemName} (Qty: ${i.quantity})</li>`).join('')}
+                        ${order.items.map(i => `<li>${i.item.ItemName} (Qty: ${i.quantity} ${i.item.Unit || ''})</li>`).join('')}
                     </ul>
                 </details>
             `).join('');
@@ -1860,7 +1881,7 @@
             btn.disabled = true;
             btn.textContent = 'Saving...';
             const total = appState.currentOrder.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
-            const newOrder = { customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone }, items: appState.currentOrder.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code }, quantity: i.quantity, sellingPrice: i.sellingPrice })), total, salesman: appState.salesman, date: new Date().toISOString() };
+            const newOrder = { customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone }, items: appState.currentOrder.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit }, quantity: i.quantity, sellingPrice: i.sellingPrice })), total, salesman: appState.salesman, date: new Date().toISOString() };
             try {
                 const orderDocRef = doc(collection(db, "orders"));
                 const stockUpdateBatch = writeBatch(db);
@@ -1919,10 +1940,11 @@
                 <strong>Date:</strong> ${new Date(orderToPrint.date).toLocaleDateString()}<br>
                 <strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString()}
             `;
-            document.getElementById('slip-table-body').innerHTML = orderToPrint.items.map(i => `
+            document.getElementById('slip-table-body').innerHTML = orderToPrint.items.map((i, index) => `
                 <tr>
+                    <td>${index + 1}</td>
                     <td class="col-item-name">${i.item.ItemName}</td>
-                    <td class="col-qty numeric">${i.quantity}</td>
+                    <td class="col-qty numeric">${i.quantity} ${i.item.Unit || ''}</td>
                     <td class="col-mrp numeric">${formatCurrency(i.item.Mrp)}</td>
                 </tr>
             `).join('');
@@ -2257,7 +2279,27 @@
                 return null; 
             } 
         };
-        const sanitizeItems = (items) => { const sanitize = (val) => parseFloat(String(val).replace(/,/g, '')) || 0; return items.map(i => ({...i, CostRate: sanitize(i.CostRate), Mrp: sanitize(i.Mrp), Price1: sanitize(i.Price1), Price2: sanitize(i.Price2), Price3: sanitize(i.Price3), Margin1: sanitize(i.Margin1), Margin2: sanitize(i.Margin2), Margin3: sanitize(i.Margin3), Clstock: sanitize(i.Clstock)})); };
+        const sanitizeAndStructureItems = (items) => {
+            const sanitizeNum = (val) => parseFloat(String(val).replace(/,/g, '')) || 0;
+            const sanitizeStr = (val) => String(val || '').trim();
+
+            return items.map(i => ({
+                Department: sanitizeStr(i.Department),
+                Category: sanitizeStr(i.Category),
+                Code: sanitizeStr(i.Code),
+                ItemName: sanitizeStr(i.ItemName),
+                CostRate: sanitizeNum(i.CostRate),
+                Mrp: sanitizeNum(i.Mrp),
+                Price1: sanitizeNum(i.Price1),
+                Price2: sanitizeNum(i.Price2),
+                Price3: sanitizeNum(i.Price3),
+                Clstock: sanitizeNum(i.Clstock),
+                Margin1: sanitizeNum(i.Margin1),
+                Margin2: sanitizeNum(i.Margin2),
+                Margin3: sanitizeNum(i.Margin3),
+                Unit: sanitizeStr(i.Unit)
+            }));
+        };
         const uploadCSV = async (file, collectionName) => { 
             if (!file) return; 
             const reader = new FileReader(); 
@@ -2265,7 +2307,7 @@
                 let data = parseCSV(event.target.result); 
                 if (data) { 
                     if (collectionName === 'items') {
-                        data = sanitizeItems(data); 
+                        data = sanitizeAndStructureItems(data); 
                     }
                     if (collectionName === 'customers' && (!data[0] || !data[0].CustomerCode)) {
                         alert("CSV Error: 'CustomerCode' column is missing or empty. Please add it as the first column.");
@@ -2295,6 +2337,7 @@
         };
         document.getElementById('customer-file-upload').addEventListener('change', (e) => { uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
         document.getElementById('item-file-upload').addEventListener('change', (e) => { uploadCSV(e.target.files[0], 'items'); e.target.value = ''; });
+        
         const editModal = document.getElementById('edit-modal');
         document.getElementById('edit-customers-btn').addEventListener('click', () => { appState.editing.type = 'customers'; showPage('page-edit-data'); renderEditDataList(); });
         document.getElementById('edit-items-btn').addEventListener('click', () => { appState.editing.type = 'items'; showPage('page-edit-data'); renderEditDataList(); });
