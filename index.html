@@ -1677,6 +1677,9 @@
         const handleHistoryClick = (e) => {
              const deleteBtn = e.target.closest('.delete-history-btn');
              const printBtn = e.target.closest('.print-history-btn');
+             // --- START OF FIX ---
+             const toggleBtn = e.target.closest('.toggle-details');
+             // --- END OF FIX ---
 
              if (deleteBtn) {
                 const type = deleteBtn.dataset.type;
@@ -1708,7 +1711,15 @@
                 }
             } else if (printBtn) {
                 printPackingSlip(printBtn.dataset.id);
+            // --- START OF FIX ---
+            } else if (toggleBtn) {
+                e.preventDefault();
+                const targetElement = document.getElementById(toggleBtn.dataset.target);
+                if (targetElement) {
+                    targetElement.classList.toggle('visible');
+                }
             }
+            // --- END OF FIX ---
         };
         
         document.getElementById('order-history-list').addEventListener('click', handleHistoryClick);
