@@ -224,7 +224,6 @@
         .history-action-btn svg { width: 20px; height: 20px; }
         .delete-history-btn svg { stroke: var(--danger-color); }
         .print-history-btn svg { stroke: var(--secondary-color); }
-        /* START: Modern Date Filter Styles */
         .date-range-filter {
             display: flex;
             gap: 8px;
@@ -251,7 +250,6 @@
             border-color: var(--secondary-color);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        /* END: Modern Date Filter Styles */
 
 
         .payment-method-options { display: flex; gap: 10px; margin: 15px 0; }
@@ -345,21 +343,82 @@
         #packing-slip-wrapper, #payment-receipt-wrapper { display: none; }
         #collection-report-wrapper { position: absolute; left: -9999px; top: -9999px; }
         #collection-report { background: #fff; padding: 40px; }
-
-        /* Packing Slip Styles */
-        #packing-slip-content { font-family: 'Segoe UI', sans-serif; color: #333; padding: 20px; }
-        .slip-header { text-align: center; margin-bottom: 25px; }
-        .slip-header h2 { margin: 0; font-size: 1.8rem; color: #000; }
-        .slip-header p { font-size: 1rem; color: #555; margin: 5px 0 0; }
-        .slip-details { display: flex; justify-content: space-between; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #333; font-size: 0.95rem; }
-        .slip-details div { line-height: 1.5; }
+        
+        /* START: Ultra-Compact Packing Slip Styles for More Items */
+        #packing-slip-content { 
+            font-family: 'Segoe UI', sans-serif; 
+            color: #222; 
+            padding: 0; 
+            font-size: 14px; /* Base font size for calculations */
+        }
+        .slip-header { 
+            text-align: center; 
+            margin-bottom: 10px; /* Reduced */
+        }
+        .slip-header h2 { 
+            margin: 0; 
+            font-size: 1.8rem; /* Slightly reduced */
+            color: #000; 
+            font-weight: 700; 
+        }
+        .slip-header p { 
+            font-size: 0.8rem; 
+            color: #555; 
+            margin: 2px 0 0; 
+        }
+        .slip-details { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 10px; /* Reduced */
+            padding-bottom: 8px; /* Reduced */
+            border-bottom: 2px solid #333; 
+            font-size: 0.85rem; 
+        }
+        .slip-details div { line-height: 1.4; } /* Reduced */
         .slip-details div strong { font-weight: 600; }
-        .slip-table { width: 100%; border-collapse: collapse; }
-        .slip-table th, .slip-table td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-        .slip-table th { background-color: #f2f2f2; font-weight: 600; }
-        .slip-table td.col-item-name { white-space: nowrap; max-width: 300px; overflow: hidden; text-overflow: ellipsis; }
+        .slip-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+        .slip-table th, .slip-table td { 
+            padding: 5px 8px; /* Reduced padding significantly */
+            text-align: left; 
+            border-bottom: 1px solid #333; /* Darker border */
+        }
+        .slip-table th { 
+            background-color: #f2f2f2; 
+            font-weight: 600; 
+            font-size: 0.8rem; 
+        }
+        .slip-table td { 
+            font-size: 0.85rem; /* Slightly reduced */
+            vertical-align: top;
+        }
+        .slip-table td.col-item-name { 
+            max-width: 250px; 
+            white-space: normal; /* Allow wrapping for very long names */
+        }
         .slip-table td.col-qty, .slip-table th.col-qty,
-        .slip-table td.col-mrp, .slip-table th.col-mrp { text-align: right; }
+        .slip-table td.col-mrp, .slip-table th.col-mrp { 
+            text-align: right; 
+            white-space: nowrap;
+        }
+        .slip-footer {
+            margin-top: 25px; /* Reduced */
+            text-align: right;
+            font-size: 0.85rem;
+        }
+        .slip-footer .sorted-by {
+            display: inline-block;
+            text-align: left;
+        }
+        .slip-footer .signature-line {
+            display: block;
+            border-bottom: 1px solid #333;
+            width: 180px; /* Slightly smaller */
+            margin-top: 25px; /* Reduced */
+        }
+        /* END: Ultra-Compact Packing Slip Styles */
 
         /* Receipt Styles */
         .receipt-container { font-family: Calibri, sans-serif; color: black; padding: 20px; width: 100%;}
@@ -540,7 +599,7 @@
         @media print {
             @page { 
                 size: A4;
-                margin: 20mm;
+                margin: 15mm; /* Reduced page margins */
             }
             body > *:not(.printing) {
                 display: none !important;
@@ -558,7 +617,7 @@
 </head>
 <body>
 
-    <!-- ... (All other page divs up to payment history remain unchanged) ... -->
+    <!-- ... (All other page divs up to the packing slip) ... -->
     <div id="page-salesman-selection" class="page active">
         <div class="content">
             <h1>Select Role</h1>
@@ -728,8 +787,8 @@
         </div>
     </div>
     <!-- END: NEW PAYMENT SUMMARY PAGE -->
-
-    <!-- NEW Customer Profile & History Pages -->
+    
+    <!-- ... (Rest of the HTML pages) ... -->
     <div id="page-customer-profile" class="page">
         <div class="header">
              <button class="icon-button" data-action="back-to-main">
@@ -754,7 +813,6 @@
             <div id="customer-history-list"></div>
         </div>
     </div>
-    <!-- END NEW PAGES -->
 
     <div id="page-settings" class="page">
         <div class="header">
@@ -920,13 +978,21 @@
             <table class="slip-table">
                 <thead>
                     <tr>
-                        <th>ITEM</th>
+                        <th class="col-item-name">ITEM</th>
                         <th class="col-qty">QTY</th>
                         <th class="col-mrp">MRP</th>
                     </tr>
                 </thead>
                 <tbody id="slip-table-body"></tbody>
             </table>
+            <!-- START: New Slip Footer -->
+            <div class="slip-footer">
+                <div class="sorted-by">
+                    Sorted By:
+                    <div class="signature-line"></div>
+                </div>
+            </div>
+            <!-- END: New Slip Footer -->
         </div>
     </div>
     <div id="payment-receipt-wrapper"><div class="receipt-container"><div class="receipt-header"><h2>MF BIGMARKET</h2><p>Payment Receipt</p></div><div class="receipt-details"><p><strong>Date:</strong><span id="receipt-date"></span></p><p><strong>Salesman:</strong><span id="receipt-salesman"></span></p><p><strong>Customer:</strong><span id="receipt-customer"></span></p><p><strong>Pay Method:</strong><span id="receipt-method"></span></p></div><div class="receipt-amount"><div class="amount-label">Amount Received</div><div class="amount-value" id="receipt-amount"></div></div><div class="receipt-footer">Thank you for your business!</div></div></div>
@@ -1571,6 +1637,7 @@
                 appState.salesman = salesman;
                 localStorage.setItem('lastSalesman', salesman);
                 if (salesman === 'ADMIN') {
+                    appState.reporting.dateRange = 'today'; // Reset to default
                     document.getElementById('footer').style.display = 'none';
                     document.getElementById('settings-icon-btn').style.display = 'flex'; // Show for Admin
                     renderAdminDashboard();
@@ -1912,7 +1979,6 @@
         document.getElementById('payment-history-list').addEventListener('click', handleHistoryClick);
         document.getElementById('customer-history-list').addEventListener('click', handleHistoryClick);
         
-        // --- START: New Date Range Filter Logic ---
         const handleDateRangeClick = (btn, isOrder) => {
             const range = btn.dataset.range;
             const { start, end } = getDateRange(range);
@@ -1934,9 +2000,7 @@
         document.getElementById('payment-history-date-filter').addEventListener('click', e => {
             if (e.target.tagName === 'BUTTON') handleDateRangeClick(e.target, false);
         });
-        // --- END: New Date Range Filter Logic ---
         
-        // --- START: New Payment Summary Logic ---
         const renderSalesmanSummaryPage = () => {
             const rangeKey = document.querySelector('#payment-history-date-filter .active').dataset.range;
             const { start, end } = getDateRange(rangeKey);
@@ -1986,14 +2050,13 @@
                 </div>
                 <div class="card">
                     <h3>All Transactions</h3>
-                    <ul class="summary-transaction-list">${transactionListHtml}</ul>
+                    <ul class="summary-transaction-list">${transactionListHtml || '<li style="text-align:center; padding: 20px 0; color: #666;">No transactions in this period.</li>'}</ul>
                 </div>
             `;
             document.getElementById('summary-date-range').textContent = `(${rangeKey.charAt(0).toUpperCase() + rangeKey.slice(1)})`;
             showPage('page-payment-summary');
         };
         document.getElementById('view-collection-summary-btn').addEventListener('click', renderSalesmanSummaryPage);
-        // --- END: New Payment Summary Logic ---
 
 
         // --- RE-ENGINEERED OFFER FLYER BUILDER LOGIC ---
