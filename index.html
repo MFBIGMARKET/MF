@@ -218,7 +218,7 @@
         .history-card-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
         .history-card-body.visible { max-height: 500px; transition: max-height 0.4s ease-in; }
         .history-item-table { width: 100%; border-collapse: collapse; }
-        .history-item-table th, .history-item-table td { padding: 8px 15px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+        .history-item-table th, .history-item-table td { padding: 8px 15px; text-align: left; border-bottom: 1px solid #f0f0f0; word-break: break-word; } /* Allow text wrapping */
         .history-item-table th { font-size: 0.8rem; color: #888; text-transform: uppercase; }
         .history-item-table td.numeric, .history-item-table th.numeric { text-align: right; }
         .history-item-table tr:last-child td { border-bottom: none; }
@@ -480,6 +480,30 @@
         .table-responsive-wrapper .report-table th {
             white-space: nowrap;
         }
+        
+        /* START: Styles for new payment summary page */
+        .summary-totals-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .summary-totals-card .kpi-card-small { margin-bottom: 0; }
+        .summary-totals-card .grand-total { grid-column: 1 / -1; }
+        .summary-transaction-list { list-style: none; padding: 0; margin-top: 20px; }
+        .summary-transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .summary-transaction-item:last-child { border-bottom: none; }
+        .summary-transaction-item .info .customer { font-weight: 500; }
+        .summary-transaction-item .info .details { font-size: 0.85rem; color: #666; margin-top: 4px; }
+        .summary-transaction-item .amount { font-weight: 600; font-size: 1.1rem; color: var(--primary-color); flex-shrink: 0; margin-left: 15px; }
+        /* END: Styles for new payment summary page */
+
 
         @media (max-width: 767px) {
             .dashboard-grid { grid-template-columns: 1fr; }
@@ -512,7 +536,7 @@
 </head>
 <body>
 
-    <!-- ... (All other page divs remain unchanged) ... -->
+    <!-- ... (All other page divs up to payment history remain unchanged) ... -->
     <div id="page-salesman-selection" class="page active">
         <div class="content">
             <h1>Select Role</h1>
@@ -657,7 +681,7 @@
             <div class="icon-button" style="width: 24px;"></div>
         </div>
         <div class="content">
-            <button id="share-collection-report-btn" class="button" style="margin-bottom: 20px;">Share Today's Report</button>
+            <button id="view-collection-summary-btn" class="button" style="margin-bottom: 20px;">View Summary Report</button>
             <div class="history-filters">
                 <div class="form-group">
                     <label for="payment-history-start">Start Date</label>
@@ -671,6 +695,21 @@
             <div id="payment-history-list"></div>
         </div>
     </div>
+
+    <!-- START: NEW PAYMENT SUMMARY PAGE -->
+    <div id="page-payment-summary" class="page">
+        <div class="header">
+             <button class="icon-button" id="back-to-payment-history-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Collection Summary</h1>
+            <div class="icon-button" style="width: 24px;"></div>
+        </div>
+        <div class="content" id="payment-summary-content">
+            <!-- Summary content will be rendered here by JS -->
+        </div>
+    </div>
+    <!-- END: NEW PAYMENT SUMMARY PAGE -->
 
     <!-- NEW Customer Profile & History Pages -->
     <div id="page-customer-profile" class="page">
@@ -1125,7 +1164,17 @@
             if (historyData.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No history found for the selected dates.</p>`; return; }
 
             container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => {
-                const itemDetailsHtml = isOrder ? (item.items || []).map(i => `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td></tr>`).join('') : '';
+                // --- START OF CHANGE: Add total calculation to order history items ---
+                const itemDetailsHtml = isOrder ? (item.items || []).map(i => {
+                    const total = i.quantity * i.sellingPrice;
+                    return `<tr>
+                                <td>${i.item.ItemName}</td>
+                                <td class="numeric">${i.quantity}</td>
+                                <td class="numeric">${formatCurrency(i.sellingPrice)}</td>
+                                <td class="numeric"><strong>${formatCurrency(total)}</strong></td>
+                            </tr>`
+                }).join('') : '';
+                // --- END OF CHANGE ---
                 return `
                     <div class="history-card">
                         <div class="history-card-header">
@@ -1143,9 +1192,16 @@
                         </div>
                         ${isOrder ? `
                         <div class="history-card-body" id="details-${item.id}">
-                            <div class="table-responsive-wrapper">
+                            <div class="table-responsive-wrapper" style="box-shadow:none; overflow-x:hidden;">
                                 <table class="history-item-table">
-                                    <thead><tr><th>Item</th><th class="numeric">Qty</th><th class="numeric">Price</th></tr></thead>
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th class="numeric">Qty</th>
+                                            <th class="numeric">Price</th>
+                                            <th class="numeric">Total</th>
+                                        </tr>
+                                    </thead>
                                     <tbody>${itemDetailsHtml}</tbody>
                                 </table>
                             </div>
@@ -1314,7 +1370,15 @@
                 container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`;
             } else {
                  container.innerHTML = customerOrders.map(item => {
-                    const itemDetailsHtml = (item.items || []).map(i => `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td></tr>`).join('');
+                    const itemDetailsHtml = (item.items || []).map(i => {
+                        const total = i.quantity * i.sellingPrice;
+                        return `<tr>
+                                    <td>${i.item.ItemName}</td>
+                                    <td class="numeric">${i.quantity}</td>
+                                    <td class="numeric">${formatCurrency(i.sellingPrice)}</td>
+                                    <td class="numeric"><strong>${formatCurrency(total)}</strong></td>
+                                </tr>`
+                    }).join('');
                     return `
                         <div class="history-card">
                             <div class="history-card-header">
@@ -1328,9 +1392,16 @@
                                 </div>
                             </div>
                             <div class="history-card-body" id="details-${item.id}">
-                                <div class="table-responsive-wrapper">
+                                <div class="table-responsive-wrapper" style="box-shadow:none; overflow-x:hidden;">
                                 <table class="history-item-table">
-                                    <thead><tr><th>Item</th><th class="numeric">Qty</th><th class="numeric">Price</th></tr></thead>
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th class="numeric">Qty</th>
+                                            <th class="numeric">Price</th>
+                                            <th class="numeric">Total</th>
+                                        </tr>
+                                    </thead>
                                     <tbody>${itemDetailsHtml}</tbody>
                                 </table>
                                 </div>
@@ -1497,6 +1568,10 @@
         document.getElementById('back-from-settings-btn').addEventListener('click', () => { if(appState.salesman === 'ADMIN') { showPage('page-admin-dashboard'); } else { showPage('page-main-view'); } });
         document.getElementById('back-to-settings-btn').addEventListener('click', () => { showPage('page-settings'); });
         
+        // --- START: New back button listener ---
+        document.getElementById('back-to-payment-history-btn').addEventListener('click', () => showPage('page-payment-history'));
+        // --- END: New back button listener ---
+
         // --- Department Tab & Item Search Logic ---
         document.getElementById('department-filter').addEventListener('change', e => {
             appState.activeDepartment = e.target.value;
@@ -1677,9 +1752,7 @@
         const handleHistoryClick = (e) => {
              const deleteBtn = e.target.closest('.delete-history-btn');
              const printBtn = e.target.closest('.print-history-btn');
-             // --- START OF FIX ---
              const toggleBtn = e.target.closest('.toggle-details');
-             // --- END OF FIX ---
 
              if (deleteBtn) {
                 const type = deleteBtn.dataset.type;
@@ -1711,7 +1784,6 @@
                 }
             } else if (printBtn) {
                 printPackingSlip(printBtn.dataset.id);
-            // --- START OF FIX ---
             } else if (toggleBtn) {
                 e.preventDefault();
                 const targetElement = document.getElementById(toggleBtn.dataset.target);
@@ -1719,7 +1791,6 @@
                     targetElement.classList.toggle('visible');
                 }
             }
-            // --- END OF FIX ---
         };
         
         document.getElementById('order-history-list').addEventListener('click', handleHistoryClick);
@@ -1969,8 +2040,91 @@
         const renderEditDataList = (filter = '') => { const isCustomers = appState.editing.type === 'customers'; const data = isCustomers ? appState.customers : appState.items; const container = document.getElementById('edit-data-list'); document.getElementById('edit-data-header').textContent = isCustomers ? 'Edit Customers' : 'Edit Items'; const filtered = data.filter(item => ((isCustomers ? item.Customer : item.ItemName) || '').toLowerCase().includes(filter.toLowerCase())); container.innerHTML = filtered.map(item => `<div class="list-item"><span class="info">${isCustomers ? item.Customer : item.ItemName}</span><button class="list-item-action" data-id="${item.id}">Edit</button></div>`).join(''); };
         document.getElementById('edit-data-list').addEventListener('click', (e) => { if(e.target.matches('.list-item-action')) { appState.editing.id = e.target.dataset.id; openEditModal(); } });
         const openEditModal = () => { const isCustomers = appState.editing.type === 'customers'; const item = (isCustomers ? appState.customers : appState.items).find(i => i.id === appState.editing.id); if (!item) return; const modalBody = document.getElementById('edit-modal-body'); document.getElementById('edit-modal-title').textContent = `Edit ${isCustomers ? 'Customer' : 'Item'}`; if (isCustomers) { modalBody.innerHTML = `<div class="form-group"><label>Customer Name</label><input type="text" id="edit-Customer" value="${item.Customer}"></div><div class="form-group"><label>Salesman</label><select id="edit-Salesman"><option>UNNI</option><option>RIYAS</option></select></div><div class="form-group"><label>Phone</label><input type="text" id="edit-Phone" value="${item.Phone || ''}"></div>`; document.getElementById('edit-Salesman').value = item.Salesman; } else { modalBody.innerHTML = `<div class="form-group"><label>Item Name</label><input type="text" id="edit-ItemName" value="${item.ItemName}"></div><div class="form-group"><label>Cost Rate</label><input type="number" id="edit-CostRate" value="${item.CostRate}"></div><div class="form-group"><label>Price 1</label><input type="number" id="edit-Price1" value="${item.Price1}"></div><div class="form-group"><label>Price 2</label><input type="number" id="edit-Price2" value="${item.Price2}"></div><div class="form-group"><label>Price 3</label><input type="number" id="edit-Price3" value="${item.Price3}"></div>`; } editModal.style.display = 'flex'; };
-        const closeEditModal = () => { editModal.style.display = 'none'; };
+        
+        // --- START OF CHANGE: New Function for Summary Page ---
+        const renderSalesmanSummaryPage = () => {
+            const startInput = document.getElementById('payment-history-start').value;
+            const endInput = document.getElementById('payment-history-end').value;
+            
+            let salesmanPayments = appState.payments[appState.salesman] || [];
+
+            if (startInput) {
+                const startDate = new Date(startInput);
+                startDate.setHours(0, 0, 0, 0);
+                salesmanPayments = salesmanPayments.filter(item => new Date(item.date) >= startDate);
+            }
+            if (endInput) {
+                const endDate = new Date(endInput);
+                endDate.setHours(23, 59, 59, 999);
+                salesmanPayments = salesmanPayments.filter(item => new Date(item.date) <= endDate);
+            }
+
+            if (salesmanPayments.length === 0) {
+                alert('No payments found for the selected date range.');
+                return;
+            }
+
+            let totalCash = 0;
+            let totalUPI = 0;
+
+            salesmanPayments.forEach(p => {
+                if (p.method === 'Cash') {
+                    totalCash += p.amount;
+                } else if (p.method === 'UPI') {
+                    totalUPI += p.amount;
+                }
+            });
+            const grandTotal = totalCash + totalUPI;
+            
+            salesmanPayments.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            const transactionListHtml = salesmanPayments.map(p => `
+                <li class="summary-transaction-item">
+                    <div class="info">
+                        <div class="customer">${p.customer.Customer}</div>
+                        <div class="details">${p.method} &bull; ${new Date(p.date).toLocaleString()}</div>
+                    </div>
+                    <div class="amount">${formatCurrency(p.amount)}</div>
+                </li>
+            `).join('');
+
+            const summaryPageContent = document.getElementById('payment-summary-content');
+            summaryPageContent.innerHTML = `
+                <div class="card">
+                    <div class="summary-totals-card">
+                        <div class="kpi-card-small grand-total">
+                            <div class="value">${formatCurrency(grandTotal)}</div>
+                            <div class="label">Total Collected</div>
+                        </div>
+                        <div class="kpi-card-small">
+                            <div class="value">${formatCurrency(totalCash)}</div>
+                            <div class="label">Total Cash</div>
+                        </div>
+                        <div class="kpi-card-small">
+                            <div class="value">${formatCurrency(totalUPI)}</div>
+                            <div class="label">Total UPI</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>All Transactions</h3>
+                    <ul class="summary-transaction-list">
+                        ${transactionListHtml}
+                    </ul>
+                </div>
+            `;
+            
+            showPage('page-payment-summary');
+        };
+
+        const closeEditModal = () => { 
+            editModal.style.display = 'none';
+        };
         document.getElementById('close-edit-modal-btn').addEventListener('click', closeEditModal);
+
+        document.getElementById('view-collection-summary-btn').addEventListener('click', renderSalesmanSummaryPage);
+        // --- END OF CHANGE ---
+
         document.getElementById('save-edit-btn').addEventListener('click', async () => { const isCustomers = appState.editing.type === 'customers'; const id = appState.editing.id; let updatedData = {}; if (isCustomers) { updatedData = { Customer: document.getElementById('edit-Customer').value, Salesman: document.getElementById('edit-Salesman').value, Phone: document.getElementById('edit-Phone').value }; } else { const fields = ['ItemName', 'CostRate', 'Price1', 'Price2', 'Price3']; fields.forEach(field => { const input = document.getElementById(`edit-${field}`); updatedData[field] = input.type === 'number' ? parseFloat(input.value) : input.value; }); } await updateDoc(doc(db, isCustomers ? 'customers' : 'items', id), updatedData); closeEditModal(); alert('Record updated successfully!'); });
         
         // --- CRM MODULE LOGIC ---
