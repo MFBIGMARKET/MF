@@ -615,18 +615,46 @@
         }
         .summary-totals-card .kpi-card-small { margin-bottom: 0; }
         .summary-totals-card .grand-total { grid-column: 1 / -1; }
-        .summary-transaction-list { list-style: none; padding: 0; }
-        .summary-transaction-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 15px 5px;
-            border-bottom: 1px solid var(--border-color);
+        
+        /* NEW: Accountant-friendly summary table */
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed; /* Prevents table from overflowing */
         }
-        .summary-transaction-item:last-child { border-bottom: none; }
-        .summary-transaction-item .info .customer { font-weight: 500; }
-        .summary-transaction-item .info .details { font-size: 0.85rem; color: #666; margin-top: 4px; }
-        .summary-transaction-item .amount { font-weight: 600; font-size: 1.1rem; color: var(--primary-color); flex-shrink: 0; margin-left: 15px; }
+        .summary-table th, .summary-table td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        .summary-table th {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #888;
+            background-color: #f8f9fa;
+        }
+        .summary-table td {
+             font-size: 0.9rem;
+        }
+        .summary-table .col-customer {
+            width: 50%;
+            word-break: break-word; /* Crucial for long names on small screens */
+            font-weight: 500;
+        }
+        .summary-table .col-mode {
+            width: 25%;
+        }
+        .summary-table .col-amount {
+            width: 25%;
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .summary-table th.col-amount {
+            text-align: right;
+        }
 
 
         @media (max-width: 767px) {
@@ -2153,12 +2181,7 @@
                     return pDate >= start && pDate <= end;
                 });
             }
-
-            if (salesmanPayments.length === 0) {
-                alert('No payments found for the selected period.');
-                return;
-            }
-
+            
             let totalCash = 0;
             let totalUPI = 0;
             salesmanPayments.forEach(p => {
@@ -2167,17 +2190,15 @@
             });
             const grandTotal = totalCash + totalUPI;
             
-            salesmanPayments.sort((a,b) => new Date(b.date) - new Date(a.date));
+            salesmanPayments.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            const transactionListHtml = salesmanPayments.map(p => `
-                <li class="summary-transaction-item">
-                    <div class="info">
-                        <div class="customer">${p.customer.Customer}</div>
-                        <div class="details">${p.method} &bull; ${new Date(p.date).toLocaleString()}</div>
-                    </div>
-                    <div class="amount">${formatCurrency(p.amount)}</div>
-                </li>
-            `).join('');
+            const transactionRowsHtml = salesmanPayments.length > 0 ? salesmanPayments.map(p => `
+                <tr>
+                    <td class="col-customer">${p.customer.Customer}</td>
+                    <td class="col-mode">${p.method}</td>
+                    <td class="col-amount">${formatCurrency(p.amount)}</td>
+                </tr>
+            `).join('') : `<tr><td colspan="3" style="text-align:center; padding: 20px 0; color: #666;">No transactions in this period.</td></tr>`;
 
             const summaryPageContent = document.getElementById('payment-summary-content');
             summaryPageContent.innerHTML = `
@@ -2190,7 +2211,20 @@
                 </div>
                 <div class="card">
                     <h3>All Transactions</h3>
-                    <ul class="summary-transaction-list">${transactionListHtml || '<li style="text-align:center; padding: 20px 0; color: #666;">No transactions in this period.</li>'}</ul>
+                    <div class="table-responsive-wrapper">
+                        <table class="summary-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-customer">Customer</th>
+                                    <th class="col-mode">Mode</th>
+                                    <th class="col-amount">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${transactionRowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             `;
             document.getElementById('summary-date-range').textContent = `(${rangeKey.charAt(0).toUpperCase() + rangeKey.slice(1)})`;
