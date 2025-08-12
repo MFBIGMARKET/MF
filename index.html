@@ -64,7 +64,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         html, body { 
             height: 100%; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; 
             background-color: var(--light-bg); 
             color: var(--text-color); 
             overscroll-behavior-y: contain;
@@ -224,22 +224,23 @@
         .history-action-btn svg { width: 20px; height: 20px; }
         .delete-history-btn svg { stroke: var(--danger-color); }
         .print-history-btn svg { stroke: var(--secondary-color); }
+
+        /* REFINED: Date range filter pills */
         .date-range-filter {
             display: flex;
-            gap: 8px;
+            gap: 6px; /* Reduced gap */
             margin-bottom: 20px;
-            overflow-x: auto;
-            padding-bottom: 8px; /* For scrollbar */
-            -webkit-overflow-scrolling: touch;
         }
         .date-range-filter button {
-            flex-shrink: 0;
+            flex: 1; /* Make buttons share space equally */
+            padding: 8px 5px; /* Adjust padding for smaller size */
+            font-size: 0.8rem; /* Reduce font size */
+            white-space: nowrap; /* Prevent text from wrapping */
+            text-align: center;
             background-color: #fff;
             color: var(--primary-color);
             border: 1px solid var(--border-color);
-            padding: 8px 16px;
             border-radius: 50px;
-            font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -250,7 +251,6 @@
             border-color: var(--secondary-color);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
 
         .payment-method-options { display: flex; gap: 10px; margin: 15px 0; }
         .payment-method-option { flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
@@ -1513,6 +1513,7 @@
             contentEl.innerHTML=`
                 <div class="date-range-filter" id="admin-date-filter">
                     <button data-range="today" ${appState.reporting.dateRange==='today'?'class="active"':''}>Today</button>
+                    <button data-range="yesterday" ${appState.reporting.dateRange==='yesterday'?'class="active"':''}>Yesterday</button>
                     <button data-range="week" ${appState.reporting.dateRange==='week'?'class="active"':''}>This Week</button>
                     <button data-range="month" ${appState.reporting.dateRange==='month'?'class="active"':''}>This Month</button>
                     <button data-range="all" ${appState.reporting.dateRange==='all'?'class="active"':''}>All Time</button>
