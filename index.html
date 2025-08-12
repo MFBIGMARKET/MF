@@ -86,6 +86,11 @@
         .footer-button svg { width: 26px; height: 26px; margin-bottom: 2px; }
 
         .card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); padding: 16px; margin-bottom: 16px; }
+        .card h3 {
+            margin: 0 0 15px 0;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
         
         .button { display: inline-block; width: 100%; padding: 15px; font-size: 1.1rem; font-weight: 600; text-align: center; color: var(--light-text-color); background: linear-gradient(45deg, var(--secondary-color), var(--primary-color)); border: none; border-radius: var(--border-radius); cursor: pointer; transition: opacity 0.3s ease, transform 0.1s ease; box-shadow: 0 4px 10px rgba(0, 95, 115, 0.25); }
         .button:active { transform: scale(0.98); opacity: 0.9; }
@@ -229,6 +234,7 @@
         .date-range-filter {
             display: flex;
             gap: 6px; /* Reduced gap */
+            margin-top: 5px; /* Added extra space from top */
             margin-bottom: 20px;
         }
         .date-range-filter button {
@@ -309,6 +315,7 @@
         .search-toggle-buttons {
             display: flex;
             gap: 10px;
+            margin-top: 15px; /* Added space below "Add Item" h3 */
             margin-bottom: 15px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
@@ -475,7 +482,10 @@
         .kpi-card-small .value { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); line-height: 1.2; }
         .kpi-card-small .label { font-size: 0.85rem; color: #6c757d; margin-top: 5px; }
         .data-list-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); padding: 20px; display: flex; flex-direction: column; }
-        .data-list-card h3 { color: var(--primary-color); margin: 0 0 15px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; font-size: 1.2rem; }
+        .data-list-card h3 { 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 10px; 
+        }
         .data-list-container, .payment-summary-list { list-style: none; padding: 0; margin: 0; }
         .data-list-container { max-height: 300px; overflow-y: auto; }
         .data-list-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 5px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background-color 0.2s; }
@@ -1510,13 +1520,25 @@
             const collectionsBreakdownHtml=Object.entries(data.collectionsBySalesman).map(([salesman,d])=>`<div class="salesman-header">${salesman}</div><ul class="salesman-breakdown"><li><span>Cash</span> <span>${formatCurrency(d.cash)}</span></li><li><span>UPI</span> <span>${formatCurrency(d.upi)}</span></li><li><span>Sub-Total</span> <span>${formatCurrency(d.cash+d.upi)}</span></li></ul>`).join("");
             const collectionsHtml=Object.keys(data.collectionsBySalesman).length>0?collectionsBreakdownHtml:'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No collections today.</li>';
 
-            contentEl.innerHTML=`
-                <div class="date-range-filter" id="admin-date-filter">
+            let dateFilterButtons = `
+                <button data-range="today" ${appState.reporting.dateRange==='today'?'class="active"':''}>Today</button>
+                <button data-range="week" ${appState.reporting.dateRange==='week'?'class="active"':''}>This Week</button>
+                <button data-range="month" ${appState.reporting.dateRange==='month'?'class="active"':''}>This Month</button>
+                <button data-range="all" ${appState.reporting.dateRange==='all'?'class="active"':''}>All Time</button>`;
+            
+            // Add Yesterday button if it fits, for a total of 5 buttons
+            if (window.innerWidth > 400) {
+                 dateFilterButtons = `
                     <button data-range="today" ${appState.reporting.dateRange==='today'?'class="active"':''}>Today</button>
                     <button data-range="yesterday" ${appState.reporting.dateRange==='yesterday'?'class="active"':''}>Yesterday</button>
                     <button data-range="week" ${appState.reporting.dateRange==='week'?'class="active"':''}>This Week</button>
                     <button data-range="month" ${appState.reporting.dateRange==='month'?'class="active"':''}>This Month</button>
-                    <button data-range="all" ${appState.reporting.dateRange==='all'?'class="active"':''}>All Time</button>
+                    <button data-range="all" ${appState.reporting.dateRange==='all'?'class="active"':''}>All Time</button>`;
+            }
+
+            contentEl.innerHTML=`
+                <div class="date-range-filter" id="admin-date-filter">
+                    ${dateFilterButtons}
                 </div>
                 <div class="dashboard-grid">
                     <div class="kpi-row">
