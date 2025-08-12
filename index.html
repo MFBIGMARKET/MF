@@ -64,7 +64,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         html, body { 
             height: 100%; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; 
             background-color: var(--light-bg); 
             color: var(--text-color); 
             overscroll-behavior-y: contain;
@@ -305,8 +305,41 @@
             border-radius: 50px;
         }
 
-        #item-search-container { position: relative; }
-        #item-search-results, #offer-item-search-results, #offer-item-search-results-bulk {
+        /* NEW: Order page search toggle styles */
+        .search-toggle-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .toggle-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+            color: var(--primary-color);
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .toggle-btn.active {
+            background-color: var(--secondary-color);
+            color: #fff;
+            border-color: var(--secondary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .search-view {
+            display: none;
+        }
+        .search-view.active {
+            display: block;
+        }
+
+        #salesman-item-search-results, #item-search-results, #offer-item-search-results, #offer-item-search-results-bulk {
             position: absolute;
             top: 100%;
             left: 0;
@@ -320,7 +353,7 @@
             z-index: 1000;
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         }
-        #item-search-results { top: calc(100% - 12px); }
+        /* End of search toggle styles */
 
         .search-result-item { padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .search-result-item:hover { background-color: var(--light-bg); }
@@ -695,17 +728,35 @@
         <div class="content">
             <div id="order-item-selection" class="card">
                 <h3>Add Item</h3>
-                <div class="form-group">
-                    <label for="department-filter">Filter by Department</label>
-                    <select id="department-filter"></select>
+                
+                <!-- NEW: Search Toggler -->
+                <div class="search-toggle-buttons">
+                    <button class="toggle-btn active" data-search-type="salesman">Salesman List</button>
+                    <button class="toggle-btn" data-search-type="master">Master List</button>
                 </div>
-                <div id="item-search-container">
-                    <div class="search-bar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="item-search-input" placeholder="Search for an item...">
+
+                <!-- Salesman Search Container -->
+                <div id="salesman-search-view" class="search-view active">
+                    <div style="position: relative;">
+                        <div class="search-bar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" id="salesman-item-search-input" placeholder="Search salesman list...">
+                        </div>
+                        <div id="salesman-item-search-results"></div>
                     </div>
-                    <div id="item-search-results"></div>
                 </div>
+
+                <!-- Master Search Container -->
+                <div id="master-search-view" class="search-view">
+                    <div style="position: relative;">
+                        <div class="search-bar">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" id="item-search-input" placeholder="Search all items...">
+                        </div>
+                        <div id="item-search-results"></div>
+                    </div>
+                </div>
+
                 <div id="item-details-form" style="display: none; margin-top: 15px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <input type="number" id="item-quantity" placeholder="Quantity" min="1" style="flex-grow: 1; margin-bottom: 0;">
@@ -849,8 +900,15 @@
                  <div class="file-upload-wrapper">
                     <div class="file-upload-area">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        <p>Upload Item CSV</p>
+                        <p>Upload Item (Master) CSV</p>
                         <input type="file" id="item-file-upload" accept=".csv">
+                    </div>
+                </div>
+                 <div class="file-upload-wrapper">
+                    <div class="file-upload-area">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <p>Upload Salesman Item List CSV</p>
+                        <input type="file" id="salesman-item-file-upload" accept=".csv">
                     </div>
                 </div>
             </div>
@@ -1042,12 +1100,12 @@
         
         let appState = {
             salesman: null, customer: null, items: [], customers: [],
+            salesmanItems: [], // NEW: For curated salesman item list
             orders: {}, payments: {}, currentOrder: [], selectedItem: null, selectedPriceOption: null,
             currentPayment: {}, currentView: 'customers', editing: { type: null, id: null, itemIndex: null },
             reporting: { salesman: null, customer: null, dateRange: 'today' },
             shareableFlyerBlob: null,
             bulkFlyerBlob: null,
-            activeDepartment: 'All',
             flyerBuilder: { items: [], editingIndex: null },
         };
 
@@ -1066,6 +1124,15 @@
                 appState.items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
                 if (appState.salesman === 'ADMIN' && document.getElementById('page-admin-dashboard').classList.contains('active')) {
                    renderAdminDashboard();
+                }
+            });
+            // NEW: Listener for salesman items list
+            onSnapshot(doc(db, "salesman_items", "sharedList"), (docSnap) => {
+                if (docSnap.exists()) {
+                    appState.salesmanItems = docSnap.data().itemNames || [];
+                } else {
+                    console.log("Salesman item list not found.");
+                    appState.salesmanItems = [];
                 }
             });
             onSnapshot(query(collection(db, "orders")), (snapshot) => { 
@@ -1158,27 +1225,47 @@
             ).join('');
         };
         
-        const renderDepartmentFilter = () => {
-            const departments = ['All', ...[...new Set(appState.items.map(item => item.Department).filter(Boolean))].sort()];
-            const container = document.getElementById('department-filter');
-            container.innerHTML = departments.map(dept => `
-                <option value="${dept}">${dept}</option>
-            `).join('');
-        };
+        // NEW: Render Salesman specific item search results
+        const renderSalesmanItemSearchResults = (filter = '') => {
+            const cont = document.getElementById('salesman-item-search-results');
+            if (!filter) {
+                cont.innerHTML = '';
+                return;
+            }
 
+            const lowerFilter = filter.toLowerCase();
+            
+            // 1. Filter the names from salesman list
+            const filteredNames = appState.salesmanItems.filter(name => name.toLowerCase().includes(lowerFilter));
+
+            // 2. For each name, find the full item object from the master list
+            const searchResults = filteredNames.map(name => {
+                return appState.items.find(item => item.ItemName === name);
+            }).filter(Boolean); // Filter out any items not found in master list
+
+            cont.innerHTML = searchResults
+                .slice(0, 50)
+                .map(i => `<div class="search-result-item" data-item-code="${i.Code}">
+                    <span>${i.ItemName}</span>
+                    <span class="item-stock" style="color: ${i.Clstock > 10 ? 'var(--success-color)' : (i.Clstock > 0 ? 'var(--warning-color)' : 'var(--danger-color)')};">
+                        Stock: ${i.Clstock}
+                    </span>
+                </div>`).join('');
+        };
+        
+        // UPDATED: Render master list search results
         const renderItemSearchResults = (filter = '', resultsContainerId = 'item-search-results') => { 
             const cont = document.getElementById(resultsContainerId); 
             if (!filter) { cont.innerHTML = ''; return; }
             
-            const deptFilter = item => appState.activeDepartment === 'All' || item.Department === appState.activeDepartment;
             const nameFilter = item => (item.ItemName || '').toLowerCase().includes(filter.toLowerCase());
             
             cont.innerHTML = appState.items
-                .filter(i => (resultsContainerId !== 'item-search-results' ? nameFilter(i) : deptFilter(i) && nameFilter(i)))
+                .filter(i => (resultsContainerId !== 'item-search-results' ? nameFilter(i) : nameFilter(i)))
                 .slice(0, 50)
                 .map(i => `<div class="search-result-item" data-item-code="${i.Code}">
                     <span>${i.ItemName}</span>
-                    <span class="item-stock" style="color: ${i.Clstock > 10 ? '#2a9d8f' : (i.Clstock > 0 ? '#ee9b00' : '#e63946')};">
+                    <span class="item-stock" style="color: ${i.Clstock > 10 ? 'var(--success-color)' : (i.Clstock > 0 ? 'var(--warning-color)' : 'var(--danger-color)')};">
                         Stock: ${i.Clstock}
                     </span>
                 </div>`).join('');
@@ -1638,10 +1725,10 @@
             appState.selectedItem = null;
             appState.selectedPriceOption = null;
             appState.editing.itemIndex = null;
-            appState.activeDepartment = 'All';
-            renderDepartmentFilter();
             document.getElementById('item-search-input').value = '';
             document.getElementById('item-search-results').innerHTML = '';
+            document.getElementById('salesman-item-search-input').value = '';
+            document.getElementById('salesman-item-search-results').innerHTML = '';
             document.getElementById('item-quantity').value = '';
             document.getElementById('item-details-form').style.display = 'none';
             document.querySelectorAll('.price-option').forEach(el => el.classList.remove('selected'));
@@ -1711,7 +1798,6 @@
             const pageId = isOrder ? 'page-order-history' : 'page-payment-history';
             const filterId = isOrder ? 'order-history-date-filter' : 'payment-history-date-filter';
             
-            // Set default date range on the correct hidden inputs and render
             handleDateRangeClick(document.querySelector(`#${filterId} button[data-range="today"]`), isOrder);
             showPage(pageId);
         });
@@ -1774,27 +1860,40 @@
         document.getElementById('back-to-settings-btn').addEventListener('click', () => { showPage('page-settings'); });
         
         document.getElementById('back-to-payment-history-btn').addEventListener('click', () => showPage('page-payment-history'));
-
-        // --- Department Tab & Item Search Logic ---
-        document.getElementById('department-filter').addEventListener('change', e => {
-            appState.activeDepartment = e.target.value;
-            const searchInput = document.getElementById('item-search-input');
-            renderItemSearchResults(searchInput.value, 'item-search-results');
-            searchInput.focus();
-        });
         
+        // --- Order Page Search Logic ---
+        document.querySelector('.search-toggle-buttons').addEventListener('click', e => {
+            if (e.target.matches('.toggle-btn')) {
+                const searchType = e.target.dataset.searchType;
+                document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                document.querySelectorAll('.search-view').forEach(view => view.classList.remove('active'));
+                document.getElementById(`${searchType}-search-view`).classList.add('active');
+                document.getElementById(`${searchType === 'salesman' ? 'salesman-item-search-input' : 'item-search-input'}`).focus();
+            }
+        });
+
+        document.getElementById('salesman-item-search-input').addEventListener('input', (e) => renderSalesmanItemSearchResults(e.target.value));
         document.getElementById('item-search-input').addEventListener('input', (e) => renderItemSearchResults(e.target.value, 'item-search-results'));
         
-        document.getElementById('item-search-results').addEventListener('click', (e) => { 
-            const itemElement = e.target.closest('.search-result-item');
-            if (itemElement) { 
-                const code = itemElement.dataset.itemCode; 
-                appState.selectedItem = appState.items.find(i => i.Code == code); 
-                document.getElementById('item-search-input').value = appState.selectedItem.ItemName; 
-                document.getElementById('item-search-results').innerHTML = ''; 
-                renderSelectedItemDetails(); 
+        const handleItemSelectionFromSearch = (itemElement) => {
+            if (itemElement) {
+                const code = itemElement.dataset.itemCode;
+                appState.selectedItem = appState.items.find(i => i.Code == code);
+                document.getElementById('item-search-input').value = '';
+                document.getElementById('salesman-item-search-input').value = '';
+                document.getElementById('item-search-results').innerHTML = '';
+                document.getElementById('salesman-item-search-results').innerHTML = '';
+                renderSelectedItemDetails();
                 document.getElementById('item-quantity').focus();
-            } 
+            }
+        };
+
+        document.getElementById('salesman-item-search-results').addEventListener('click', (e) => {
+            handleItemSelectionFromSearch(e.target.closest('.search-result-item'));
+        });
+        document.getElementById('item-search-results').addEventListener('click', (e) => { 
+            handleItemSelectionFromSearch(e.target.closest('.search-result-item'));
         });
 
         document.querySelector('.price-options').addEventListener('click', e => { const opt = e.target.closest('.price-option'); if (!opt) return; document.querySelectorAll('.price-option').forEach(el => el.classList.remove('selected')); opt.classList.add('selected'); appState.selectedPriceOption = opt.id; const cIn = document.getElementById('custom-price-input'), cMar = document.getElementById('custom-price-margin'); cIn.style.display = (opt.id === 'custom-price-option') ? 'block' : 'none'; if (opt.id === 'custom-price-option') cIn.focus(); else cMar.textContent = ''; });
@@ -1819,7 +1918,7 @@
             appState.currentOrder.push({ item: appState.selectedItem, quantity: qty, sellingPrice: price });
             resetOrderForm();
             renderOrderSummary();
-            document.getElementById('item-search-input').focus();
+            document.getElementById('salesman-item-search-input').focus(); // Default to salesman list
         });
 
         document.getElementById('order-items-list').addEventListener('click', e => {
@@ -1833,11 +1932,7 @@
                 const itemToEdit = appState.currentOrder[index];
                 appState.selectedItem = itemToEdit.item;
                 
-                // Set active department and update tabs
-                appState.activeDepartment = itemToEdit.item.Department || 'All';
-                document.getElementById('department-filter').value = appState.activeDepartment;
-
-                document.getElementById('item-search-input').value = itemToEdit.item.ItemName;
+                document.getElementById('salesman-item-search-input').value = itemToEdit.item.ItemName;
                 document.getElementById('item-quantity').value = itemToEdit.quantity;
                 document.getElementById('item-details-form').style.display = 'block';
                 document.querySelectorAll('.price-option').forEach(el => el.classList.remove('selected'));
@@ -2335,8 +2430,33 @@
             }; 
             reader.readAsText(file); 
         };
+
+        // NEW: Upload for Salesman Items CSV
+        const uploadSalesmanItemsCSV = (file) => {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const data = parseCSV(event.target.result);
+                if (data && data.length > 0 && data[0].ItemName) {
+                    const itemNames = data.map(row => row.ItemName.trim()).filter(Boolean);
+                    try {
+                        const docRef = doc(db, "salesman_items", "sharedList");
+                        await setDoc(docRef, { itemNames: itemNames });
+                        alert(`${itemNames.length} salesman items uploaded successfully.`);
+                    } catch (err) {
+                        alert('Error uploading salesman items to database.');
+                        console.error(err);
+                    }
+                } else {
+                    alert("CSV Error: 'ItemName' column not found or file is empty.");
+                }
+            };
+            reader.readAsText(file);
+        };
+        
         document.getElementById('customer-file-upload').addEventListener('change', (e) => { uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
         document.getElementById('item-file-upload').addEventListener('change', (e) => { uploadCSV(e.target.files[0], 'items'); e.target.value = ''; });
+        document.getElementById('salesman-item-file-upload').addEventListener('change', (e) => { uploadSalesmanItemsCSV(e.target.files[0]); e.target.value = ''; });
         
         const editModal = document.getElementById('edit-modal');
         document.getElementById('edit-customers-btn').addEventListener('click', () => { appState.editing.type = 'customers'; showPage('page-edit-data'); renderEditDataList(); });
