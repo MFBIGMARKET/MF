@@ -352,7 +352,7 @@
             display: block;
         }
 
-        #salesman-item-search-results, #item-search-results, #offer-item-search-results, #offer-item-search-results-bulk {
+        #salesman-item-search-results, #item-search-results, #offer-item-search-results, #offer-item-search-results-bulk, #info-salesman-item-search-results, #info-item-search-results {
             position: absolute;
             top: 100%;
             left: 0;
@@ -725,6 +725,45 @@
         .print-totals-footer div.grand-total { font-weight: 700; font-size: 14pt; border-top: 1px solid #333; padding-top: 8px; }
         /* --- END: PAYMENT SUMMARY PRINT STYLES --- */
 
+        /* --- START: PRODUCT INFO PAGE STYLES --- */
+        #product-info-display-card {
+            margin-top: 20px;
+        }
+        #product-info-display-card h3 {
+            font-size: 1.3rem;
+            word-break: break-word;
+        }
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .price-item {
+            text-align: center;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+        .price-item .label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #6c757d;
+        }
+        .price-item .value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        .stock-info {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+        /* --- END: PRODUCT INFO PAGE STYLES --- */
+
+
         @media (max-width: 767px) {
             .dashboard-grid { grid-template-columns: 1fr; }
             .summary-totals-card { grid-template-columns: 1fr; }
@@ -773,6 +812,9 @@
             </button>
             <h1 id="main-view-header">Customers</h1>
             <div class="header-actions">
+                <button class="icon-button" id="product-info-icon-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                </button>
                 <button class="icon-button" id="history-icon-btn">
                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
                 </button>
@@ -981,6 +1023,46 @@
             <div id="customer-history-list"></div>
         </div>
     </div>
+
+    <!-- NEW: Product Info Page -->
+    <div id="page-product-info" class="page">
+        <div class="header">
+             <button class="icon-button" id="back-to-main-from-info-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Product Info</h1>
+            <div class="icon-button" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+            <div class="card">
+                <h3>Search Item</h3>
+                <div class="search-toggle-buttons">
+                    <button class="toggle-btn active" data-search-type="info-salesman">Salesman List</button>
+                    <button class="toggle-btn" data-search-type="info-master">Master List</button>
+                </div>
+                <div id="info-salesman-search-view" class="search-view active">
+                    <div style="position: relative;">
+                        <div class="search-bar">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" id="info-salesman-item-search-input" placeholder="Search salesman list...">
+                        </div>
+                        <div id="info-salesman-item-search-results"></div>
+                    </div>
+                </div>
+                <div id="info-master-search-view" class="search-view">
+                    <div style="position: relative;">
+                        <div class="search-bar">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" id="info-item-search-input" placeholder="Search all items...">
+                        </div>
+                        <div id="info-item-search-results"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="product-info-display-card" class="card" style="display: none;"></div>
+        </div>
+    </div>
+
 
     <div id="page-settings" class="page">
         <div class="header">
@@ -1281,8 +1363,6 @@
             
             const closeModal = () => {
                 modal.classList.remove('active');
-                // Use { once: true } to automatically remove the event listener after it's called
-                closeBtn.removeEventListener('click', closeModal);
                 if (onCloseCallback && typeof onCloseCallback === 'function') {
                     onCloseCallback();
                 }
@@ -1390,15 +1470,15 @@
             if (filteredCustomers.length === 0) { container.innerHTML = `<div class="card" style="text-align: center;">No customers found.</div>`; return; }
             container.innerHTML = filteredCustomers.map(c => `<div class="list-item"><span class="info">${c.Customer}</span><button class="list-item-action" data-customer='${JSON.stringify(c)}'>Collect</button></div>`).join('');
         };
-        const renderSalesmanItemSearchResults = (filter = '') => {
-            const cont = document.getElementById('salesman-item-search-results');
+        const renderSalesmanItemSearchResults = (filter = '', resultsContainerId) => {
+            const cont = document.getElementById(resultsContainerId);
             if (!filter) { cont.innerHTML = ''; return; }
             const lowerFilter = filter.toLowerCase();
             const filteredNames = appState.salesmanItems.filter(name => name.toLowerCase().includes(lowerFilter));
             const searchResults = filteredNames.map(name => appState.items.find(item => item.ItemName === name)).filter(Boolean);
             cont.innerHTML = searchResults.slice(0, 50).map(i => `<div class="search-result-item" data-item-code="${i.Code}"><span>${i.ItemName}</span><span class="item-stock" style="color: ${i.Clstock > 10 ? 'var(--success-color)' : (i.Clstock > 0 ? 'var(--warning-color)' : 'var(--danger-color)')};">Stock: ${i.Clstock}</span></div>`).join('');
         };
-        const renderItemSearchResults = (filter = '', resultsContainerId = 'item-search-results') => { 
+        const renderItemSearchResults = (filter = '', resultsContainerId) => { 
             const cont = document.getElementById(resultsContainerId); 
             if (!filter) { cont.innerHTML = ''; return; }
             const nameFilter = item => (item.ItemName || '').toLowerCase().includes(filter.toLowerCase());
@@ -1494,6 +1574,10 @@
         document.querySelectorAll('.footer-button').forEach(btn => btn.addEventListener('click', e => { const current = e.currentTarget; document.querySelectorAll('.footer-button').forEach(b => b.classList.remove('active')); current.classList.add('active'); customerView.style.display = 'none'; paymentView.style.display = 'none'; appState.currentView = current.id === 'orders-tab-btn' ? 'customers' : 'payments'; renderCurrentView(); if (appState.currentView === 'customers') { customerView.style.display = 'block';} else { paymentView.style.display = 'block'; } }));
         
         document.getElementById('history-icon-btn').addEventListener('click', () => { const isOrder = appState.currentView === 'customers'; const pageId = isOrder ? 'page-order-history' : 'page-payment-history'; const filterId = isOrder ? 'order-history-date-filter' : 'payment-history-date-filter'; handleDateRangeClick(document.querySelector(`#${filterId} button[data-range="today"]`), isOrder); showPage(pageId); });
+        
+        document.getElementById('product-info-icon-btn').addEventListener('click', () => { showPage('page-product-info'); });
+        document.getElementById('back-to-main-from-info-btn').addEventListener('click', () => { showPage('page-main-view'); });
+
 
         document.getElementById('customer-list-container').addEventListener('click', async (e) => {
             const header = e.target.closest('.customer-item-header');
@@ -1568,7 +1652,7 @@
         document.getElementById('back-to-payment-history-btn').addEventListener('click', () => showPage('page-payment-history'));
         
         document.querySelector('.search-toggle-buttons').addEventListener('click', e => { if (e.target.matches('.toggle-btn')) { const searchType = e.target.dataset.searchType; document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.search-view').forEach(view => view.classList.remove('active')); document.getElementById(`${searchType}-search-view`).classList.add('active'); document.getElementById(`${searchType === 'salesman' ? 'salesman-item-search-input' : 'item-search-input'}`).focus(); } });
-        document.getElementById('salesman-item-search-input').addEventListener('input', (e) => renderSalesmanItemSearchResults(e.target.value));
+        document.getElementById('salesman-item-search-input').addEventListener('input', (e) => renderSalesmanItemSearchResults(e.target.value, 'salesman-item-search-results'));
         document.getElementById('item-search-input').addEventListener('input', (e) => renderItemSearchResults(e.target.value, 'item-search-results'));
         
         const handleItemSelectionFromSearch = (itemElement) => { if (itemElement) { const code = itemElement.dataset.itemCode; appState.selectedItem = appState.items.find(i => i.Code == code); document.getElementById('item-search-input').value = ''; document.getElementById('salesman-item-search-input').value = ''; document.getElementById('item-search-results').innerHTML = ''; document.getElementById('salesman-item-search-results').innerHTML = ''; renderSelectedItemDetails(); document.getElementById('item-quantity').focus(); } };
@@ -1771,6 +1855,40 @@
         const pageCrm = document.getElementById('page-crm'); const renderCrmModule = () => { appState.flyerBuilder.items = []; const salesmanFilter = document.getElementById('crm-salesman-filter'); const routeFilter = document.getElementById('crm-route-filter'); const salesmen = [...new Set(appState.customers.map(c => c.Salesman).filter(Boolean))].sort(); salesmanFilter.innerHTML = '<option value="ALL">All Salesmen</option>' + salesmen.map(s => `<option value="${s}">${s}</option>`).join(''); const routes = [...new Set(appState.customers.map(c => c.Route).filter(Boolean))].sort(); routeFilter.innerHTML = '<option value="ALL">All Routes</option>' + routes.map(r => `<option value="${r}">${r}</option>`).join(''); updateCrmCustomerCount(); document.getElementById('crm-flyer-headline').value = ''; document.getElementById('crm-flyer-preview-container').innerHTML = `<p style="color:#888;">Flyer preview will appear here.</p>`; document.getElementById('share-bulk-flyer-btn').style.display = 'none'; document.getElementById('generate-bulk-flyer-btn').style.display = 'block'; document.getElementById('crm-flyer-builder-content').style.display = 'block'; renderCrmFlyerItems(); }; const renderCrmFlyerItems = () => { const listContainer = document.getElementById('crm-flyer-item-list'); if (appState.flyerBuilder.items.length === 0) { listContainer.innerHTML = `<p style="text-align:center; color:#888;">No items added to flyer yet.</p>`; return; } listContainer.innerHTML = appState.flyerBuilder.items.map((flyerItem, index) => `<div class="offer-builder-item"><div class="item-info"><div class="item-name">${flyerItem.item.ItemName}</div><div class="item-price">Offer Price: ${formatCurrency(flyerItem.price)}</div></div><button class="item-action-btn edit-btn" data-index="${index}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="item-action-btn delete-btn" data-index="${index}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>`).join(''); }; pageCrm.addEventListener('input', e => { if(e.target.id === 'offer-item-search-input-bulk') { renderItemSearchResults(e.target.value, 'offer-item-search-results-bulk'); } }); pageCrm.addEventListener('click', e => { const resultItem = e.target.closest('#offer-item-search-results-bulk .search-result-item'); if(resultItem) { const code = resultItem.dataset.itemCode; const fullItem = appState.items.find(i => i.Code == code); if (fullItem && !appState.flyerBuilder.items.some(fi => fi.item.Code === fullItem.Code)) { appState.flyerBuilder.items.push({ item: fullItem, price: fullItem.Price2 }); renderCrmFlyerItems(); } document.getElementById('offer-item-search-input-bulk').value = ''; document.getElementById('offer-item-search-results-bulk').innerHTML = ''; } const deleteBtn = e.target.closest('#crm-flyer-item-list .delete-btn'); if(deleteBtn) { appState.flyerBuilder.items.splice(parseInt(deleteBtn.dataset.index), 1); renderCrmFlyerItems(); } const editBtn = e.target.closest('#crm-flyer-item-list .edit-btn'); if (editBtn) { const index = parseInt(editBtn.dataset.index); const flyerItem = appState.flyerBuilder.items[index]; const newPrice = prompt(`Enter new offer price for ${flyerItem.item.ItemName}:`, flyerItem.price); if (newPrice !== null && !isNaN(parseFloat(newPrice))) { flyerItem.price = parseFloat(newPrice); renderCrmFlyerItems(); } } }); const updateCrmCustomerCount = () => { const selectedSalesman = document.getElementById('crm-salesman-filter').value; const selectedRoute = document.getElementById('crm-route-filter').value; const targetCustomers = appState.customers.filter(c => { const hasPhone = c.Phone && c.Phone.trim().length > 5; const matchesSalesman = selectedSalesman === 'ALL' || c.Salesman === selectedSalesman; const matchesRoute = selectedRoute === 'ALL' || c.Route === selectedRoute; return hasPhone && matchesSalesman && matchesRoute; }); document.getElementById('crm-customer-count').textContent = `Targeted Customers: ${targetCustomers.length}`; }; const generateBulkFlyer = async () => { const generateBtn = document.getElementById('generate-bulk-flyer-btn'); const previewContainer = document.getElementById('crm-flyer-preview-container'); if (appState.flyerBuilder.items.length === 0) { alert("Please add at least one item to the flyer."); return; } generateBtn.disabled = true; generateBtn.innerHTML = '<div class="spinner" style="width:20px; height:20px; border-width:2px; margin: 0 auto;"></div>'; previewContainer.innerHTML = '<div class="spinner"></div>'; const headline = document.getElementById('crm-flyer-headline').value.trim() || 'A Special Offer For You!'; const itemsHtml = appState.flyerBuilder.items.map(item => `<li class="flyer-item"><span class="flyer-item-name">${item.item.ItemName}</span><span class="flyer-item-price">${formatCurrency(item.price)}</span></li>`).join(''); document.getElementById('flyer-template-wrapper').innerHTML = `<div id="flyer-content"><div id="flyer-header"><h2 id="flyer-logo">MF BIGMARKET</h2><p id="flyer-tagline">Quality Products, Delivered.</p></div><div id="flyer-offer-details"><h3 id="flyer-headline">${headline}</h3><ul id="flyer-item-list">${itemsHtml}</ul></div><div id="flyer-footer"><p>Contact your salesman to order today!</p></div></div>`; try { const canvas = await html2canvas(document.getElementById('flyer-template-wrapper'), { scale: 2, useCORS: true, backgroundColor: null }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9)); appState.bulkFlyerBlob = blob; const imgEl = document.createElement('img'); imgEl.src = URL.createObjectURL(blob); previewContainer.innerHTML = ''; previewContainer.appendChild(imgEl); document.getElementById('share-bulk-flyer-btn').style.display = 'block'; } catch (error) { console.error("Bulk flyer generation error:", error); previewContainer.innerHTML = '<p style="color:red;">Error generating flyer image.</p>'; } finally { generateBtn.disabled = false; generateBtn.innerHTML = 'Generate Flyer Preview'; } };
         document.getElementById('generate-bulk-flyer-btn').addEventListener('click', generateBulkFlyer); document.getElementById('share-bulk-flyer-btn').addEventListener('click', async () => { const flyerBlob = appState.bulkFlyerBlob; if (!flyerBlob) { alert('Please generate a flyer first.'); return; } const targetCount = document.getElementById('crm-customer-count').textContent; if(!confirm(`Your flyer is ready. You will now be prompted to share it with your selected ${targetCount}. Continue?`)){ return; } try { const file = new File([flyerBlob], 'MF-BigMarket-Offer.jpg', { type: 'image/jpeg' }); const shareText = document.getElementById('crm-flyer-headline').value.trim() || 'Check out our latest deals!'; if (navigator.share && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'MF BigMarket Offer', text: shareText }); } else { alert("Sharing not supported on this browser. You can save the image by long-pressing it and share manually."); } } catch (error) { console.error('Bulk Share failed:', error); alert("Could not share automatically. Please save the image and send it manually."); } });
         document.getElementById('back-to-admin-from-crm-btn').addEventListener('click', () => showPage('page-admin-dashboard')); document.getElementById('crm-salesman-filter').addEventListener('change', updateCrmCustomerCount); document.getElementById('crm-route-filter').addEventListener('change', updateCrmCustomerCount);
+        
+        // Product Info Page Logic
+        document.querySelector('#page-product-info .search-toggle-buttons').addEventListener('click', e => { if (e.target.matches('.toggle-btn')) { const searchType = e.target.dataset.searchType; document.querySelectorAll('#page-product-info .toggle-btn').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('#page-product-info .search-view').forEach(view => view.classList.remove('active')); document.getElementById(`${searchType}-search-view`).classList.add('active'); document.getElementById(`${searchType === 'info-salesman' ? 'info-salesman-item-search-input' : 'info-item-search-input'}`).focus(); } });
+        document.getElementById('info-salesman-item-search-input').addEventListener('input', (e) => renderSalesmanItemSearchResults(e.target.value, 'info-salesman-item-search-results'));
+        document.getElementById('info-item-search-input').addEventListener('input', (e) => renderItemSearchResults(e.target.value, 'info-item-search-results'));
+        
+        const renderProductInfoCard = (item) => {
+            const container = document.getElementById('product-info-display-card');
+            if (!item) { container.style.display = 'none'; return; }
+            container.innerHTML = `
+                <h3>${item.ItemName}</h3>
+                <div class="price-grid">
+                    <div class="price-item"><div class="label">Price 1</div><div class="value">${formatCurrency(item.Price1)}</div></div>
+                    <div class="price-item"><div class="label">Price 2</div><div class="value">${formatCurrency(item.Price2)}</div></div>
+                    <div class="price-item"><div class="label">Price 3</div><div class="value">${formatCurrency(item.Price3)}</div></div>
+                </div>
+                <p class="stock-info">Current Stock: ${item.Clstock} ${item.Unit || ''}</p>`;
+            container.style.display = 'block';
+        };
+
+        const handleInfoItemSelection = (itemElement) => {
+            if (itemElement) {
+                const code = itemElement.dataset.itemCode;
+                const selectedItem = appState.items.find(i => i.Code == code);
+                document.getElementById('info-item-search-input').value = '';
+                document.getElementById('info-salesman-item-search-input').value = '';
+                document.getElementById('info-item-search-results').innerHTML = '';
+                document.getElementById('info-salesman-item-search-results').innerHTML = '';
+                renderProductInfoCard(selectedItem);
+            }
+        };
+        document.getElementById('info-salesman-item-search-results').addEventListener('click', (e) => handleInfoItemSelection(e.target.closest('.search-result-item')));
+        document.getElementById('info-item-search-results').addEventListener('click', (e) => handleInfoItemSelection(e.target.closest('.search-result-item')));
+
         const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v2'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('Service Worker registered successfully.')).catch(err => console.log('Service Worker registration failed: ', err)); }); } };
         
         setupPWA();
