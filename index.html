@@ -375,19 +375,24 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .search-result-item:last-child {
+            border-bottom: none;
         }
         .search-result-item:hover { background-color: var(--light-bg); }
         .search-result-item .item-name {
             font-weight: 500;
             width: 100%;
-            white-space: normal;
-            margin-bottom: 4px;
+            white-space: normal; /* Allow name to wrap */
+            margin-bottom: 5px; /* Space between name and details */
         }
         .search-result-item .item-details-row {
             display: flex;
             justify-content: space-between;
             width: 100%;
             font-size: 0.9rem;
+            align-items: center;
         }
         .search-result-item .item-p2 {
             font-weight: 600;
