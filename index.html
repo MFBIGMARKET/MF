@@ -287,15 +287,65 @@
         .price-option .price { font-size: 1.1rem; font-weight: bold; }
         .price-option .margin { font-size: 0.8rem; opacity: 0.8; }
         #current-order-summary { margin-top: 20px; }
-        .order-item-card { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 10px; margin-bottom: 10px; background: #fff; padding: 12px; border-radius: var(--border-radius); box-shadow: var(--card-shadow); }
-        .order-item-card .item-info .item-name { font-weight: 500; }
-        .order-item-card .item-info .item-details { font-size: 0.9rem; color: #666; }
-        .order-item-card .item-total { font-weight: bold; font-size: 1.1rem; color: var(--primary-color); }
-        .order-item-card .item-action-btn { background: none; border: none; cursor: pointer; padding: 5px; }
-        .order-item-card .item-action-btn svg { width: 20px; height: 20px; }
-        .order-item-card .delete-btn svg { stroke: var(--danger-color); }
+        
+        /* REVISED: Order Item Card Styles */
+        .order-item-card {
+            background: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 12px 15px;
+            margin-bottom: 12px;
+        }
+        .order-item-card .item-primary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        .order-item-card .item-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--text-color);
+            flex-grow: 1;
+            white-space: normal;
+            word-break: break-word;
+        }
+        .order-item-card .item-actions {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .order-item-card .item-action-btn {
+            background: none; border: none; cursor: pointer; padding: 0;
+        }
+        .order-item-card .item-action-btn svg {
+            width: 22px; height: 22px; stroke-width: 2.5;
+        }
         .order-item-card .edit-btn svg { stroke: var(--secondary-color); }
+        .order-item-card .delete-btn svg { stroke: var(--danger-color); }
 
+        .order-item-card .item-details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .order-item-card .detail-item .label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 2px;
+        }
+        .order-item-card .detail-item .value {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .order-item-card .detail-item.total .value {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
         #order-grand-total {
             margin-top: 20px;
             padding: 15px;
@@ -1534,7 +1584,39 @@
             const totalCont = document.getElementById('order-grand-total'); 
             let grandTotalRevenue = 0, grandTotalCost = 0;
             if (appState.currentOrder.length === 0) { listCont.innerHTML = '<p style="text-align:center; padding: 20px 0;">No items added yet.</p>'; totalCont.style.display = 'none'; return; } 
-            listCont.innerHTML = appState.currentOrder.map((o, idx) => { const lineItemRevenue = o.quantity * o.sellingPrice; const lineItemCost = o.quantity * (parseFloat(o.item.CostRate) || 0); grandTotalRevenue += lineItemRevenue; grandTotalCost += lineItemCost; return `<div class="order-item-card"><div class="item-info"><div class="item-name">${o.item.ItemName}</div><div class="item-details">${o.quantity} ${o.item.Unit||""} &times; ${formatCurrency(o.sellingPrice)}<br><small>MRP: ${formatCurrency(o.item.Mrp)}</small></div></div><div class="item-total">${formatCurrency(lineItemRevenue)}</div><button class="item-action-btn edit-btn" data-index="${idx}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="item-action-btn delete-btn" data-index="${idx}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>`; }).join(''); 
+            listCont.innerHTML = appState.currentOrder.map((o, idx) => { 
+                const lineItemRevenue = o.quantity * o.sellingPrice; 
+                const lineItemCost = o.quantity * (parseFloat(o.item.CostRate) || 0); 
+                grandTotalRevenue += lineItemRevenue; 
+                grandTotalCost += lineItemCost; 
+                return `<div class="order-item-card">
+                            <div class="item-primary-row">
+                                <div class="item-name">${o.item.ItemName}</div>
+                                <div class="item-actions">
+                                    <button class="item-action-btn edit-btn" data-index="${idx}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                    </button>
+                                    <button class="item-action-btn delete-btn" data-index="${idx}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="item-details-grid">
+                                <div class="detail-item">
+                                    <div class="label">Qty</div>
+                                    <div class="value">${o.quantity} ${o.item.Unit||""}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="label">Price</div>
+                                    <div class="value">${formatCurrency(o.sellingPrice)}</div>
+                                </div>
+                                <div class="detail-item total">
+                                    <div class="label">Total</div>
+                                    <div class="value">${formatCurrency(lineItemRevenue)}</div>
+                                </div>
+                            </div>
+                        </div>`; 
+            }).join(''); 
             let marginPercent = 0;
             if (grandTotalCost > 0) { marginPercent = ((grandTotalRevenue - grandTotalCost) / grandTotalCost) * 100; }
             let marginBgColor = 'var(--danger-color)';
