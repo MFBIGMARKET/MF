@@ -215,7 +215,7 @@
         }
 
         /* NEW History Page Styles */
-        .history-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); margin-bottom: 15px; overflow: hidden; }
+        .history-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); margin-bottom: 15px; overflow: hidden; transition: all 0.3s ease-out; /* Added for delete animation */ }
         .history-card-header { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
         .history-card-header .info { flex-grow: 1; }
         .history-card-header .actions { display: flex; gap: 15px; flex-shrink: 0; margin-left: 10px; }
@@ -384,7 +384,7 @@
         .file-upload-area input[type="file"] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         
         /* Hidden Printable Documents */
-        #packing-slip-wrapper, #payment-receipt-wrapper { display: none; }
+        #packing-slip-wrapper, #payment-receipt-wrapper, #payment-summary-print-wrapper { display: none; }
         #collection-report-wrapper { position: absolute; left: -9999px; top: -9999px; }
         #collection-report { background: #fff; padding: 40px; }
         
@@ -689,8 +689,65 @@
             color: var(--secondary-color);
         }
 
+        /* --- START: SUCCESS ANIMATION STYLES (REVISED) --- */
+        #success-animation-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #success-animation-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        .success-animation-content {
+            background: white;
+            padding: 25px 40px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #success-animation-modal.active .success-animation-content {
+            transform: scale(1);
+        }
+        #success-animation-message {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        /* --- END: SUCCESS ANIMATION STYLES --- */
+
+        /* --- START: PAYMENT SUMMARY PRINT STYLES --- */
+        #payment-summary-print-content {
+            display: none;
+            font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+            color: #000;
+        }
+        .print-header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 15px; }
+        .print-header h2 { margin: 0; font-size: 24pt; }
+        .print-header p { margin: 5px 0 0; font-size: 11pt; color: #555; }
+        .print-details { display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 11pt; }
+        .print-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+        .print-table th, .print-table td { padding: 10px; text-align: left; border-bottom: 1px solid #ccc; }
+        .print-table th { background-color: #f2f2f2; font-weight: 600; }
+        .print-table td.numeric, .print-table th.numeric { text-align: right; }
+        .print-totals-footer { margin-top: 25px; padding-top: 15px; border-top: 2px solid #333; float: right; width: 40%; }
+        .print-totals-footer div { display: flex; justify-content: space-between; font-size: 12pt; margin-bottom: 8px; }
+        .print-totals-footer div.grand-total { font-weight: 700; font-size: 14pt; border-top: 1px solid #333; padding-top: 8px; }
+        /* --- END: PAYMENT SUMMARY PRINT STYLES --- */
+
         @media (max-width: 767px) {
             .dashboard-grid { grid-template-columns: 1fr; }
+            .summary-totals-card { grid-template-columns: 1fr; }
         }
         @media (min-width: 768px) {
             .kpi-row { grid-template-columns: repeat(4, 1fr); }
@@ -702,19 +759,19 @@
         @media print {
             @page { 
                 size: A4;
-                margin: 15mm; /* Reduced page margins */
+                margin: 20mm;
             }
+            body, html { background: #fff; }
             body > *:not(.printing) {
                 display: none !important;
             }
             body.printing-packing-slip #packing-slip-wrapper,
-            body.printing-receipt #payment-receipt-wrapper {
+            body.printing-receipt #payment-receipt-wrapper,
+            body.printing-summary #payment-summary-print-wrapper {
                 display: block !important;
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
+                position: static;
             }
+            #payment-summary-print-content { display: block; }
         }
     </style>
 </head>
@@ -908,7 +965,11 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1>Collection Summary <span id="summary-date-range" style="font-size: 0.9rem; font-weight: 400; opacity: 0.8;"></span></h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions">
+                 <button class="icon-button" id="print-summary-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                </button>
+            </div>
         </div>
         <div class="content" id="payment-summary-content">
             <!-- Summary content will be rendered here by JS -->
@@ -1146,6 +1207,35 @@
     <div id="collection-report-wrapper"><div id="collection-report"><div class="report-header"><h2>MF BIGMARKET</h2><p>Daily Collection Report</p></div><div class="report-details"><div id="report-salesman"></div><div id="report-date"></div></div><table class="report-table"><thead><tr><th>CUSTOMER</th><th class="col-method">MODE</th><th class="col-amount">AMOUNT</th></tr></thead><tbody id="report-table-body"></tbody></table><div class="report-footer"><div id="report-totals"></div><div class="grand-total" id="report-grand-total"></div></div></div></div>
     <div id="flyer-template-wrapper"></div>
     
+    <div id="payment-summary-print-wrapper">
+        <div id="payment-summary-print-content">
+            <div class="print-header">
+                <h2>MF BIGMARKET</h2>
+                <p>Collection Summary Report</p>
+            </div>
+            <div class="print-details">
+                <div id="print-summary-salesman"></div>
+                <div id="print-summary-daterange"></div>
+            </div>
+            <table class="print-table">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Customer</th>
+                        <th>Mode</th>
+                        <th class="numeric">Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="print-summary-table-body"></tbody>
+            </table>
+            <div class="print-totals-footer">
+                <div><span>Total Cash:</span> <span id="print-summary-cash"></span></div>
+                <div><span>Total UPI:</span> <span id="print-summary-upi"></span></div>
+                <div class="grand-total"><span>Grand Total:</span> <span id="print-summary-grandtotal"></span></div>
+            </div>
+        </div>
+    </div>
+
     <div id="offer-modal" class="modal">
         <div class="modal-content">
             <h2 id="offer-modal-title">Flyer Builder</h2>
@@ -1163,6 +1253,13 @@
 
     <div id="edit-modal" class="modal"><div class="modal-content"><h2 id="edit-modal-title">Edit</h2><div class="modal-body" id="edit-modal-body"></div><div class="modal-footer"><button class="button button-outline" id="close-edit-modal-btn">Cancel</button><button class="button" id="save-edit-btn">Save Changes</button></div></div></div>
 
+    <div id="success-animation-modal">
+        <div class="success-animation-content">
+            <p id="success-animation-message">Success</p>
+        </div>
+    </div>
+
+
 <script type="module">
     document.addEventListener('DOMContentLoaded', () => {
         if (!window.firebaseDB || !window.firebaseTools) {
@@ -1179,7 +1276,7 @@
             shareableFlyerBlob: null,
             bulkFlyerBlob: null,
             flyerBuilder: { items: [], editingIndex: null },
-            currentOrderLocation: null, // NEW: To hold location for the current order session
+            currentOrderLocation: null,
         };
 
         const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc } = window.firebaseTools;
@@ -1188,6 +1285,16 @@
         const showPage = (pageId) => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); };
         const formatCurrency = (v) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(v);
         
+        const showSuccessAnimation = (message) => {
+            const modal = document.getElementById('success-animation-modal');
+            const messageEl = document.getElementById('success-animation-message');
+            messageEl.textContent = message;
+            modal.classList.add('active');
+            setTimeout(() => {
+                modal.classList.remove('active');
+            }, 1800);
+        };
+
         const getCurrentLocation = () => {
             return new Promise((resolve, reject) => {
                 if (!navigator.geolocation) {
@@ -1320,11 +1427,19 @@
             const startInput = document.getElementById(isOrder ? 'order-history-start' : 'payment-history-start').value;
             const endInput = document.getElementById(isOrder ? 'order-history-end' : 'payment-history-end').value;
             let historyData = isOrder ? (appState.orders[appState.salesman] || []) : (appState.payments[appState.salesman] || []);
-            if (startInput && endInput) { const startDate = new Date(startInput); const endDate = new Date(endInput); endDate.setHours(23, 59, 59, 999); historyData = historyData.filter(item => { const itemDate = new Date(item.date); return itemDate >= startDate && itemDate <= endDate; }); }
+            if (startInput && endInput) {
+                const startDate = new Date(startInput + 'T00:00:00');
+                const endDate = new Date(endInput + 'T00:00:00');
+                endDate.setHours(23, 59, 59, 999);
+                historyData = historyData.filter(item => {
+                    const itemDate = new Date(item.date);
+                    return itemDate >= startDate && itemDate <= endDate;
+                });
+            }
             if (historyData.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No history found for the selected dates.</p>`; return; }
-            container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => { const itemDetailsHtml = isOrder ? (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join('') : ''; return `<div class="history-card"><div class="history-card-header"><div class="info"><p><strong>${isOrder?"Customer":"Customer"}:</strong> ${item.customer.Customer}</p><p><strong>${isOrder?"Total":"Amount"}:</strong> ${formatCurrency(isOrder?item.total:item.amount)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p></div><div class="actions">${isOrder?`<button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`:""}<button class="history-action-btn delete-history-btn" data-type="${isOrder?"orders":"payments"}" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div>${isOrder?`<div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th>Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a>`:""}</div>`; }).join('');
+            container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => { const itemDetailsHtml = isOrder ? (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join('') : ''; return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>${isOrder?"Customer":"Customer"}:</strong> ${item.customer.Customer}</p><p><strong>${isOrder?"Total":"Amount"}:</strong> ${formatCurrency(isOrder?item.total:item.amount)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p></div><div class="actions">${isOrder?`<button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`:""}<button class="history-action-btn delete-history-btn" data-type="${isOrder?"orders":"payments"}" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div>${isOrder?`<div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th>Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a>`:""}</div>`; }).join('');
         };
-        const getDateRange = (rangeKey) => { const now = new Date(); const start = new Date(now); const end = new Date(now); switch(rangeKey) { case 'today': start.setHours(0,0,0,0); end.setHours(23,59,59,999); break; case 'yesterday': start.setDate(start.getDate()-1); start.setHours(0,0,0,0); end.setDate(end.getDate()-1); end.setHours(23,59,59,999); break; case 'week': start.setDate(start.getDate()-start.getDay()); start.setHours(0,0,0,0); break; case 'month': start.setDate(1); start.setHours(0,0,0,0); break; case 'all': return {start:null,end:null}; } return {start, end}; };
+        const getDateRange = (rangeKey) => { const now = new Date(); const start = new Date(now); const end = new Date(now); switch(rangeKey) { case 'today': start.setHours(0,0,0,0); end.setHours(23,59,59,999); break; case 'yesterday': start.setDate(start.getDate()-1); start.setHours(0,0,0,0); end.setDate(end.getDate()-1); end.setHours(23,59,59,999); break; case 'week': start.setDate(start.getDate()-now.getDay()); start.setHours(0,0,0,0); break; case 'month': start.setDate(1); start.setHours(0,0,0,0); break; case 'all': return {start:null,end:null}; } return {start, end}; };
         const processAdminData = (rangeKey) => { const {start,end}=getDateRange(rangeKey); const costMap = new Map(appState.items.map(i=>[String(i.Code),parseFloat(i.CostRate)||0])); let orders=Object.values(appState.orders).flat(); let payments=Object.values(appState.payments).flat(); if(start&&end){orders=orders.filter(o=>{const orderDate=new Date(o.date);return orderDate>=start&&orderDate<=end});payments=payments.filter(p=>{const paymentDate=new Date(p.date);return paymentDate>=start&&paymentDate<=end})}let totalRevenue=0,totalCost=0,totalOrders=orders.length; const salesBySalesman={}; const topItems={}; orders.forEach(order=>{const salesman=order.salesman||'N/A';if(!salesBySalesman[salesman])salesBySalesman[salesman]={revenue:0,cost:0,orderCount:0};salesBySalesman[salesman].orderCount++;(order.items||[]).forEach(item=>{const revenue=item.quantity*item.sellingPrice;const cost=item.quantity*(costMap.get(String(item.item.Code))||0);totalRevenue+=revenue;totalCost+=cost;salesBySalesman[salesman].revenue+=revenue;salesBySalesman[salesman].cost+=cost;const itemName=item.item.ItemName;if(!topItems[itemName])topItems[itemName]={quantity:0,revenue:0};topItems[itemName].quantity+=item.quantity;topItems[itemName].revenue+=revenue})}); const collectionsBySalesman={}; let grandTotalCash=0,grandTotalUPI=0; const todayStr=new Date().toLocaleDateString(); Object.values(appState.payments).flat().forEach(p=>{if(new Date(p.date).toLocaleDateString()===todayStr){const salesman=p.salesman||'N/A';if(!collectionsBySalesman[salesman])collectionsBySalesman[salesman]={cash:0,upi:0};if(p.method==='Cash'){collectionsBySalesman[salesman].cash+=p.amount;grandTotalCash+=p.amount}else if(p.method==='UPI'){collectionsBySalesman[salesman].upi+=p.amount;grandTotalUPI+=p.amount}}}); return {totalRevenue,totalProfit:totalRevenue-totalCost,totalOrders,salesBySalesman,topItems:Object.entries(topItems).sort((a,b)=>b[1].revenue-a[1].revenue).slice(0,10),collectionsBySalesman,grandTotalCash,grandTotalUPI}};
         const renderAdminDashboard = () => { const contentEl=document.getElementById("admin-dashboard-content"); if(appState.items.length===0){contentEl.innerHTML='<div class="card" style="text-align: center;">Loading data...</div>';return} const data=processAdminData(appState.reporting.dateRange); const overallMargin=data.totalRevenue>0?(data.totalProfit/data.totalRevenue*100):0; const salesListHtml=Object.entries(data.salesBySalesman).sort((a,b)=>b[1].revenue-a[1].revenue).map(([salesman,d])=>{const profit=d.revenue-d.cost;const margin=d.revenue>0?profit/d.revenue*100:0;return`<li class="data-list-item" data-salesman="${salesman}"><div class="item-main">${salesman}</div><div class="item-details"><span class="value-primary">${formatCurrency(d.revenue)}</span><span class="value-secondary"><span class="${profit>=0?"profit":"loss"}">${formatCurrency(profit)} (${margin.toFixed(1)}%)</span></span></div></li>`}).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>'; const topItemsHtml=data.topItems.map(([name,d])=>`<li class="data-list-item" style="cursor:default;"><div class="item-main">${name}</div><div class="item-details"><span class="value-primary">${formatCurrency(d.revenue)}</span><span class="value-secondary">Qty: ${d.quantity}</span></div></li>`).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>'; const totalCollectionsToday=data.grandTotalCash+data.grandTotalUPI; const collectionsBreakdownHtml=Object.entries(data.collectionsBySalesman).map(([salesman,d])=>`<div class="salesman-header">${salesman}</div><ul class="salesman-breakdown"><li><span>Cash</span> <span>${formatCurrency(d.cash)}</span></li><li><span>UPI</span> <span>${formatCurrency(d.upi)}</span></li><li><span>Sub-Total</span> <span>${formatCurrency(d.cash+d.upi)}</span></li></ul>`).join(""); const collectionsHtml=Object.keys(data.collectionsBySalesman).length>0?collectionsBreakdownHtml:'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No collections today.</li>'; let dateFilterButtons=`<button data-range="today" ${appState.reporting.dateRange==='today'?'class="active"':''}>Today</button><button data-range="week" ${appState.reporting.dateRange==='week'?'class="active"':''}>This Week</button><button data-range="month" ${appState.reporting.dateRange==='month'?'class="active"':''}>This Month</button><button data-range="all" ${appState.reporting.dateRange==='all'?'class="active"':''}>All Time</button>`; contentEl.innerHTML=`<div class="date-range-filter" id="admin-date-filter">${dateFilterButtons}</div><div class="dashboard-grid"><div class="kpi-row"><div class="kpi-card-small"><div class="value">${formatCurrency(data.totalRevenue)}</div><div class="label">Total Revenue</div></div><div class="kpi-card-small"><div class="value">${formatCurrency(data.totalProfit)}</div><div class="label">Total Profit</div></div><div class="kpi-card-small"><div class="value">${data.totalOrders}</div><div class="label">Total Orders</div></div><div class="kpi-card-small"><div class="value ${overallMargin>=0?"profit":"loss"}">${overallMargin.toFixed(1)}%</div><div class="label">Overall Margin</div></div></div><div class="data-list-card"><h3>Sales by Salesman</h3><ul class="data-list-container">${salesListHtml}</ul></div><div class="data-list-card"><h3>Top Selling Items</h3><ul class="data-list-container">${topItemsHtml}</ul></div><div class="data-list-card"><h3>Today's Collections</h3><ul class="payment-summary-list"><li><span>Total Cash</span><strong>${formatCurrency(data.grandTotalCash)}</strong></li><li><span>Total UPI</span><strong>${formatCurrency(data.grandTotalUPI)}</strong></li><li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatCurrency(totalCollectionsToday)}</strong></li>${collectionsHtml}</ul></div><div class="data-list-card"><h3>Operations</h3><button class="button button-outline" id="location-report-btn" style="margin-bottom: 10px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Location Report</button><button class="button button-outline" id="crm-module-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Send Bulk Offer</button></div></div>`;};
         const renderLocationReportPage = () => { const contentEl=document.getElementById('location-report-content'); const allSalesmen=['UNNI','RIYAS']; const dateFilterHtml=`<div class="date-range-filter" id="location-report-date-filter"><button data-range="today" class="${appState.reporting.locationDateRange==='today'?'active':''}">Today</button><button data-range="yesterday" class="${appState.reporting.locationDateRange==='yesterday'?'active':''}">Yesterday</button><button data-range="week" class="${appState.reporting.locationDateRange==='week'?'active':''}">This Week</button><button data-range="month" class="${appState.reporting.locationDateRange==='month'?'active':''}">This Month</button></div>`; const {start,end}=getDateRange(appState.reporting.locationDateRange); let filteredOrders=Object.values(appState.orders).flat(); if(start&&end){filteredOrders=filteredOrders.filter(o=>{const orderDate=new Date(o.date);return orderDate>=start&&orderDate<=end})} let summaryHtml='<div class="card"><h3>Last Activity Summary</h3><div id="location-summary-list">'; allSalesmen.forEach(salesman=>{const lastOrder=filteredOrders.filter(o=>o.salesman===salesman&&o.location).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];if(lastOrder){summaryHtml+=`<div class="list-item"><div class="info"><strong style="color: var(--primary-color); font-size: 1.1rem;">${salesman}</strong><p><strong>Last Order:</strong> ${lastOrder.customer.Customer} (${formatCurrency(lastOrder.total)})</p><p><strong>Time:</strong> ${new Date(lastOrder.date).toLocaleString()}</p></div><a href="https://www.google.com/maps?q=${lastOrder.location.lat},${lastOrder.location.lng}" target="_blank" class="button button-outline" style="width: auto; padding: 8px 15px; font-size: 0.9rem;">View Last Location</a></div>`}else{summaryHtml+=`<div class="list-item"><strong style="color: var(--primary-color); font-size: 1.1rem;">${salesman}</strong><span>No location data found for this period.</span></div>`}}); summaryHtml+='</div></div>'; const allOrdersWithLocation=filteredOrders.filter(o=>o.location).sort((a,b)=>new Date(b.date)-new Date(a.date)); let detailsHtml='<div class="card" style="margin-top: 20px;"><h3>Detailed Location Log</h3><div id="location-details-list">'; if(allOrdersWithLocation.length>0){detailsHtml+=allOrdersWithLocation.map(order=>`<div class="list-item"><div class="info"><strong>${order.customer.Customer}</strong><br><small>${order.salesman} - ${new Date(order.date).toLocaleString()}</small></div><a href="https://www.google.com/maps?q=${order.location.lat},${order.location.lng}" target="_blank" class="list-item-action">View Map</a></div>`).join('')}else{detailsHtml+='<p style="text-align: center; padding: 20px;">No orders with location data found for this period.</p>'} detailsHtml+='</div></div>'; contentEl.innerHTML=dateFilterHtml+summaryHtml+detailsHtml; showPage('page-location-report')};
@@ -1353,7 +1468,7 @@
         document.getElementById('back-to-admin-from-location-btn').addEventListener('click', () => showPage('page-admin-dashboard'));
 
         const renderCustomerProfile = () => { const c = appState.customer; document.getElementById('customer-profile-name').textContent = c.Customer; const content = document.getElementById('customer-profile-content'); content.innerHTML = `<div class="card"><p><strong>Name:</strong> ${c.Customer||'N/A'}</p><p><strong>Phone:</strong> ${c.Phone||'N/A'}</p><p><strong>Route:</strong> ${c.Route||'N/A'}</p><p><strong>Assigned Salesman:</strong> ${c.Salesman||'N/A'}</p></div>`; showPage('page-customer-profile'); };
-        const renderCustomerHistory = () => { const c = appState.customer; document.getElementById('customer-history-name').textContent = `History for ${c.Customer}`; const container = document.getElementById('customer-history-list'); const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === c.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)); if (customerOrders.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`; } else { container.innerHTML = customerOrders.map(item => { const itemDetailsHtml = (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join(''); return `<div class="history-card"><div class="history-card-header"><div class="info"><p><strong>Total:</strong> ${formatCurrency(item.total)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p></div><div class="actions"><button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button><button class="history-action-btn delete-history-btn" data-type="orders" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th>Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a></div>`; }).join(''); } showPage('page-customer-history'); };
+        const renderCustomerHistory = () => { const c = appState.customer; document.getElementById('customer-history-name').textContent = `History for ${c.Customer}`; const container = document.getElementById('customer-history-list'); const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === c.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)); if (customerOrders.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`; } else { container.innerHTML = customerOrders.map(item => { const itemDetailsHtml = (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join(''); return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>Total:</strong> ${formatCurrency(item.total)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p></div><div class="actions"><button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button><button class="history-action-btn delete-history-btn" data-type="orders" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th>Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a></div>`; }).join(''); } showPage('page-customer-history'); };
         const renderPreviousOrders = () => { const container = document.getElementById('previous-orders-list'); const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === appState.customer.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 2); if (customerOrders.length === 0) { document.getElementById('previous-orders-card').style.display = 'none'; return; } document.getElementById('previous-orders-card').style.display = 'block'; container.innerHTML = customerOrders.map((order, index) => `<details style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px;"><summary style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-weight:500;"><span>${new Date(order.date).toLocaleDateString()} - ${formatCurrency(order.total)}</span><button class="reload-order-btn" data-order-index="${index}" title="Reload this order"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3L22 2M22 12.5a10 10 0 0 1-18.8 4.3L2 22"/></svg></button></summary><ul style="list-style-position: inside; padding: 10px 0 0 15px; font-size: 0.9rem; color: #555;">${order.items.map(i => `<li>${i.item.ItemName} (Qty: ${i.quantity} ${i.item.Unit || ''})</li>`).join('')}</ul></details>`).join(''); };
         const resetOrderForm = () => { appState.selectedItem = null; appState.selectedPriceOption = null; appState.editing.itemIndex = null; document.getElementById('item-search-input').value = ''; document.getElementById('item-search-results').innerHTML = ''; document.getElementById('salesman-item-search-input').value = ''; document.getElementById('salesman-item-search-results').innerHTML = ''; document.getElementById('item-quantity').value = ''; document.getElementById('item-details-form').style.display = 'none'; document.querySelectorAll('.price-option').forEach(el => el.classList.remove('selected')); document.getElementById('custom-price-input').style.display = 'none'; document.getElementById('custom-price-input').value = ''; document.getElementById('custom-price-margin').textContent = ''; document.getElementById('add-item-btn').textContent = 'Add to Order'; };
 
@@ -1383,7 +1498,6 @@
         
         document.getElementById('history-icon-btn').addEventListener('click', () => { const isOrder = appState.currentView === 'customers'; const pageId = isOrder ? 'page-order-history' : 'page-payment-history'; const filterId = isOrder ? 'order-history-date-filter' : 'payment-history-date-filter'; handleDateRangeClick(document.querySelector(`#${filterId} button[data-range="today"]`), isOrder); showPage(pageId); });
 
-        // MODIFIED: 'customer-list-container' listener to get location before showing order page
         document.getElementById('customer-list-container').addEventListener('click', async (e) => {
             const header = e.target.closest('.customer-item-header');
             const actionButton = e.target.closest('.action-button');
@@ -1402,12 +1516,10 @@
                 const action = actionButton.dataset.action;
 
                 if (action === 'order') {
-                    actionButton.disabled = true; // Prevent multiple clicks
+                    actionButton.disabled = true; 
                     try {
                         const location = await getCurrentLocation();
-                        appState.currentOrderLocation = location; // Store location on success
-
-                        // If location is successful, proceed to order page
+                        appState.currentOrderLocation = location;
                         document.getElementById('order-customer-name').textContent = appState.customer.Customer; 
                         appState.currentOrder = []; 
                         resetOrderForm();
@@ -1417,7 +1529,7 @@
                     } catch (error) {
                         alert(`Could not start order. Location is required.\n\nError: ${error.message}`);
                     } finally {
-                        actionButton.disabled = false; // Re-enable button
+                        actionButton.disabled = false;
                     }
                 } else if (action === 'profile') {
                     renderCustomerProfile();
@@ -1449,9 +1561,8 @@
         document.getElementById('admin-settings-btn').addEventListener('click', showSettingsPage);
         document.querySelectorAll('#back-to-main-btn-order-history, #back-to-main-btn-payment-history, #back-to-main-btn-payment').forEach(btn => btn.addEventListener('click', () => { showPage('page-main-view'); }));
         
-        // MODIFIED: Added specific listener for order page back button to clean up state
         document.getElementById('back-to-customers-btn').addEventListener('click', () => {
-            appState.currentOrderLocation = null; // Clear stored location
+            appState.currentOrderLocation = null;
             showPage('page-main-view');
         });
 
@@ -1474,29 +1585,19 @@
         document.getElementById('order-items-list').addEventListener('click', e => { const deleteBtn = e.target.closest('.delete-btn'); const editBtn = e.target.closest('.edit-btn'); if (deleteBtn) { appState.currentOrder.splice(parseInt(deleteBtn.dataset.index), 1); renderOrderSummary(); } else if (editBtn) { const index = parseInt(editBtn.dataset.index); const itemToEdit = appState.currentOrder[index]; appState.selectedItem = itemToEdit.item; document.getElementById('salesman-item-search-input').value = itemToEdit.item.ItemName; document.getElementById('item-quantity').value = itemToEdit.quantity; document.getElementById('item-details-form').style.display = 'block'; document.querySelectorAll('.price-option').forEach(el => el.classList.remove('selected')); document.getElementById('custom-price-option').classList.add('selected'); document.getElementById('custom-price-input').style.display = 'block'; document.getElementById('custom-price-input').value = itemToEdit.sellingPrice; appState.selectedPriceOption = 'custom-price-option'; appState.currentOrder.splice(index, 1); renderOrderSummary(); document.getElementById('add-item-btn').textContent = 'Update Item'; document.getElementById('item-quantity').focus(); } });
         document.getElementById('previous-orders-list').addEventListener('click', e => { const copyBtn = e.target.closest('.reload-order-btn'); if (copyBtn) { e.preventDefault(); const index = parseInt(copyBtn.dataset.orderIndex); const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === appState.customer.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)); const orderToCopy = customerOrders[index]; if (orderToCopy) { appState.currentOrder = orderToCopy.items.map(oldItem => { const fullItem = appState.items.find(i => i.Code == oldItem.item.Code); return { item: fullItem || oldItem.item, quantity: oldItem.quantity, sellingPrice: oldItem.sellingPrice }; }); renderOrderSummary(); alert('Order items loaded into Current Order.'); } } });
         
-        // MODIFIED: confirm-order-btn listener to use stored location
         document.getElementById('confirm-order-btn').addEventListener('click', async (e) => {
             const btn = e.currentTarget;
             if (appState.currentOrder.length === 0) { alert('Cannot confirm an empty order.'); return; }
+            if (!appState.currentOrderLocation) { alert("Location data was lost. Please go back and start the order again."); return; }
 
-            if (!appState.currentOrderLocation) {
-                alert("Location data was lost. Please go back and start the order again.");
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = 'Saving Order...';
+            btn.disabled = true; btn.textContent = 'Saving Order...';
             try {
                 const total = appState.currentOrder.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
                 const newOrder = {
                     customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone },
                     items: appState.currentOrder.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit }, quantity: i.quantity, sellingPrice: i.sellingPrice })),
-                    total,
-                    salesman: appState.salesman,
-                    date: new Date().toISOString(),
-                    location: appState.currentOrderLocation // Use the location stored in the state
+                    total, salesman: appState.salesman, date: new Date().toISOString(), location: appState.currentOrderLocation
                 };
-                
                 const orderDocRef = doc(collection(db, "orders"));
                 const stockUpdateBatch = writeBatch(db);
                 stockUpdateBatch.set(orderDocRef, newOrder);
@@ -1506,35 +1607,159 @@
                     const newStock = (currentItem ? Number(currentItem.Clstock) : 0) - orderItem.quantity;
                     stockUpdateBatch.update(itemRef, { Clstock: newStock });
                 });
-                
                 await stockUpdateBatch.commit();
-                alert('Order Saved Successfully!');
-                showPage('page-main-view');
+                
+                showSuccessAnimation('Order Confirmed');
+                setTimeout(() => showPage('page-main-view'), 1500);
 
             } catch (error) {
                 console.error("Error during order confirmation:", error);
                 alert(`Failed to save order. Reason: ${error.message}`);
             } finally {
-                btn.disabled = false;
-                btn.textContent = 'Confirm Order';
-                appState.currentOrderLocation = null; // Clean up the stored location
+                btn.disabled = false; btn.textContent = 'Confirm Order';
+                appState.currentOrderLocation = null;
             }
         });
 
         document.querySelector('.payment-method-options').addEventListener('click', e => { if (e.target.matches('.payment-method-option')) { document.querySelectorAll('.payment-method-option').forEach(el => el.classList.remove('selected')); e.target.classList.add('selected'); } });
-        document.getElementById('confirm-payment-btn').addEventListener('click', async () => { const amount = parseFloat(document.getElementById('payment-amount').value); if (isNaN(amount) || amount <= 0) { alert('Please enter a valid amount.'); return; } const method = document.querySelector('.payment-method-option.selected').dataset.method; const newPayment = { customer: { Customer: appState.currentPayment.customer.Customer }, amount, method, salesman: appState.salesman, date: new Date().toISOString() }; await setDoc(doc(collection(db, "payments")), newPayment); appState.currentPayment = newPayment; document.getElementById('confirm-payment-btn').style.display = 'none'; document.getElementById('print-receipt-btn').style.display = 'block'; alert('Payment saved!'); });
+        
+        document.getElementById('confirm-payment-btn').addEventListener('click', async () => { 
+            const amount = parseFloat(document.getElementById('payment-amount').value); 
+            if (isNaN(amount) || amount <= 0) { alert('Please enter a valid amount.'); return; } 
+            const method = document.querySelector('.payment-method-option.selected').dataset.method; 
+            const newPayment = { customer: { Customer: appState.currentPayment.customer.Customer }, amount, method, salesman: appState.salesman, date: new Date().toISOString() }; 
+            await setDoc(doc(collection(db, "payments")), newPayment); 
+            appState.currentPayment = newPayment; 
+            document.getElementById('confirm-payment-btn').style.display = 'none'; 
+            document.getElementById('print-receipt-btn').style.display = 'block'; 
+            showSuccessAnimation('Payment Successful');
+        });
+        
         document.getElementById('print-receipt-btn').addEventListener('click', () => { const p = appState.currentPayment; document.getElementById('receipt-date').textContent = new Date(p.date).toLocaleString(); document.getElementById('receipt-salesman').textContent = appState.salesman; document.getElementById('receipt-customer').textContent = p.customer.Customer; document.getElementById('receipt-amount').textContent = formatCurrency(p.amount); document.getElementById('receipt-method').textContent = p.method; document.body.classList.add('printing', 'printing-receipt'); setTimeout(() => window.print(), 100); });
-        window.onafterprint = () => { document.body.classList.remove('printing', 'printing-receipt', 'printing-packing-slip'); };
+        window.onafterprint = () => { document.body.classList.remove('printing', 'printing-receipt', 'printing-packing-slip', 'printing-summary'); };
         const printPackingSlip = (orderId) => { const allOrders = Object.values(appState.orders).flat(); const orderToPrint = allOrders.find(o => o.id === orderId); if (!orderToPrint) { alert('Could not find order to print.'); return; } document.getElementById('slip-customer-details').innerHTML = `<strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}`; document.getElementById('slip-date-details').innerHTML = `<strong>Date:</strong> ${new Date(orderToPrint.date).toLocaleDateString()}<br><strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString()}`; document.getElementById('slip-table-body').innerHTML = orderToPrint.items.map((i, index) => `<tr><td>${index + 1}</td><td class="col-item-name">${i.item.ItemName}</td><td class="col-qty numeric">${i.quantity} ${i.item.Unit || ''}</td><td class="col-mrp numeric">${formatCurrency(i.item.Mrp)}</td></tr>`).join(''); document.body.classList.add('printing', 'printing-packing-slip'); setTimeout(() => window.print(), 100); };
-        const handleHistoryClick = (e) => { const deleteBtn = e.target.closest('.delete-history-btn'); const printBtn = e.target.closest('.print-history-btn'); const toggleBtn = e.target.closest('.toggle-details'); if (deleteBtn) { const type = deleteBtn.dataset.type; const id = deleteBtn.dataset.id; if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) { try { if (type === 'orders') { const orderToDelete = Object.values(appState.orders).flat().find(o => o.id === id); if (!orderToDelete) { alert("Could not find the order to delete."); return; } const batch = writeBatch(db); batch.delete(doc(db, "orders", id)); for (const orderItem of orderToDelete.items) { const itemRef = doc(db, "items", String(orderItem.item.Code)); const currentItem = appState.items.find(i => i.Code == orderItem.item.Code); if (currentItem) { const restoredStock = Number(currentItem.Clstock) + Number(orderItem.quantity); batch.update(itemRef, { Clstock: restoredStock }); } } batch.commit(); } else { deleteDoc(doc(db, "payments", id)); } renderHistory(type === 'orders' ? 'customers' : 'payments'); } catch (error) { console.error("Error deleting entry:", error); alert("Failed to delete entry. Please try again."); } } } else if (printBtn) { printPackingSlip(printBtn.dataset.id); } else if (toggleBtn) { e.preventDefault(); const targetElement = document.getElementById(toggleBtn.dataset.target); if (targetElement) { targetElement.classList.toggle('visible'); } } };
+        
+        const handleHistoryClick = (e) => {
+            const deleteBtn = e.target.closest('.delete-history-btn');
+            const printBtn = e.target.closest('.print-history-btn');
+            const toggleBtn = e.target.closest('.toggle-details');
+
+            if (deleteBtn) {
+                const type = deleteBtn.dataset.type;
+                const id = deleteBtn.dataset.id;
+                const cardElement = deleteBtn.closest('.history-card');
+
+                if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
+                    if (cardElement) {
+                        cardElement.style.opacity = '0';
+                        cardElement.style.transform = 'translateX(-20px)';
+                        setTimeout(() => cardElement.remove(), 300);
+                    }
+
+                    if (type === 'orders') {
+                        const salesmanOrders = appState.orders[appState.salesman] || [];
+                        const orderIndex = salesmanOrders.findIndex(o => o.id === id);
+                        if (orderIndex > -1) {
+                            const orderToDelete = salesmanOrders[orderIndex];
+                            salesmanOrders.splice(orderIndex, 1); 
+                            
+                            (async () => {
+                                try {
+                                    const batch = writeBatch(db);
+                                    batch.delete(doc(db, "orders", id));
+                                    for (const orderItem of orderToDelete.items) {
+                                        const itemRef = doc(db, "items", String(orderItem.item.Code));
+                                        const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
+                                        if (currentItem) {
+                                            const restoredStock = Number(currentItem.Clstock) + Number(orderItem.quantity);
+                                            batch.update(itemRef, { Clstock: restoredStock });
+                                        }
+                                    }
+                                    await batch.commit();
+                                } catch (error) {
+                                    console.error("Error deleting order:", error);
+                                    alert("Failed to delete order. The item will reappear on refresh.");
+                                    renderHistory('customers'); 
+                                }
+                            })();
+                        }
+                    } else { // Payments
+                        const salesmanPayments = appState.payments[appState.salesman] || [];
+                        const paymentIndex = salesmanPayments.findIndex(p => p.id === id);
+                        if (paymentIndex > -1) {
+                            salesmanPayments.splice(paymentIndex, 1);
+                            (async () => {
+                                try {
+                                    await deleteDoc(doc(db, "payments", id));
+                                } catch (error) {
+                                    console.error("Error deleting payment:", error);
+                                    alert("Failed to delete payment. The item will reappear on refresh.");
+                                    renderHistory('payments');
+                                }
+                            })();
+                        }
+                    }
+                }
+            } else if (printBtn) {
+                printPackingSlip(printBtn.dataset.id);
+            } else if (toggleBtn) {
+                e.preventDefault();
+                const targetElement = document.getElementById(toggleBtn.dataset.target);
+                if (targetElement) {
+                    targetElement.classList.toggle('visible');
+                }
+            }
+        };
+
         document.getElementById('order-history-list').addEventListener('click', handleHistoryClick);
         document.getElementById('payment-history-list').addEventListener('click', handleHistoryClick);
         document.getElementById('customer-history-list').addEventListener('click', handleHistoryClick);
         const handleDateRangeClick = (btn, isOrder) => { const range = btn.dataset.range; const { start, end } = getDateRange(range); const startInput = document.getElementById(isOrder ? 'order-history-start' : 'payment-history-start'); const endInput = document.getElementById(isOrder ? 'order-history-end' : 'payment-history-end'); startInput.valueAsDate = start; endInput.valueAsDate = end; btn.parentElement.querySelector('.active').classList.remove('active'); btn.classList.add('active'); renderHistory(isOrder ? 'customers' : 'payments'); };
         document.getElementById('order-history-date-filter').addEventListener('click', e => { if (e.target.tagName === 'BUTTON') handleDateRangeClick(e.target, true); });
         document.getElementById('payment-history-date-filter').addEventListener('click', e => { if (e.target.tagName === 'BUTTON') handleDateRangeClick(e.target, false); });
+        
+        const printPaymentSummary = () => {
+            const rangeKey = document.querySelector('#payment-history-date-filter .active').dataset.range;
+            const { start, end } = getDateRange(rangeKey);
+            let salesmanPayments = appState.payments[appState.salesman] || [];
+            if (start && end) {
+                salesmanPayments = salesmanPayments.filter(p => {
+                    const pDate = new Date(p.date);
+                    return pDate >= start && pDate <= end;
+                });
+            }
+            let totalCash = 0, totalUPI = 0;
+            salesmanPayments.forEach(p => {
+                if (p.method === 'Cash') totalCash += p.amount;
+                else if (p.method === 'UPI') totalUPI += p.amount;
+            });
+            const grandTotal = totalCash + totalUPI;
+            salesmanPayments.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            document.getElementById('print-summary-salesman').textContent = `Salesman: ${appState.salesman}`;
+            const dateRangeText = `Date Range: ${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+            document.getElementById('print-summary-daterange').textContent = dateRangeText;
+            document.getElementById('print-summary-cash').textContent = formatCurrency(totalCash);
+            document.getElementById('print-summary-upi').textContent = formatCurrency(totalUPI);
+            document.getElementById('print-summary-grandtotal').textContent = formatCurrency(grandTotal);
+
+            const tableBody = document.getElementById('print-summary-table-body');
+            tableBody.innerHTML = salesmanPayments.map(p => `
+                <tr>
+                    <td>${new Date(p.date).toLocaleString()}</td>
+                    <td>${p.customer.Customer}</td>
+                    <td>${p.method}</td>
+                    <td class="numeric">${formatCurrency(p.amount)}</td>
+                </tr>`).join('');
+            
+            document.body.classList.add('printing', 'printing-summary');
+            setTimeout(() => window.print(), 100);
+        };
+
         const renderSalesmanSummaryPage = () => { const rangeKey = document.querySelector('#payment-history-date-filter .active').dataset.range; const { start, end } = getDateRange(rangeKey); let salesmanPayments = appState.payments[appState.salesman] || []; if (start && end) { salesmanPayments = salesmanPayments.filter(p => { const pDate = new Date(p.date); return pDate >= start && pDate <= end; }); } let totalCash = 0; let totalUPI = 0; salesmanPayments.forEach(p => { if (p.method === 'Cash') totalCash += p.amount; else if (p.method === 'UPI') totalUPI += p.amount; }); const grandTotal = totalCash + totalUPI; salesmanPayments.sort((a, b) => new Date(b.date) - new Date(a.date)); const transactionRowsHtml = salesmanPayments.length > 0 ? salesmanPayments.map(p => `<tr><td class="col-customer">${p.customer.Customer}</td><td class="col-mode">${p.method}</td><td class="col-amount">${formatCurrency(p.amount)}</td></tr>`).join('') : `<tr><td colspan="3" style="text-align:center; padding: 20px 0; color: #666;">No transactions in this period.</td></tr>`; const summaryPageContent = document.getElementById('payment-summary-content'); summaryPageContent.innerHTML = `<div class="card"><div class="summary-totals-card"><div class="kpi-card-small grand-total"><div class="value">${formatCurrency(grandTotal)}</div><div class="label">Total Collected</div></div><div class="kpi-card-small"><div class="value">${formatCurrency(totalCash)}</div><div class="label">Total Cash</div></div><div class="kpi-card-small"><div class="value">${formatCurrency(totalUPI)}</div><div class="label">Total UPI</div></div></div></div><div class="card"><h3>All Transactions</h3><div class="table-responsive-wrapper"><table class="summary-table"><thead><tr><th class="col-customer">Customer</th><th class="col-mode">Mode</th><th class="col-amount">Amount</th></tr></thead><tbody>${transactionRowsHtml}</tbody></table></div></div>`; document.getElementById('summary-date-range').textContent = `(${rangeKey.charAt(0).toUpperCase() + rangeKey.slice(1)})`; showPage('page-payment-summary'); };
         document.getElementById('view-collection-summary-btn').addEventListener('click', renderSalesmanSummaryPage);
+        document.getElementById('print-summary-btn').addEventListener('click', printPaymentSummary);
+
         const offerModal = document.getElementById('offer-modal'), offerModalBody = document.getElementById('offer-modal-body'); const renderFlyerBuilder = () => { const customer = appState.customer; const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === customer.Customer); let previouslyOrderedItemsHtml = ''; appState.flyerBuilder.items = []; if (customerOrders.length > 0) { const uniqueItemCodes = new Set(); customerOrders.forEach(order => {(order.items || []).forEach(item => uniqueItemCodes.add(item.item.Code))}); [...uniqueItemCodes].forEach(code => { const fullItem = appState.items.find(i => i.Code == code); if (fullItem) { appState.flyerBuilder.items.push({ item: fullItem, price: fullItem.Price2, isPrevious: true }); } }); if(appState.flyerBuilder.items.length > 0) { previouslyOrderedItemsHtml = `<h4 style="margin-bottom:10px;">Previously Ordered Items</h4>`; } } offerModalBody.innerHTML = `<div id="offer-flyer-preview-container"></div><div id="offer-builder-content">${previouslyOrderedItemsHtml}<div id="offer-builder-item-list"></div><hr style="border: 1px solid #f0f0f0; margin: 20px 0;"><h4 style="margin-bottom:10px;">Add New Item to Offer</h4><div id="offer-item-search-container" style="position: relative;"><input type="text" id="offer-item-search-input" placeholder="Search for products..."><div id="offer-item-search-results"></div></div></div>`; renderFlyerBuilderItems(); }; const renderFlyerBuilderItems = () => { const listContainer = document.getElementById('offer-builder-item-list'); if (appState.flyerBuilder.items.length === 0) { listContainer.innerHTML = `<p style="text-align:center; color:#888;">No items added to flyer yet.</p>`; return; } listContainer.innerHTML = appState.flyerBuilder.items.map((flyerItem, index) => `<div class="offer-builder-item"><div class="item-info"><div class="item-name">${flyerItem.item.ItemName}</div><div class="item-price">Offer Price: ${formatCurrency(flyerItem.price)}</div></div><button class="item-action-btn edit-btn" data-index="${index}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="item-action-btn delete-btn" data-index="${index}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>`).join(''); }; const handleGenerateOffer = (customer) => { appState.customer = customer; document.getElementById('offer-modal-title').textContent = `Flyer for ${customer.Customer}`; renderFlyerBuilder(); document.getElementById('generate-flyer-btn').style.display = 'block'; document.getElementById('share-flyer-btn').style.display = 'none'; appState.shareableFlyerBlob = null; offerModal.style.display = 'flex'; }; offerModalBody.addEventListener('input', e => { if(e.target.id === 'offer-item-search-input') { renderItemSearchResults(e.target.value, 'offer-item-search-results'); } }); offerModalBody.addEventListener('click', e => { const resultItem = e.target.closest('.search-result-item'); if(resultItem) { const code = resultItem.dataset.itemCode; const fullItem = appState.items.find(i => i.Code == code); if (fullItem && !appState.flyerBuilder.items.some(fi => fi.item.Code === fullItem.Code)) { appState.flyerBuilder.items.push({ item: fullItem, price: fullItem.Price2, isPrevious: false }); renderFlyerBuilderItems(); } document.getElementById('offer-item-search-input').value = ''; document.getElementById('offer-item-search-results').innerHTML = ''; } const deleteBtn = e.target.closest('.delete-btn'); if(deleteBtn) { appState.flyerBuilder.items.splice(parseInt(deleteBtn.dataset.index), 1); renderFlyerBuilderItems(); } const editBtn = e.target.closest('.edit-btn'); if (editBtn) { const index = parseInt(editBtn.dataset.index); const flyerItem = appState.flyerBuilder.items[index]; const newPrice = prompt(`Enter new offer price for ${flyerItem.item.ItemName}:`, flyerItem.price); if (newPrice !== null && !isNaN(parseFloat(newPrice))) { flyerItem.price = parseFloat(newPrice); renderFlyerBuilderItems(); } } });
         document.getElementById('generate-flyer-btn').addEventListener('click', async () => { const generateBtn = document.getElementById('generate-flyer-btn'); const previewContainer = document.getElementById('offer-flyer-preview-container'); if (appState.flyerBuilder.items.length === 0) { alert("Please add at least one item to the flyer."); return; } generateBtn.disabled = true; generateBtn.innerHTML = '<div class="spinner" style="width:20px; height:20px; border-width:2px; margin: 0 auto;"></div>'; previewContainer.innerHTML = '<div class="spinner"></div>'; document.getElementById('offer-builder-content').style.display = 'none'; let headline = `A Special Offer For <span class="customer-name-highlight">${appState.customer.Customer}</span>!`; if(appState.flyerBuilder.items.some(i => i.isPrevious)) { headline = `Your Favorites Are On Offer, <span class="customer-name-highlight">${appState.customer.Customer}</span>!`; } const itemsHtml = appState.flyerBuilder.items.map(item => `<li class="flyer-item"><span class="flyer-item-name">${item.item.ItemName}</span><span class="flyer-item-price">${formatCurrency(item.price)}</span></li>`).join(''); document.getElementById('flyer-template-wrapper').innerHTML = `<div id="flyer-content"><div id="flyer-header"><h2 id="flyer-logo">MF BIGMARKET</h2><p id="flyer-tagline">Quality Products, Delivered.</p></div><div id="flyer-offer-details"><h3 id="flyer-headline">${headline}</h3><ul id="flyer-item-list">${itemsHtml}</ul></div><div id="flyer-footer"><p>Contact your salesman, ${appState.salesman}, to order today!</p></div></div>`; try { const canvas = await html2canvas(document.getElementById('flyer-template-wrapper'), { scale: 2, useCORS: true, backgroundColor: null }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9)); appState.shareableFlyerBlob = blob; const imgEl = document.createElement('img'); imgEl.src = URL.createObjectURL(blob); previewContainer.innerHTML = ''; previewContainer.appendChild(imgEl); generateBtn.style.display = 'none'; document.getElementById('share-flyer-btn').style.display = 'block'; } catch (error) { console.error("Flyer generation error:", error); previewContainer.innerHTML = '<p style="color:red;">Error generating flyer image.</p>'; } finally { generateBtn.disabled = false; generateBtn.innerHTML = 'Generate Flyer'; } });
         document.getElementById('share-flyer-btn').addEventListener('click', async () => { const flyerBlob = appState.shareableFlyerBlob; if (!flyerBlob) { alert('Flyer image is not available.'); return; } try { const file = new File([flyerBlob], 'MF-BigMarket-Offer.jpg', { type: 'image/jpeg' }); if (navigator.share && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Special Offer for ' + appState.customer.Customer }); } else { alert("Sharing not supported. You can save the image by long-pressing it and share manually."); } } catch (error) { console.error('Share failed:', error); alert("Could not share automatically. Please save the image and send it manually."); } });
