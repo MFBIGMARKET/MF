@@ -1052,8 +1052,6 @@
                 <button data-range="week">This Week</button>
                 <button data-range="month">This Month</button>
             </div>
-            <input type="date" id="order-history-start" style="display:none;">
-            <input type="date" id="order-history-end" style="display:none;">
             <div id="order-history-list"></div>
         </div>
     </div>
@@ -1074,8 +1072,6 @@
                 <button data-range="week">This Week</button>
                 <button data-range="month">This Month</button>
             </div>
-            <input type="date" id="payment-history-start" style="display:none;">
-            <input type="date" id="payment-history-end" style="display:none;">
             <div id="payment-history-list"></div>
         </div>
     </div>
@@ -1659,25 +1655,73 @@
             totalCont.innerHTML = `<span>Grand Total: ${formatCurrency(grandTotalRevenue)}</span><span class="total-margin-badge" style="background-color: ${marginBgColor};">${marginPercent.toFixed(2)}%</span>`;
             totalCont.style.display = 'flex'; 
         };
-        const renderHistory = (type) => {
+        
+        const renderHistory = (type, dateRange = null) => {
             const isOrder = type === 'customers';
             const container = document.getElementById(isOrder ? 'order-history-list' : 'payment-history-list');
-            const startInput = document.getElementById(isOrder ? 'order-history-start' : 'payment-history-start').value;
-            const endInput = document.getElementById(isOrder ? 'order-history-end' : 'payment-history-end').value;
             let historyData = isOrder ? (appState.orders[appState.salesman] || []) : (appState.payments[appState.salesman] || []);
-            if (startInput && endInput) {
-                const startDate = new Date(startInput + 'T00:00:00');
-                const endDate = new Date(endInput + 'T00:00:00');
-                endDate.setHours(23, 59, 59, 999);
+            
+            if (dateRange && dateRange.start && dateRange.end) {
+                const { start, end } = dateRange;
                 historyData = historyData.filter(item => {
                     const itemDate = new Date(item.date);
-                    return itemDate >= startDate && itemDate <= endDate;
+                    return itemDate >= start && itemDate <= end;
                 });
             }
+
             if (historyData.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No history found for the selected dates.</p>`; return; }
-            container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => { const itemDetailsHtml = isOrder ? (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join('') : ''; return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>${isOrder?"Customer":"Customer"}:</strong> ${item.customer.Customer}</p><p><strong>${isOrder?"Total":"Amount"}:</strong> ${formatCurrency(isOrder?item.total:item.amount)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p></div><div class="actions">${isOrder?`<button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`:""}<button class="history-action-btn delete-history-btn" data-type="${isOrder?"orders":"payments"}" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div>${isOrder?`<div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th>Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a>`:""}</div>`; }).join('');
+            
+            container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => { const itemDetailsHtml = isOrder ? (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join('') : ''; return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>${isOrder?"Customer":"Customer"}:</strong> ${item.customer.Customer}</p><p><strong>${isOrder?"Total":"Amount"}:</strong> ${formatCurrency(isOrder?item.total:item.amount)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p></div><div class="actions">${isOrder?`<button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`:""}<button class="history-action-btn delete-history-btn" data-type="${isOrder?"orders":"payments"}" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div>${isOrder?`<div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th>Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a>`:""}</div>`; }).join('');
         };
-        const getDateRange = (rangeKey) => { const now = new Date(); const start = new Date(now); const end = new Date(now); switch(rangeKey) { case 'today': start.setHours(0,0,0,0); end.setHours(23,59,59,999); break; case 'yesterday': start.setDate(start.getDate()-1); start.setHours(0,0,0,0); end.setDate(end.getDate()-1); end.setHours(23,59,59,999); break; case 'week': start.setDate(start.getDate()-now.getDay()); start.setHours(0,0,0,0); break; case 'month': start.setDate(1); start.setHours(0,0,0,0); break; case 'all': return {start:null,end:null}; } return {start, end}; };
+        
+        /**
+         * TIMEZONE FIX: This function calculates date ranges based on IST (+5:30)
+         * to ensure filtering works correctly regardless of user/server timezone.
+         */
+        const getDateRange = (rangeKey) => {
+            const IST_OFFSET = 5.5 * 60 * 60 * 1000;
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const istNow = new Date(utc + IST_OFFSET);
+
+            let startIST = new Date(istNow);
+            let endIST = new Date(istNow);
+
+            switch (rangeKey) {
+                case 'today':
+                    startIST.setUTCHours(0, 0, 0, 0);
+                    endIST.setUTCHours(23, 59, 59, 999);
+                    break;
+                case 'yesterday':
+                    startIST.setUTCDate(startIST.getUTCDate() - 1);
+                    startIST.setUTCHours(0, 0, 0, 0);
+                    endIST.setUTCDate(endIST.getUTCDate() - 1);
+                    endIST.setUTCHours(23, 59, 59, 999);
+                    break;
+                case 'week':
+                    // In IST, week starts on Sunday (day 0)
+                    const dayOfWeek = startIST.getUTCDay();
+                    startIST.setUTCDate(startIST.getUTCDate() - dayOfWeek);
+                    startIST.setUTCHours(0, 0, 0, 0);
+                    // End of week is 6 days after start
+                    endIST = new Date(startIST);
+                    endIST.setUTCDate(endIST.getUTCDate() + 6);
+                    endIST.setUTCHours(23, 59, 59, 999);
+                    break;
+                case 'month':
+                    startIST = new Date(Date.UTC(istNow.getUTCFullYear(), istNow.getUTCMonth(), 1));
+                    endIST = new Date(Date.UTC(istNow.getUTCFullYear(), istNow.getUTCMonth() + 1, 0));
+                    endIST.setUTCHours(23, 59, 59, 999);
+                    break;
+                case 'all':
+                    return { start: null, end: null };
+            }
+            
+            // The calculated IST dates are already in UTC representation, so we can use them directly.
+            // new Date(utc timestamp) creates a date object that represents that universal moment.
+            return { start: startIST, end: endIST };
+        };
+
         const processAdminData = (rangeKey) => { const {start,end}=getDateRange(rangeKey); const costMap = new Map(appState.items.map(i=>[String(i.Code),parseFloat(i.CostRate)||0])); let orders=Object.values(appState.orders).flat(); let payments=Object.values(appState.payments).flat(); if(start&&end){orders=orders.filter(o=>{const orderDate=new Date(o.date);return orderDate>=start&&orderDate<=end});payments=payments.filter(p=>{const paymentDate=new Date(p.date);return paymentDate>=start&&paymentDate<=end})}let totalRevenue=0,totalCost=0,totalOrders=orders.length; const salesBySalesman={}; const topItems={}; orders.forEach(order=>{const salesman=order.salesman||'N/A';if(!salesBySalesman[salesman])salesBySalesman[salesman]={revenue:0,cost:0,orderCount:0};salesBySalesman[salesman].orderCount++;(order.items||[]).forEach(item=>{const revenue=item.quantity*item.sellingPrice;const cost=item.quantity*(costMap.get(String(item.item.Code))||0);totalRevenue+=revenue;totalCost+=cost;salesBySalesman[salesman].revenue+=revenue;salesBySalesman[salesman].cost+=cost;const itemName=item.item.ItemName;if(!topItems[itemName])topItems[itemName]={quantity:0,revenue:0};topItems[itemName].quantity+=item.quantity;topItems[itemName].revenue+=revenue})}); const collectionsBySalesman={}; let grandTotalCash=0,grandTotalUPI=0; const todayStr=new Date().toLocaleDateString(); Object.values(appState.payments).flat().forEach(p=>{if(new Date(p.date).toLocaleDateString()===todayStr){const salesman=p.salesman||'N/A';if(!collectionsBySalesman[salesman])collectionsBySalesman[salesman]={cash:0,upi:0};if(p.method==='Cash'){collectionsBySalesman[salesman].cash+=p.amount;grandTotalCash+=p.amount}else if(p.method==='UPI'){collectionsBySalesman[salesman].upi+=p.amount;grandTotalUPI+=p.amount}}}); return {totalRevenue,totalProfit:totalRevenue-totalCost,totalOrders,salesBySalesman,topItems:Object.entries(topItems).sort((a,b)=>b[1].revenue-a[1].revenue).slice(0,10),collectionsBySalesman,grandTotalCash,grandTotalUPI}};
         const renderAdminDashboard = () => { const contentEl=document.getElementById("admin-dashboard-content"); if(appState.items.length===0){contentEl.innerHTML='<div class="card" style="text-align: center;">Loading data...</div>';return} const data=processAdminData(appState.reporting.dateRange); const overallMargin=data.totalRevenue>0?(data.totalProfit/data.totalRevenue*100):0; const salesListHtml=Object.entries(data.salesBySalesman).sort((a,b)=>b[1].revenue-a[1].revenue).map(([salesman,d])=>{const profit=d.revenue-d.cost;const margin=d.revenue>0?profit/d.revenue*100:0;return`<li class="data-list-item" data-salesman="${salesman}"><div class="item-main">${salesman}</div><div class="item-details"><span class="value-primary">${formatCurrency(d.revenue)}</span><span class="value-secondary"><span class="${profit>=0?"profit":"loss"}">${formatCurrency(profit)} (${margin.toFixed(1)}%)</span></span></div></li>`}).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>'; const topItemsHtml=data.topItems.map(([name,d])=>`<li class="data-list-item" style="cursor:default;"><div class="item-main">${name}</div><div class="item-details"><span class="value-primary">${formatCurrency(d.revenue)}</span><span class="value-secondary">Qty: ${d.quantity}</span></div></li>`).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>'; const totalCollectionsToday=data.grandTotalCash+data.grandTotalUPI; const collectionsBreakdownHtml=Object.entries(data.collectionsBySalesman).map(([salesman,d])=>`<div class="salesman-header">${salesman}</div><ul class="salesman-breakdown"><li><span>Cash</span> <span>${formatCurrency(d.cash)}</span></li><li><span>UPI</span> <span>${formatCurrency(d.upi)}</span></li><li><span>Sub-Total</span> <span>${formatCurrency(d.cash+d.upi)}</span></li></ul>`).join(""); const collectionsHtml=Object.keys(data.collectionsBySalesman).length>0?collectionsBreakdownHtml:'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No collections today.</li>'; let dateFilterButtons=`<button data-range="today" ${appState.reporting.dateRange==='today'?'class="active"':''}>Today</button><button data-range="week" ${appState.reporting.dateRange==='week'?'class="active"':''}>This Week</button><button data-range="month" ${appState.reporting.dateRange==='month'?'class="active"':''}>This Month</button><button data-range="all" ${appState.reporting.dateRange==='all'?'class="active"':''}>All Time</button>`; contentEl.innerHTML=`<div class="date-range-filter" id="admin-date-filter">${dateFilterButtons}</div><div class="dashboard-grid"><div class="kpi-row"><div class="kpi-card-small"><div class="value">${formatCurrency(data.totalRevenue)}</div><div class="label">Total Revenue</div></div><div class="kpi-card-small"><div class="value">${formatCurrency(data.totalProfit)}</div><div class="label">Total Profit</div></div><div class="kpi-card-small"><div class="value">${data.totalOrders}</div><div class="label">Total Orders</div></div><div class="kpi-card-small"><div class="value ${overallMargin>=0?"profit":"loss"}">${overallMargin.toFixed(1)}%</div><div class="label">Overall Margin</div></div></div><div class="data-list-card"><h3>Sales by Salesman</h3><ul class="data-list-container">${salesListHtml}</ul></div><div class="data-list-card"><h3>Top Selling Items</h3><ul class="data-list-container">${topItemsHtml}</ul></div><div class="data-list-card"><h3>Today's Collections</h3><ul class="payment-summary-list"><li><span>Total Cash</span><strong>${formatCurrency(data.grandTotalCash)}</strong></li><li><span>Total UPI</span><strong>${formatCurrency(data.grandTotalUPI)}</strong></li><li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatCurrency(totalCollectionsToday)}</strong></li>${collectionsHtml}</ul></div><div class="data-list-card"><h3>Operations</h3><button class="button button-outline" id="location-report-btn" style="margin-bottom: 10px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Location Report</button><button class="button button-outline" id="crm-module-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Send Bulk Offer</button></div></div>`;};
         const renderLocationReportPage = () => { const contentEl=document.getElementById('location-report-content'); const allSalesmen=['UNNI','RIYAS']; const dateFilterHtml=`<div class="date-range-filter" id="location-report-date-filter"><button data-range="today" class="${appState.reporting.locationDateRange==='today'?'active':''}">Today</button><button data-range="yesterday" class="${appState.reporting.locationDateRange==='yesterday'?'active':''}">Yesterday</button><button data-range="week" class="${appState.reporting.locationDateRange==='week'?'active':''}">This Week</button><button data-range="month" class="${appState.reporting.locationDateRange==='month'?'active':''}">This Month</button></div>`; const {start,end}=getDateRange(appState.reporting.locationDateRange); let filteredOrders=Object.values(appState.orders).flat(); if(start&&end){filteredOrders=filteredOrders.filter(o=>{const orderDate=new Date(o.date);return orderDate>=start&&orderDate<=end})} let summaryHtml='<div class="card"><h3>Last Activity Summary</h3><div id="location-summary-list">'; allSalesmen.forEach(salesman=>{const lastOrder=filteredOrders.filter(o=>o.salesman===salesman&&o.location).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];if(lastOrder){summaryHtml+=`<div class="list-item"><div class="info"><strong style="color: var(--primary-color); font-size: 1.1rem;">${salesman}</strong><p><strong>Last Order:</strong> ${lastOrder.customer.Customer} (${formatCurrency(lastOrder.total)})</p><p><strong>Time:</strong> ${new Date(lastOrder.date).toLocaleString()}</p></div><a href="https://www.google.com/maps?q=${lastOrder.location.lat},${lastOrder.location.lng}" target="_blank" class="button button-outline" style="width: auto; padding: 8px 15px; font-size: 0.9rem;">View Last Location</a></div>`}else{summaryHtml+=`<div class="list-item"><strong style="color: var(--primary-color); font-size: 1.1rem;">${salesman}</strong><span>No location data found for this period.</span></div>`}}); summaryHtml+='</div></div>'; const allOrdersWithLocation=filteredOrders.filter(o=>o.location).sort((a,b)=>new Date(b.date)-new Date(a.date)); let detailsHtml='<div class="card" style="margin-top: 20px;"><h3>Detailed Location Log</h3><div id="location-details-list">'; if(allOrdersWithLocation.length>0){detailsHtml+=allOrdersWithLocation.map(order=>`<div class="list-item"><div class="info"><strong>${order.customer.Customer}</strong><br><small>${order.salesman} - ${new Date(order.date).toLocaleString()}</small></div><a href="https://www.google.com/maps?q=${order.location.lat},${order.location.lng}" target="_blank" class="list-item-action">View Map</a></div>`).join('')}else{detailsHtml+='<p style="text-align: center; padding: 20px;">No orders with location data found for this period.</p>'} detailsHtml+='</div></div>'; contentEl.innerHTML=dateFilterHtml+summaryHtml+detailsHtml; showPage('page-location-report')};
@@ -1734,7 +1778,16 @@
 
         document.querySelectorAll('.footer-button').forEach(btn => btn.addEventListener('click', e => { const current = e.currentTarget; document.querySelectorAll('.footer-button').forEach(b => b.classList.remove('active')); current.classList.add('active'); customerView.style.display = 'none'; paymentView.style.display = 'none'; appState.currentView = current.id === 'orders-tab-btn' ? 'customers' : 'payments'; renderCurrentView(); if (appState.currentView === 'customers') { customerView.style.display = 'block';} else { paymentView.style.display = 'block'; } }));
         
-        document.getElementById('history-icon-btn').addEventListener('click', () => { const isOrder = appState.currentView === 'customers'; const pageId = isOrder ? 'page-order-history' : 'page-payment-history'; const filterId = isOrder ? 'order-history-date-filter' : 'payment-history-date-filter'; handleDateRangeClick(document.querySelector(`#${filterId} button[data-range="today"]`), isOrder); showPage(pageId); });
+        document.getElementById('history-icon-btn').addEventListener('click', () => {
+            const isOrder = appState.currentView === 'customers';
+            const pageId = isOrder ? 'page-order-history' : 'page-payment-history';
+            const filterId = isOrder ? 'order-history-date-filter' : 'payment-history-date-filter';
+            document.querySelector(`#${filterId} .active`).classList.remove('active');
+            document.querySelector(`#${filterId} [data-range="today"]`).classList.add('active');
+            const { start, end } = getDateRange('today');
+            renderHistory(isOrder ? 'customers' : 'payments', { start, end });
+            showPage(pageId);
+        });
         
         document.getElementById('product-info-icon-btn').addEventListener('click', () => { showPage('page-product-info'); });
         document.getElementById('back-to-main-from-info-btn').addEventListener('click', () => { showPage('page-main-view'); });
@@ -1987,7 +2040,15 @@
         document.getElementById('order-history-list').addEventListener('click', handleHistoryClick);
         document.getElementById('payment-history-list').addEventListener('click', handleHistoryClick);
         document.getElementById('customer-history-list').addEventListener('click', handleHistoryClick);
-        const handleDateRangeClick = (btn, isOrder) => { const range = btn.dataset.range; const { start, end } = getDateRange(range); const startInput = document.getElementById(isOrder ? 'order-history-start' : 'payment-history-start'); const endInput = document.getElementById(isOrder ? 'order-history-end' : 'payment-history-end'); startInput.valueAsDate = start; endInput.valueAsDate = end; btn.parentElement.querySelector('.active').classList.remove('active'); btn.classList.add('active'); renderHistory(isOrder ? 'customers' : 'payments'); };
+        
+        const handleDateRangeClick = (btn, isOrder) => {
+            const range = btn.dataset.range;
+            const { start, end } = getDateRange(range);
+            btn.parentElement.querySelector('.active').classList.remove('active');
+            btn.classList.add('active');
+            renderHistory(isOrder ? 'customers' : 'payments', { start, end });
+        };
+        
         document.getElementById('order-history-date-filter').addEventListener('click', e => { if (e.target.tagName === 'BUTTON') handleDateRangeClick(e.target, true); });
         document.getElementById('payment-history-date-filter').addEventListener('click', e => { if (e.target.tagName === 'BUTTON') handleDateRangeClick(e.target, false); });
         
