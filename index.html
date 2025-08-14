@@ -420,7 +420,7 @@
 
         /* REVISED: Mobile-friendly search result item */
         .search-result-item {
-            padding: 10px 16px;
+            padding: 12px 15px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
@@ -435,21 +435,37 @@
             font-weight: 500;
             width: 100%;
             white-space: normal; /* Allow name to wrap */
-            margin-bottom: 5px; /* Space between name and details */
+            margin-bottom: 8px; /* Space between name and details grid */
+            font-size: 1rem;
         }
-        .search-result-item .item-details-row {
-            display: flex;
-            justify-content: space-between;
+
+        /* NEW: Styles for the search result details grid */
+        .search-result-item .item-details-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
             width: 100%;
-            font-size: 0.9rem;
-            align-items: center;
+            text-align: center;
+        }
+        .search-result-item .detail-cell .label {
+            display: block;
+            font-size: 0.7rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .search-result-item .detail-cell .value {
+            font-size: 0.85rem;
+            font-weight: 600;
         }
         .search-result-item .item-p2 {
-            font-weight: 600;
             color: var(--primary-color);
         }
-        .search-result-item .item-stock {
-            font-weight: 500;
+        .search-result-item .item-margin.profit {
+            color: var(--success-color);
+        }
+        .search-result-item .item-margin.loss {
+            color: var(--danger-color);
         }
         
         .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--primary-color); animation: spin 1s ease infinite; margin: 20px auto; }
@@ -1438,6 +1454,35 @@
         const showPage = (pageId) => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); };
         const formatCurrency = (v) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(v);
         
+        const createSearchResultItemHTML = (i) => {
+            const margin = i.CostRate > 0 ? (((i.Price2 - i.CostRate) / i.CostRate) * 100) : 0;
+            const marginClass = margin >= 0 ? 'profit' : 'loss';
+            const stockColor = i.Clstock > 10 ? 'var(--success-color)' : (i.Clstock > 0 ? 'var(--warning-color)' : 'var(--danger-color)');
+
+            return `
+                <div class="search-result-item" data-item-code="${i.Code}">
+                    <div class="item-name">${i.ItemName}</div>
+                    <div class="item-details-grid">
+                        <div class="detail-cell">
+                            <span class="label">P2</span>
+                            <span class="value item-p2">${formatCurrency(i.Price2)}</span>
+                        </div>
+                        <div class="detail-cell">
+                            <span class="label">MRP</span>
+                            <span class="value">${formatCurrency(i.Mrp)}</span>
+                        </div>
+                        <div class="detail-cell">
+                            <span class="label">Margin</span>
+                            <span class="value item-margin ${marginClass}">${margin.toFixed(1)}%</span>
+                        </div>
+                        <div class="detail-cell">
+                            <span class="label">Stock</span>
+                            <span class="value item-stock" style="color: ${stockColor};">${i.Clstock}</span>
+                        </div>
+                    </div>
+                </div>`;
+        };
+
         const showProfessionalModal = (title, message, onCloseCallback) => {
             const modal = document.getElementById('professional-modal');
             document.getElementById('professional-modal-title').textContent = title;
@@ -1560,27 +1605,13 @@
             const lowerFilter = filter.toLowerCase();
             const filteredNames = appState.salesmanItems.filter(name => name.toLowerCase().includes(lowerFilter));
             const searchResults = filteredNames.map(name => appState.items.find(item => item.ItemName === name)).filter(Boolean);
-            cont.innerHTML = searchResults.slice(0, 50).map(i => `
-                <div class="search-result-item" data-item-code="${i.Code}">
-                    <div class="item-name">${i.ItemName}</div>
-                    <div class="item-details-row">
-                        <span class="item-p2">${formatCurrency(i.Price2)}</span>
-                        <span class="item-stock" style="color: ${i.Clstock > 10 ? 'var(--success-color)' : (i.Clstock > 0 ? 'var(--warning-color)' : 'var(--danger-color)')};">Stock: ${i.Clstock}</span>
-                    </div>
-                </div>`).join('');
+            cont.innerHTML = searchResults.slice(0, 50).map(i => createSearchResultItemHTML(i)).join('');
         };
         const renderItemSearchResults = (filter = '', resultsContainerId) => { 
             const cont = document.getElementById(resultsContainerId); 
             if (!filter) { cont.innerHTML = ''; return; }
             const nameFilter = item => (item.ItemName || '').toLowerCase().includes(filter.toLowerCase());
-            cont.innerHTML = appState.items.filter(i => nameFilter(i)).slice(0, 50).map(i => `
-                <div class="search-result-item" data-item-code="${i.Code}">
-                    <div class="item-name">${i.ItemName}</div>
-                    <div class="item-details-row">
-                        <span class="item-p2">${formatCurrency(i.Price2)}</span>
-                        <span class="item-stock" style="color: ${i.Clstock > 10 ? 'var(--success-color)' : (i.Clstock > 0 ? 'var(--warning-color)' : 'var(--danger-color)')};">Stock: ${i.Clstock}</span>
-                    </div>
-                </div>`).join('');
+            cont.innerHTML = appState.items.filter(i => nameFilter(i)).slice(0, 50).map(i => createSearchResultItemHTML(i)).join('');
         };
         const renderSelectedItemDetails = () => { const i = appState.selectedItem; if (!i) return; const calcMargin = (price) => i.CostRate > 0 ? (((price - i.CostRate) / i.CostRate) * 100).toFixed(2) : 0; document.getElementById('price1-option').innerHTML = `<div class="price">P1 ${formatCurrency(i.Price1)}</div><div class="margin">Margin: ${calcMargin(i.Price1)}%</div>`; document.getElementById('price2-option').innerHTML = `<div class="price">P2 ${formatCurrency(i.Price2)}</div><div class="margin">Margin: ${calcMargin(i.Price2)}%</div>`; document.getElementById('price3-option').innerHTML = `<div class="price">P3 ${formatCurrency(i.Price3)}</div><div class="margin">Margin: ${calcMargin(i.Price3)}%</div>`; document.getElementById('item-details-form').style.display = 'block'; document.getElementById('item-unit-display').textContent = i.Unit || ''; };
         const renderOrderSummary = () => { 
