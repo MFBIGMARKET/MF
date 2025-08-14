@@ -305,9 +305,12 @@
         /* NEW: Styles for Order Item Tiles */
         #item-tiles-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: 1fr; /* Single column on small screens */
             gap: 15px;
             padding-top: 15px;
+        }
+        @media (min-width: 680px) { /* Two columns on larger screens */
+            #item-tiles-container { grid-template-columns: 1fr 1fr; }
         }
         .item-tile {
             background-color: #fff;
@@ -339,7 +342,7 @@
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 8px;
-            align-items: flex-start;
+            align-items: flex-start; 
         }
         .item-tile .control-cell {
             display: flex;
@@ -371,7 +374,7 @@
             color: #555;
             font-weight: 500;
         }
-        .item-tile .quantity-input {
+        .item-tile .control-input {
             width: 100%;
             height: 40px;
             padding: 6px;
@@ -381,8 +384,8 @@
             border-radius: 6px;
             -moz-appearance: textfield;
         }
-        .item-tile .quantity-input::-webkit-outer-spin-button,
-        .item-tile .quantity-input::-webkit-inner-spin-button {
+        .item-tile .control-input::-webkit-outer-spin-button,
+        .item-tile .control-input::-webkit-inner-spin-button {
             -webkit-appearance: none; margin: 0;
         }
         .item-tile .add-to-cart-btn {
@@ -396,6 +399,7 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
+            transition: background-color 0.2s;
         }
         .item-tile .add-to-cart-btn.added {
             background-color: var(--success-color);
@@ -403,52 +407,50 @@
 
         /* REVISED: Order Item Card Styles (for Summary Page) */
         #order-summary-list .order-item-card {
-            background: #fff;
-            border-radius: var(--border-radius);
-            box-shadow: var(--card-shadow);
-            padding: 12px 15px;
-            margin-bottom: 12px;
             display: flex;
             flex-direction: column;
             gap: 10px;
             align-items: stretch;
+            padding: 12px 15px;
+            margin-bottom: 12px;
         }
-        .order-item-card .item-primary-row {
+        #order-summary-list .item-primary-row {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             width: 100%;
         }
-        .order-item-card .item-name-group {
+        #order-summary-list .item-name-group {
             display: flex;
             align-items: flex-start;
             gap: 10px;
             flex-grow: 1;
+            min-width: 0;
         }
-        .order-item-card .item-serial-no {
+        #order-summary-list .item-serial-no {
             font-weight: 600;
             color: var(--secondary-color);
             font-size: 1.05rem;
             padding-top: 2px;
         }
-        .order-item-card .item-name {
+        #order-summary-list .item-name {
             font-weight: 600;
             font-size: 1.05rem;
             color: var(--text-color);
             word-break: break-word;
         }
-        .order-item-card .item-actions {
+        #order-summary-list .item-actions {
             flex-shrink: 0;
             margin-left: 10px;
         }
-        .order-item-card .item-action-btn {
+        #order-summary-list .item-action-btn {
             background: none; border: none; cursor: pointer; padding: 0;
         }
-        .order-item-card .item-action-btn svg {
+        #order-summary-list .item-action-btn svg {
             width: 22px; height: 22px; stroke-width: 2.5;
         }
-        .order-item-card .delete-btn svg { stroke: var(--danger-color); }
-        .order-item-card .item-details-grid {
+        #order-summary-list .delete-btn svg { stroke: var(--danger-color); }
+        #order-summary-list .item-details-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
@@ -456,19 +458,19 @@
             padding-top: 10px;
             border-top: 1px solid #f0f0f0;
         }
-        .order-item-card .detail-item {
+        #order-summary-list .detail-item {
             text-align: center;
         }
-        .order-item-card .detail-item .label {
+        #order-summary-list .detail-item .label {
             font-size: 0.8rem;
             color: #6c757d;
             margin-bottom: 2px;
         }
-        .order-item-card .detail-item .value {
+        #order-summary-list .detail-item .value {
             font-weight: 500;
             font-size: 0.95rem;
         }
-        .order-item-card .detail-item.total .value {
+        #order-summary-list .detail-item.total .value {
             font-weight: 700;
             color: var(--primary-color);
         }
@@ -1753,10 +1755,6 @@
                     </div>
                     <div class="item-controls">
                         <div class="control-cell">
-                            <button class="price-box" data-price-type="p1">${formatShortCurrency(item.Price1)}</button>
-                            <span class="control-label">P1</span>
-                        </div>
-                        <div class="control-cell">
                              <button class="price-box active" data-price-type="p2">${formatShortCurrency(item.Price2)}</button>
                              <span class="control-label">P2</span>
                         </div>
@@ -1765,7 +1763,11 @@
                             <span class="control-label">P3</span>
                         </div>
                         <div class="control-cell">
-                            <input type="number" class="quantity-input" min="1">
+                            <input type="number" class="control-input custom-price-input" placeholder="Price" min="0">
+                            <span class="control-label">Custom</span>
+                        </div>
+                        <div class="control-cell">
+                            <input type="number" class="control-input quantity-input" min="1">
                             <span class="control-label">QTY</span>
                         </div>
                         <div class="control-cell">
@@ -1849,7 +1851,7 @@
 
             if (historyData.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No history found for the selected dates.</p>`; return; }
             
-            container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => { const itemDetailsHtml = isOrder ? (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join('') : ''; return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>${isOrder?"Customer":"Customer"}:</strong> ${item.customer.Customer}</p><p><strong>${isOrder?"Total":"Amount"}:</strong> ${formatCurrency(isOrder?item.total:item.amount)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p></div><div class="actions">${isOrder?`<button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`:""}<button class="history-action-btn delete-history-btn" data-type="${isOrder?"orders":"payments"}" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div>${isOrder?`<div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a>`:""}</div>`; }).join('');
+            container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => { const itemDetailsHtml = isOrder ? (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join('') : ''; return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>${isOrder?"Customer":"Customer"}:</strong> ${item.customer.Customer}</p><p><strong>${isOrder?"Total":"Amount"}:</strong> ${formatCurrency(isOrder?item.total:item.amount)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p></div><div class="actions">${isOrder?`<button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`:""}<button class="history-action-btn delete-history-btn" data-type="${isOrder?"orders":"payments"}" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div>${isOrder?`<div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a>`:""}</div>`; }).join('');
         };
         
         const getDateRange = (rangeKey) => {
@@ -1920,7 +1922,7 @@
         document.getElementById('back-to-admin-from-location-btn').addEventListener('click', () => showPage('page-admin-dashboard'));
 
         const renderCustomerProfile = () => { const c = appState.customer; document.getElementById('customer-profile-name').textContent = c.Customer; const content = document.getElementById('customer-profile-content'); content.innerHTML = `<div class="card"><p><strong>Name:</strong> ${c.Customer||'N/A'}</p><p><strong>Phone:</strong> ${c.Phone||'N/A'}</p><p><strong>Route:</strong> ${c.Route||'N/A'}</p><p><strong>Assigned Salesman:</strong> ${c.Salesman||'N/A'}</p></div>`; showPage('page-customer-profile'); };
-        const renderCustomerHistory = () => { const c = appState.customer; document.getElementById('customer-history-name').textContent = `History for ${c.Customer}`; const container = document.getElementById('customer-history-list'); const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === c.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)); if (customerOrders.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`; } else { container.innerHTML = customerOrders.map(item => { const itemDetailsHtml = (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join(''); return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>Total:</strong> ${formatCurrency(item.total)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p></div><div class="actions"><button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button><button class="history-action-btn delete-history-btn" data-type="orders" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a></div>`; }).join(''); } showPage('page-customer-history'); };
+        const renderCustomerHistory = () => { const c = appState.customer; document.getElementById('customer-history-name').textContent = `History for ${c.Customer}`; const container = document.getElementById('customer-history-list'); const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === c.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)); if (customerOrders.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`; } else { container.innerHTML = customerOrders.map(item => { const itemDetailsHtml = (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join(''); return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>Total:</strong> ${formatCurrency(item.total)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p></div><div class="actions"><button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button><button class="history-action-btn delete-history-btn" data-type="orders" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a></div>`; }).join(''); } showPage('page-customer-history'); };
         
         document.getElementById('page-salesman-selection').addEventListener('click', e => {
             if (e.target.matches('.button')) {
@@ -2048,6 +2050,12 @@
                 const parentTile = priceBox.closest('.item-tile');
                 parentTile.querySelectorAll('.price-box').forEach(box => box.classList.remove('active'));
                 priceBox.classList.add('active');
+                const customPriceInput = parentTile.querySelector('.custom-price-input');
+                const itemCode = parentTile.dataset.itemCode;
+                const item = appState.items.find(i => i.Code == itemCode);
+                const priceType = priceBox.dataset.priceType;
+                if(priceType === 'p2') customPriceInput.value = item.Price2;
+                else if (priceType === 'p3') customPriceInput.value = item.Price3;
             }
 
             if (addBtn) {
@@ -2055,29 +2063,33 @@
                 const itemCode = tile.dataset.itemCode;
                 const qtyInput = tile.querySelector('.quantity-input');
                 const qty = parseInt(qtyInput.value);
+                const customPriceInput = tile.querySelector('.custom-price-input');
+                const customPrice = parseFloat(customPriceInput.value);
                 const activePriceBox = tile.querySelector('.price-box.active');
-
-                if (!activePriceBox) {
-                    alert('Please select a price (P1, P2, or P3).');
-                    return;
-                }
+                
                 if (isNaN(qty) || qty <= 0) {
                     alert('Please enter a valid quantity.');
                     qtyInput.focus();
                     return;
                 }
                 
-                const priceType = activePriceBox.dataset.priceType; // 'p1', 'p2', 'p3'
                 const item = appState.items.find(i => i.Code == itemCode);
                 let price;
-                if (priceType === 'p1') price = item.Price1;
-                else if (priceType === 'p2') price = item.Price2;
-                else if (priceType === 'p3') price = item.Price3;
+
+                if (!isNaN(customPrice) && customPrice > 0) {
+                    price = customPrice;
+                } else if (activePriceBox) {
+                    const priceType = activePriceBox.dataset.priceType;
+                    if (priceType === 'p2') price = item.Price2;
+                    else if (priceType === 'p3') price = item.Price3;
+                } else {
+                    alert('Please select a price or enter a custom price.');
+                    return;
+                }
                 
                 appState.currentOrder.push({ item: item, quantity: qty, sellingPrice: price });
                 updateCartBadge();
                 
-                // Visual feedback
                 addBtn.classList.add('added');
                 addBtn.textContent = 'Added!';
                 setTimeout(() => {
@@ -2085,7 +2097,17 @@
                     addBtn.textContent = 'Add';
                 }, 1000);
 
-                qtyInput.value = ''; // Reset quantity input
+                qtyInput.value = '';
+                customPriceInput.value = '';
+                tile.querySelectorAll('.price-box').forEach(b => b.classList.remove('active'));
+                tile.querySelector('[data-price-type="p2"]').classList.add('active');
+            }
+        });
+        
+        document.getElementById('item-tiles-container').addEventListener('input', e => {
+            if (e.target.matches('.custom-price-input')) {
+                const parentTile = e.target.closest('.item-tile');
+                parentTile.querySelectorAll('.price-box').forEach(box => box.classList.remove('active'));
             }
         });
         
@@ -2170,8 +2192,7 @@
             
             const tableBodyHtml = orderToPrint.items.map((i, index) => {
                 let priceType = '<span class="price-type">C</span>';
-                if(i.item.Price1 && i.sellingPrice === i.item.Price1) priceType = '<span class="price-type">P1</span>';
-                else if (i.item.Price2 && i.sellingPrice === i.item.Price2) priceType = '<span class="price-type">P2</span>';
+                if(i.item.Price2 && i.sellingPrice === i.item.Price2) priceType = '<span class="price-type">P2</span>';
                 else if (i.item.Price3 && i.sellingPrice === i.item.Price3) priceType = '<span class="price-type">P3</span>';
 
                 return `<tr>
