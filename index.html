@@ -79,9 +79,25 @@
 
         .header { background-color: var(--primary-color); color: var(--light-text-color); padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 100; }
         .header h1 { font-size: 1.4rem; font-weight: 600; }
-        .header .icon-button { background: none; border: none; color: var(--light-text-color); cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s; }
+        .header .icon-button { background: none; border: none; color: var(--light-text-color); cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s; position: relative; }
         .header .icon-button:active { background-color: rgba(255, 255, 255, 0.15); }
         .header .header-actions { display: flex; align-items: center; gap: 15px; }
+
+        #cart-item-count {
+            position: absolute;
+            top: -4px;
+            right: -6px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            line-height: 1;
+            min-width: 20px;
+            text-align: center;
+            border: 2px solid var(--primary-color);
+        }
 
         .content { flex-grow: 1; overflow-y: auto; padding: 15px; }
         .footer { display: flex; justify-content: space-around; background-color: #fff; box-shadow: 0 -2px 8px rgba(0,0,0,0.1); padding: 5px 0 10px 0; flex-shrink: 0; }
@@ -281,26 +297,126 @@
         
         #page-salesman-selection .content { display: flex; flex-direction: column; justify-content: center; gap: 20px; }
         #page-salesman-selection h1 { text-align: center; color: var(--primary-color); margin-bottom: 20px; font-size: 2rem; }
-        #order-item-selection .price-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
-        .price-option { padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
-        .price-option.selected { background-color: var(--secondary-color); color: white; border-color: var(--secondary-color); font-weight: bold; transform: scale(1.05); }
-        .price-option .price { font-size: 1.1rem; font-weight: bold; }
-        .price-option .margin { font-size: 0.8rem; opacity: 0.8; }
-        #current-order-summary { margin-top: 20px; }
         
-        /* REVISED: Order Item Card Styles */
+        /* NEW: Styles for Order Item Tiles */
+        #item-tiles-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 15px;
+            padding-top: 15px;
+        }
+        .item-tile {
+            background-color: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .item-tile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .item-tile .item-name {
+            font-weight: 600;
+            font-size: 1rem;
+            word-break: break-word;
+        }
+        .item-tile .item-info-tags {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #6c757d;
+            white-space: nowrap;
+        }
+        .item-tile .item-controls {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            align-items: flex-start; /* Align to the top */
+        }
+        .item-tile .control-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .item-tile .price-box {
+            width: 100%;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .item-tile .price-box.active {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+        .item-tile .control-label {
+            font-size: 0.75rem;
+            color: #555;
+            font-weight: 500;
+        }
+        .item-tile .quantity-input {
+            width: 100%;
+            height: 40px;
+            padding: 6px;
+            text-align: center;
+            font-size: 1rem;
+            margin-bottom: 0;
+            border-radius: 6px;
+            -moz-appearance: textfield;
+        }
+        .item-tile .quantity-input::-webkit-outer-spin-button,
+        .item-tile .quantity-input::-webkit-inner-spin-button {
+            -webkit-appearance: none; margin: 0;
+        }
+        .item-tile .add-to-cart-btn {
+            width: 100%;
+            height: 40px;
+            padding: 0;
+            font-size: 0.9rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .item-tile .add-to-cart-btn.added {
+            background-color: var(--success-color);
+        }
+
+        /* REVISED: Order Item Card Styles (for Summary Page) */
         .order-item-card {
             background: #fff;
             border-radius: var(--border-radius);
             box-shadow: var(--card-shadow);
             padding: 12px 15px;
             margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .order-item-card .item-serial-no {
+            font-weight: 600;
+            color: var(--secondary-color);
         }
         .order-item-card .item-primary-row {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            gap: 15px;
+            flex-grow: 1;
         }
         .order-item-card .item-name {
             font-weight: 600;
@@ -346,7 +462,7 @@
             color: var(--primary-color);
         }
         
-        #order-grand-total {
+        #order-summary-grand-total {
             margin-top: 20px;
             padding: 15px;
             background-color: var(--primary-color);
@@ -373,8 +489,6 @@
             gap: 10px;
             margin-top: 15px; /* Added space below "Add Item" h3 */
             margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
         }
         .toggle-btn {
             flex: 1;
@@ -402,7 +516,8 @@
             display: block;
         }
 
-        #salesman-item-search-results, #item-search-results, #offer-item-search-results, #offer-item-search-results-bulk, #info-salesman-item-search-results, #info-item-search-results {
+        /* Search Results for Product Info & Modals */
+        #offer-item-search-results, #offer-item-search-results-bulk, #info-salesman-item-search-results, #info-item-search-results {
             position: absolute;
             top: 100%;
             left: 0;
@@ -416,9 +531,8 @@
             z-index: 1000;
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         }
-        /* End of search toggle styles */
-
-        /* REVISED: Mobile-friendly search result item */
+        
+        /* Mobile-friendly search result item */
         .search-result-item {
             padding: 12px 15px;
             cursor: pointer;
@@ -439,7 +553,6 @@
             font-size: 1rem;
         }
 
-        /* NEW: Styles for the search result details grid */
         .search-result-item .item-details-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -467,19 +580,6 @@
         .search-result-item .item-margin.loss {
             color: var(--danger-color);
         }
-        
-        .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--primary-color); animation: spin 1s ease infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .reload-order-btn { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 50%; transition: background-color 0.2s; }
-        .reload-order-btn:active { background-color: var(--light-bg); }
-        .reload-order-btn svg { width: 22px; height: 22px; stroke: var(--secondary-color); stroke-width: 2.5; }
-        .file-upload-wrapper { position: relative; margin-bottom: 15px; }
-        .file-upload-area { border: 2px dashed var(--border-color); border-radius: var(--border-radius); padding: 30px; text-align: center; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; }
-        .file-upload-area:hover { background-color: #f8f9fa; border-color: var(--secondary-color); }
-        .file-upload-area svg { width: 40px; height: 40px; stroke: var(--secondary-color); margin-bottom: 10px; }
-        .file-upload-area p { font-weight: 500; color: var(--primary-color); }
-        .file-upload-area input[type="file"] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         
         /* Hidden Printable Documents */
         #packing-slip-wrapper, #payment-receipt-wrapper, #payment-summary-print-wrapper { display: none; }
@@ -970,62 +1070,56 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="order-customer-name">New Order</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions">
+                <button class="icon-button" id="cart-icon-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    <span id="cart-item-count" style="display: none;">0</span>
+                </button>
+            </div>
         </div>
         <div class="content">
-            <div id="order-item-selection" class="card">
-                <h3>Add Item</h3>
-                
+            <div class="card">
                 <div class="search-toggle-buttons">
                     <button class="toggle-btn active" data-search-type="salesman">Salesman List</button>
                     <button class="toggle-btn" data-search-type="master">Master List</button>
                 </div>
-
                 <div id="salesman-search-view" class="search-view active">
-                    <div style="position: relative;">
-                        <div class="search-bar">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            <input type="text" id="salesman-item-search-input" placeholder="Search salesman list...">
-                        </div>
-                        <div id="salesman-item-search-results"></div>
+                    <div class="search-bar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="salesman-item-search-input" placeholder="Search salesman list...">
                     </div>
                 </div>
-
                 <div id="master-search-view" class="search-view">
-                    <div style="position: relative;">
-                        <div class="search-bar">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            <input type="text" id="item-search-input" placeholder="Search all items...">
-                        </div>
-                        <div id="item-search-results"></div>
+                     <div class="search-bar">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="item-search-input" placeholder="Search all items...">
                     </div>
                 </div>
-
-                <div id="item-details-form" style="display: none; margin-top: 15px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <input type="number" id="item-quantity" placeholder="Quantity" min="1" style="flex-grow: 1; margin-bottom: 0;">
-                        <span id="item-unit-display" style="font-weight: 500; color: #555; white-space: nowrap;"></span>
-                    </div>
-                    <div class="price-options">
-                        <div class="price-option" id="price1-option"></div>
-                        <div class="price-option" id="price2-option"></div>
-                        <div class="price-option" id="price3-option"></div>
-                        <div class="price-option" id="custom-price-option">Custom</div>
-                    </div>
-                    <input type="number" id="custom-price-input" placeholder="Enter Custom Price" style="display: none;">
-                    <div id="custom-price-margin" style="text-align:center; margin-bottom: 10px; font-weight: bold;"></div>
-                    <button id="add-item-btn" class="button">Add to Order</button>
-                </div>
             </div>
-            <div id="previous-orders-card" class="card">
-                <h3>Previous Orders</h3>
-                <div id="previous-orders-list"></div>
+            <div id="item-tiles-container">
+                <!-- Item tiles will be rendered here by JS -->
             </div>
-            <div id="current-order-summary"><h3 style="margin-bottom: 10px;">Current Order</h3><div id="order-items-list"></div><div id="order-grand-total"></div></div>
         </div>
-        <div style="padding: 20px; flex-shrink: 0;"><button id="confirm-order-btn" class="button button-accent">Confirm Order</button></div>
     </div>
     
+    <div id="page-order-summary" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-order-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Order Summary</h1>
+            <div class="icon-button" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+            <h3 style="margin-bottom: 10px;">Current Order</h3>
+            <div id="order-summary-list"></div>
+            <div id="order-summary-grand-total"></div>
+        </div>
+        <div style="padding: 20px; flex-shrink: 0;">
+            <button id="confirm-order-btn" class="button button-accent">Confirm Order</button>
+        </div>
+    </div>
+
     <div id="page-payment" class="page">
         <div class="header">
              <button class="icon-button" id="back-to-main-btn-payment">
@@ -1435,8 +1529,8 @@
         let appState = {
             salesman: null, customer: null, items: [], customers: [],
             salesmanItems: [], 
-            orders: {}, payments: {}, currentOrder: [], selectedItem: null, selectedPriceOption: null,
-            currentPayment: {}, currentView: 'customers', editing: { type: null, id: null, itemIndex: null },
+            orders: {}, payments: {}, currentOrder: [],
+            currentPayment: {}, currentView: 'customers', editing: { type: null, id: null },
             reporting: { salesman: null, customer: null, dateRange: 'today', locationDateRange: 'today' },
             shareableFlyerBlob: null,
             bulkFlyerBlob: null,
@@ -1448,7 +1542,7 @@
         const db = window.firebaseDB;
        
         const showPage = (pageId) => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); };
-        const formatCurrency = (v) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(v);
+        const formatCurrency = (v) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
         
         const createSearchResultItemHTML = (i) => {
             const margin = i.CostRate > 0 ? (((i.Price2 - i.CostRate) / i.CostRate) * 100) : 0;
@@ -1595,6 +1689,8 @@
             if (filteredCustomers.length === 0) { container.innerHTML = `<div class="card" style="text-align: center;">No customers found.</div>`; return; }
             container.innerHTML = filteredCustomers.map(c => `<div class="list-item"><span class="info">${c.Customer}</span><button class="list-item-action" data-customer='${JSON.stringify(c)}'>Collect</button></div>`).join('');
         };
+        
+        // Search for Product Info page and modals
         const renderSalesmanItemSearchResults = (filter = '', resultsContainerId) => {
             const cont = document.getElementById(resultsContainerId);
             if (!filter) { cont.innerHTML = ''; return; }
@@ -1609,30 +1705,99 @@
             const nameFilter = item => (item.ItemName || '').toLowerCase().includes(filter.toLowerCase());
             cont.innerHTML = appState.items.filter(i => nameFilter(i)).slice(0, 50).map(i => createSearchResultItemHTML(i)).join('');
         };
-        const renderSelectedItemDetails = () => { const i = appState.selectedItem; if (!i) return; const calcMargin = (price) => i.CostRate > 0 ? (((price - i.CostRate) / i.CostRate) * 100).toFixed(2) : 0; document.getElementById('price1-option').innerHTML = `<div class="price">P1 ${formatCurrency(i.Price1)}</div><div class="margin">Margin: ${calcMargin(i.Price1)}%</div>`; document.getElementById('price2-option').innerHTML = `<div class="price">P2 ${formatCurrency(i.Price2)}</div><div class="margin">Margin: ${calcMargin(i.Price2)}%</div>`; document.getElementById('price3-option').innerHTML = `<div class="price">P3 ${formatCurrency(i.Price3)}</div><div class="margin">Margin: ${calcMargin(i.Price3)}%</div>`; document.getElementById('item-details-form').style.display = 'block'; document.getElementById('item-unit-display').textContent = i.Unit || ''; };
-        const renderOrderSummary = () => { 
-            const listCont = document.getElementById('order-items-list');
-            const totalCont = document.getElementById('order-grand-total'); 
+
+        // NEW: Item Tiles for Order Page
+        const renderItemTiles = (filter = '', listType = 'salesman') => {
+            const container = document.getElementById('item-tiles-container');
+            const lowerFilter = filter.toLowerCase();
+
+            let itemsToDisplay;
+            if (listType === 'salesman') {
+                const salesmanItemNames = new Set(appState.salesmanItems);
+                itemsToDisplay = appState.items.filter(item => salesmanItemNames.has(item.ItemName));
+            } else {
+                itemsToDisplay = appState.items;
+            }
+
+            if (filter) {
+                itemsToDisplay = itemsToDisplay.filter(item => (item.ItemName || '').toLowerCase().includes(lowerFilter));
+            }
+
+            if (itemsToDisplay.length === 0) {
+                container.innerHTML = `<p class="card" style="text-align:center; grid-column: 1 / -1;">No items found.</p>`;
+                return;
+            }
+            
+            const stockColor = (stock) => stock > 10 ? 'var(--success-color)' : (stock > 0 ? 'var(--warning-color)' : 'var(--danger-color)');
+            const formatShortCurrency = (v) => `₹${Number(v).toFixed(0)}`;
+
+            container.innerHTML = itemsToDisplay.map(item => `
+                <div class="item-tile" data-item-code="${item.Code}">
+                    <div class="item-tile-header">
+                        <div class="item-name">${item.ItemName}</div>
+                        <div class="item-info-tags">
+                            <span>MRP: ${formatCurrency(item.Mrp)}</span> | 
+                            <span style="color: ${stockColor(item.Clstock)};">Stock: ${item.Clstock}</span>
+                        </div>
+                    </div>
+                    <div class="item-controls">
+                        <div class="control-cell">
+                            <div class="price-box" data-price-type="p1">${formatShortCurrency(item.Price1)}</div>
+                            <span class="control-label">P1</span>
+                        </div>
+                        <div class="control-cell">
+                            <div class="price-box active" data-price-type="p2">${formatShortCurrency(item.Price2)}</div>
+                            <span class="control-label">P2</span>
+                        </div>
+                        <div class="control-cell">
+                            <div class="price-box" data-price-type="p3">${formatShortCurrency(item.Price3)}</div>
+                            <span class="control-label">P3</span>
+                        </div>
+                        <div class="control-cell">
+                            <input type="number" class="quantity-input" min="1">
+                            <span class="control-label">QTY</span>
+                        </div>
+                        <div class="control-cell">
+                           <button class="add-to-cart-btn">Add</button>
+                           <span class="control-label">&nbsp;</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        const updateCartBadge = () => {
+            const badge = document.getElementById('cart-item-count');
+            const count = appState.currentOrder.length;
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        };
+
+        const renderOrderSummaryPage = () => { 
+            const listCont = document.getElementById('order-summary-list');
+            const totalCont = document.getElementById('order-summary-grand-total'); 
             let grandTotalRevenue = 0, grandTotalCost = 0;
-            if (appState.currentOrder.length === 0) { listCont.innerHTML = '<p style="text-align:center; padding: 20px 0;">No items added yet.</p>'; totalCont.style.display = 'none'; return; } 
+            if (appState.currentOrder.length === 0) { listCont.innerHTML = '<p class="card" style="text-align:center;">Your cart is empty.</p>'; totalCont.style.display = 'none'; return; } 
             listCont.innerHTML = appState.currentOrder.map((o, idx) => { 
                 const lineItemRevenue = o.quantity * o.sellingPrice; 
                 const lineItemCost = o.quantity * (parseFloat(o.item.CostRate) || 0); 
                 grandTotalRevenue += lineItemRevenue; 
                 grandTotalCost += lineItemCost; 
                 return `<div class="order-item-card">
+                            <span class="item-serial-no">${idx + 1}.</span>
                             <div class="item-primary-row">
                                 <div class="item-name">${o.item.ItemName}</div>
                                 <div class="item-actions">
-                                    <button class="item-action-btn edit-btn" data-index="${idx}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                                    </button>
                                     <button class="item-action-btn delete-btn" data-index="${idx}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                     </button>
                                 </div>
                             </div>
-                            <div class="item-details-grid">
+                            <div class="item-details-grid" style="display:none;">
                                 <div class="detail-item">
                                     <div class="label">Qty</div>
                                     <div class="value">${o.quantity} ${o.item.Unit||""}</div>
@@ -1655,7 +1820,7 @@
             totalCont.innerHTML = `<span>Grand Total: ${formatCurrency(grandTotalRevenue)}</span><span class="total-margin-badge" style="background-color: ${marginBgColor};">${marginPercent.toFixed(2)}%</span>`;
             totalCont.style.display = 'flex'; 
         };
-        
+
         const renderHistory = (type, dateRange = null) => {
             const isOrder = type === 'customers';
             const container = document.getElementById(isOrder ? 'order-history-list' : 'payment-history-list');
@@ -1674,10 +1839,6 @@
             container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => { const itemDetailsHtml = isOrder ? (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join('') : ''; return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>${isOrder?"Customer":"Customer"}:</strong> ${item.customer.Customer}</p><p><strong>${isOrder?"Total":"Amount"}:</strong> ${formatCurrency(isOrder?item.total:item.amount)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p></div><div class="actions">${isOrder?`<button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`:""}<button class="history-action-btn delete-history-btn" data-type="${isOrder?"orders":"payments"}" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div>${isOrder?`<div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th>Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a>`:""}</div>`; }).join('');
         };
         
-        /**
-         * TIMEZONE FIX: This function calculates date ranges based on IST (+5:30)
-         * to ensure filtering works correctly regardless of user/server timezone.
-         */
         const getDateRange = (rangeKey) => {
             const IST_OFFSET = 5.5 * 60 * 60 * 1000;
             const now = new Date();
@@ -1699,11 +1860,9 @@
                     endIST.setUTCHours(23, 59, 59, 999);
                     break;
                 case 'week':
-                    // In IST, week starts on Sunday (day 0)
-                    const dayOfWeek = startIST.getUTCDay();
+                    const dayOfWeek = startIST.getUTCDay(); // Sunday is 0, Monday is 1, etc.
                     startIST.setUTCDate(startIST.getUTCDate() - dayOfWeek);
                     startIST.setUTCHours(0, 0, 0, 0);
-                    // End of week is 6 days after start
                     endIST = new Date(startIST);
                     endIST.setUTCDate(endIST.getUTCDate() + 6);
                     endIST.setUTCHours(23, 59, 59, 999);
@@ -1717,8 +1876,6 @@
                     return { start: null, end: null };
             }
             
-            // The calculated IST dates are already in UTC representation, so we can use them directly.
-            // new Date(utc timestamp) creates a date object that represents that universal moment.
             return { start: startIST, end: endIST };
         };
 
@@ -1751,9 +1908,7 @@
 
         const renderCustomerProfile = () => { const c = appState.customer; document.getElementById('customer-profile-name').textContent = c.Customer; const content = document.getElementById('customer-profile-content'); content.innerHTML = `<div class="card"><p><strong>Name:</strong> ${c.Customer||'N/A'}</p><p><strong>Phone:</strong> ${c.Phone||'N/A'}</p><p><strong>Route:</strong> ${c.Route||'N/A'}</p><p><strong>Assigned Salesman:</strong> ${c.Salesman||'N/A'}</p></div>`; showPage('page-customer-profile'); };
         const renderCustomerHistory = () => { const c = appState.customer; document.getElementById('customer-history-name').textContent = `History for ${c.Customer}`; const container = document.getElementById('customer-history-list'); const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === c.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)); if (customerOrders.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`; } else { container.innerHTML = customerOrders.map(item => { const itemDetailsHtml = (item.items || []).map(i => { const total = i.quantity * i.sellingPrice; return `<tr><td>${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatCurrency(total)}</strong></td></tr>` }).join(''); return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>Total:</strong> ${formatCurrency(item.total)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p></div><div class="actions"><button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button><button class="history-action-btn delete-history-btn" data-type="orders" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th>Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a></div>`; }).join(''); } showPage('page-customer-history'); };
-        const renderPreviousOrders = () => { const container = document.getElementById('previous-orders-list'); const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === appState.customer.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 2); if (customerOrders.length === 0) { document.getElementById('previous-orders-card').style.display = 'none'; return; } document.getElementById('previous-orders-card').style.display = 'block'; container.innerHTML = customerOrders.map((order, index) => `<details style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px;"><summary style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-weight:500;"><span>${new Date(order.date).toLocaleDateString()} - ${formatCurrency(order.total)}</span><button class="reload-order-btn" data-order-index="${index}" title="Reload this order"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3L22 2M22 12.5a10 10 0 0 1-18.8 4.3L2 22"/></svg></button></summary><ul style="list-style-position: inside; padding: 10px 0 0 15px; font-size: 0.9rem; color: #555;">${order.items.map(i => `<li>${i.item.ItemName} (Qty: ${i.quantity} ${i.item.Unit || ''})</li>`).join('')}</ul></details>`).join(''); };
-        const resetOrderForm = () => { appState.selectedItem = null; appState.selectedPriceOption = null; appState.editing.itemIndex = null; document.getElementById('item-search-input').value = ''; document.getElementById('item-search-results').innerHTML = ''; document.getElementById('salesman-item-search-input').value = ''; document.getElementById('salesman-item-search-results').innerHTML = ''; document.getElementById('item-quantity').value = ''; document.getElementById('item-details-form').style.display = 'none'; document.querySelectorAll('.price-option').forEach(el => el.classList.remove('selected')); document.getElementById('custom-price-input').style.display = 'none'; document.getElementById('custom-price-input').value = ''; document.getElementById('custom-price-margin').textContent = ''; document.getElementById('add-item-btn').textContent = 'Add to Order'; };
-
+        
         document.getElementById('page-salesman-selection').addEventListener('click', e => {
             if (e.target.matches('.button')) {
                 const salesman = e.target.dataset.salesman;
@@ -1782,8 +1937,13 @@
             const isOrder = appState.currentView === 'customers';
             const pageId = isOrder ? 'page-order-history' : 'page-payment-history';
             const filterId = isOrder ? 'order-history-date-filter' : 'payment-history-date-filter';
-            document.querySelector(`#${filterId} .active`).classList.remove('active');
-            document.querySelector(`#${filterId} [data-range="today"]`).classList.add('active');
+            const filterContainer = document.querySelector(`#${filterId}`);
+            if (filterContainer) {
+                 const currentActive = filterContainer.querySelector('.active');
+                 if(currentActive) currentActive.classList.remove('active');
+                 const todayBtn = filterContainer.querySelector('[data-range="today"]');
+                 if(todayBtn) todayBtn.classList.add('active');
+            }
             const { start, end } = getDateRange('today');
             renderHistory(isOrder ? 'customers' : 'payments', { start, end });
             showPage(pageId);
@@ -1791,7 +1951,6 @@
         
         document.getElementById('product-info-icon-btn').addEventListener('click', () => { showPage('page-product-info'); });
         document.getElementById('back-to-main-from-info-btn').addEventListener('click', () => { showPage('page-main-view'); });
-
 
         document.getElementById('customer-list-container').addEventListener('click', async (e) => {
             const header = e.target.closest('.customer-item-header');
@@ -1817,9 +1976,8 @@
                         appState.currentOrderLocation = location;
                         document.getElementById('order-customer-name').textContent = appState.customer.Customer; 
                         appState.currentOrder = []; 
-                        resetOrderForm();
-                        renderOrderSummary(); 
-                        renderPreviousOrders();
+                        updateCartBadge();
+                        renderItemTiles(); // Render the new tile layout
                         showPage('page-order');
                     } catch (error) {
                         alert(`Could not start order. Location is required.\n\nError: ${error.message}`);
@@ -1865,22 +2023,74 @@
         document.getElementById('back-to-settings-btn').addEventListener('click', () => { showPage('page-settings'); });
         document.getElementById('back-to-payment-history-btn').addEventListener('click', () => showPage('page-payment-history'));
         
-        document.querySelector('#page-order .search-toggle-buttons').addEventListener('click', e => { if (e.target.matches('.toggle-btn')) { const searchType = e.target.dataset.searchType; document.querySelectorAll('#page-order .toggle-btn').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('#page-order .search-view').forEach(view => view.classList.remove('active')); document.getElementById(`${searchType}-search-view`).classList.add('active'); document.getElementById(`${searchType === 'salesman' ? 'salesman-item-search-input' : 'item-search-input'}`).focus(); } });
-        document.getElementById('salesman-item-search-input').addEventListener('input', (e) => renderSalesmanItemSearchResults(e.target.value, 'salesman-item-search-results'));
-        document.getElementById('item-search-input').addEventListener('input', (e) => renderItemSearchResults(e.target.value, 'item-search-results'));
+        document.querySelector('#page-order .search-toggle-buttons').addEventListener('click', e => { if (e.target.matches('.toggle-btn')) { const searchType = e.target.dataset.searchType; document.querySelectorAll('#page-order .toggle-btn').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('#page-order .search-view').forEach(view => view.classList.remove('active')); document.getElementById(`${searchType}-search-view`).classList.add('active'); const searchInput = document.getElementById(`${searchType === 'salesman' ? 'salesman-item-search-input' : 'item-search-input'}`); searchInput.focus(); renderItemTiles(searchInput.value, searchType); } });
+        document.getElementById('salesman-item-search-input').addEventListener('input', (e) => renderItemTiles(e.target.value, 'salesman'));
+        document.getElementById('item-search-input').addEventListener('input', (e) => renderItemTiles(e.target.value, 'master'));
         
-        const handleItemSelectionFromSearch = (itemElement) => { if (itemElement) { const code = itemElement.dataset.itemCode; appState.selectedItem = appState.items.find(i => i.Code == code); document.getElementById('item-search-input').value = ''; document.getElementById('salesman-item-search-input').value = ''; document.getElementById('item-search-results').innerHTML = ''; document.getElementById('salesman-item-search-results').innerHTML = ''; renderSelectedItemDetails(); document.getElementById('item-quantity').focus(); } };
-        document.getElementById('salesman-item-search-results').addEventListener('click', (e) => { handleItemSelectionFromSearch(e.target.closest('.search-result-item')); });
-        document.getElementById('item-search-results').addEventListener('click', (e) => { handleItemSelectionFromSearch(e.target.closest('.search-result-item')); });
+        document.getElementById('item-tiles-container').addEventListener('click', e => {
+            const priceBox = e.target.closest('.price-box');
+            const addBtn = e.target.closest('.add-to-cart-btn');
 
-        document.querySelector('.price-options').addEventListener('click', e => { const opt = e.target.closest('.price-option'); if (!opt) return; document.querySelectorAll('.price-option').forEach(el => el.classList.remove('selected')); opt.classList.add('selected'); appState.selectedPriceOption = opt.id; const cIn = document.getElementById('custom-price-input'), cMar = document.getElementById('custom-price-margin'); cIn.style.display = (opt.id === 'custom-price-option') ? 'block' : 'none'; if (opt.id === 'custom-price-option') cIn.focus(); else cMar.textContent = ''; });
-        document.getElementById('custom-price-input').addEventListener('input', e => { const price = parseFloat(e.target.value), cost = appState.selectedItem.CostRate, marginDisp = document.getElementById('custom-price-margin'); if (!isNaN(price) && cost > 0) { const margin = ((price - cost) / cost) * 100; marginDisp.textContent = `Margin: ${margin.toFixed(2)}%`; marginDisp.style.color = margin < 0 ? '#e63946' : '#2a9d8f'; } else { marginDisp.textContent = ''; } });
+            if (priceBox) {
+                const parentTile = priceBox.closest('.item-tile');
+                parentTile.querySelectorAll('.price-box').forEach(box => box.classList.remove('active'));
+                priceBox.classList.add('active');
+            }
+
+            if (addBtn) {
+                const tile = addBtn.closest('.item-tile');
+                const itemCode = tile.dataset.itemCode;
+                const qtyInput = tile.querySelector('.quantity-input');
+                const qty = parseInt(qtyInput.value);
+                const activePriceBox = tile.querySelector('.price-box.active');
+
+                if (!activePriceBox) {
+                    alert('Please select a price (P1, P2, or P3).');
+                    return;
+                }
+                if (isNaN(qty) || qty <= 0) {
+                    alert('Please enter a valid quantity.');
+                    qtyInput.focus();
+                    return;
+                }
+                
+                const priceType = activePriceBox.dataset.priceType; // 'p1', 'p2', 'p3'
+                const item = appState.items.find(i => i.Code == itemCode);
+                let price;
+                if (priceType === 'p1') price = item.Price1;
+                else if (priceType === 'p2') price = item.Price2;
+                else if (priceType === 'p3') price = item.Price3;
+                
+                appState.currentOrder.push({ item: item, quantity: qty, sellingPrice: price });
+                updateCartBadge();
+                
+                // Visual feedback
+                addBtn.classList.add('added');
+                addBtn.textContent = 'Added!';
+                setTimeout(() => {
+                    addBtn.classList.remove('added');
+                    addBtn.textContent = 'Add';
+                }, 1000);
+
+                qtyInput.value = ''; // Reset quantity input
+            }
+        });
         
-        document.getElementById('add-item-btn').addEventListener('click', () => { const qty = parseInt(document.getElementById('item-quantity').value); if (!appState.selectedItem || !appState.selectedPriceOption || isNaN(qty) || qty <= 0) { alert('Please select an item, price, and quantity.'); return; } let price; switch(appState.selectedPriceOption) { case 'price1-option': price = appState.selectedItem.Price1; break; case 'price2-option': price = appState.selectedItem.Price2; break; case 'price3-option': price = appState.selectedItem.Price3; break; case 'custom-price-option': price = parseFloat(document.getElementById('custom-price-input').value); if (isNaN(price) || price < 0) { alert('Invalid custom price.'); return; } break; } appState.currentOrder.push({ item: appState.selectedItem, quantity: qty, sellingPrice: price }); resetOrderForm(); renderOrderSummary(); document.getElementById('salesman-item-search-input').focus(); });
-        document.getElementById('order-items-list').addEventListener('click', e => { const deleteBtn = e.target.closest('.delete-btn'); const editBtn = e.target.closest('.edit-btn'); if (deleteBtn) { appState.currentOrder.splice(parseInt(deleteBtn.dataset.index), 1); renderOrderSummary(); } else if (editBtn) { const index = parseInt(editBtn.dataset.index); const itemToEdit = appState.currentOrder[index]; appState.selectedItem = itemToEdit.item; document.getElementById('salesman-item-search-input').value = itemToEdit.item.ItemName; document.getElementById('item-quantity').value = itemToEdit.quantity; document.getElementById('item-details-form').style.display = 'block'; document.querySelectorAll('.price-option').forEach(el => el.classList.remove('selected')); document.getElementById('custom-price-option').classList.add('selected'); document.getElementById('custom-price-input').style.display = 'block'; document.getElementById('custom-price-input').value = itemToEdit.sellingPrice; appState.selectedPriceOption = 'custom-price-option'; appState.currentOrder.splice(index, 1); renderOrderSummary(); document.getElementById('add-item-btn').textContent = 'Update Item'; document.getElementById('item-quantity').focus(); } });
-        document.getElementById('previous-orders-list').addEventListener('click', e => { const copyBtn = e.target.closest('.reload-order-btn'); if (copyBtn) { e.preventDefault(); const index = parseInt(copyBtn.dataset.orderIndex); const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === appState.customer.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)); const orderToCopy = customerOrders[index]; if (orderToCopy) { appState.currentOrder = orderToCopy.items.map(oldItem => { const fullItem = appState.items.find(i => i.Code == oldItem.item.Code); return { item: fullItem || oldItem.item, quantity: oldItem.quantity, sellingPrice: oldItem.sellingPrice }; }); renderOrderSummary(); alert('Order items loaded into Current Order.'); } } });
-        
-        document.getElementById('confirm-order-btn').addEventListener('click', async (e) => {
+        document.getElementById('cart-icon-btn').addEventListener('click', () => {
+            renderOrderSummaryPage();
+            showPage('page-order-summary');
+        });
+        document.getElementById('back-to-order-btn').addEventListener('click', () => showPage('page-order'));
+        document.getElementById('order-summary-list').addEventListener('click', e => { 
+            const deleteBtn = e.target.closest('.delete-btn'); 
+            if (deleteBtn) { 
+                appState.currentOrder.splice(parseInt(deleteBtn.dataset.index), 1); 
+                renderOrderSummaryPage();
+                updateCartBadge();
+            } 
+        });
+
+        document.getElementById('page-order-summary').querySelector('#confirm-order-btn').addEventListener('click', async (e) => {
             const btn = e.currentTarget;
             if (appState.currentOrder.length === 0) { alert('Cannot confirm an empty order.'); return; }
             if (!appState.currentOrderLocation) { alert("Location data was lost. Please go back and start the order again."); return; }
