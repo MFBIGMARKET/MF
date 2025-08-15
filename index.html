@@ -425,7 +425,7 @@
             align-items: flex-start;
             gap: 10px;
             flex-grow: 1;
-            min-width: 0;
+            min-width: 0; /* Important for flexbox wrapping */
         }
         #order-summary-list .item-serial-no {
             font-weight: 600;
@@ -1934,7 +1934,12 @@
             }
         });
 
-        const handleLogout = () => { appState.salesman = null; localStorage.removeItem('lastSalesman'); showPage('page-salesman-selection'); };
+        const handleLogout = () => { 
+            appState.salesman = null; 
+            localStorage.removeItem('lastSalesman'); 
+            appState.currentOrder = [];
+            showPage('page-salesman-selection'); 
+        };
         document.getElementById('logout-btn').addEventListener('click', handleLogout);
         document.getElementById('admin-logout-btn').addEventListener('click', handleLogout);
         
@@ -1990,7 +1995,6 @@
                         const location = await getCurrentLocation();
                         appState.currentOrderLocation = location;
                         document.getElementById('order-customer-name').textContent = appState.customer.Customer; 
-                        appState.currentOrder = []; 
                         updateCartBadge();
                         renderItemTiles(); // Render the new tile layout
                         showPage('page-order');
@@ -2030,6 +2034,11 @@
         document.querySelectorAll('#back-to-main-btn-order-history, #back-to-main-btn-payment-history, #back-to-main-btn-payment').forEach(btn => btn.addEventListener('click', () => { showPage('page-main-view'); }));
         
         document.getElementById('back-to-customers-btn').addEventListener('click', () => {
+            if (appState.currentOrder.length > 0) {
+                if (!confirm("You have items in your cart. Are you sure you want to go back and lose the current customer selection? Your cart will be saved.")) {
+                    return;
+                }
+            }
             appState.currentOrderLocation = null;
             showPage('page-main-view');
         });
@@ -2154,6 +2163,8 @@
                 await stockUpdateBatch.commit();
                 
                 showProfessionalModal('Success', 'The order has been saved successfully.', () => {
+                    appState.currentOrder = [];
+                    updateCartBadge();
                     showPage('page-main-view');
                 });
 
