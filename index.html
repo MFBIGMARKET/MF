@@ -248,6 +248,12 @@
         .history-item-table .col-item-name {
             white-space: normal;
             word-break: break-word;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.4;
         }
         .history-action-btn { background: none; border: none; cursor: pointer; padding: 0; }
         .history-action-btn svg { width: 20px; height: 20px; }
@@ -1161,8 +1167,6 @@
                 <button data-range="yesterday">Yesterday</button>
                 <button data-range="week">This Week</button>
                 <button data-range="month">This Month</button>
-                <button data-range="custom">Custom</button>
-                <input type="date" class="custom-date-input" id="order-history-custom-date">
             </div>
             <div id="order-history-list"></div>
         </div>
@@ -1183,8 +1187,6 @@
                 <button data-range="yesterday">Yesterday</button>
                 <button data-range="week">This Week</button>
                 <button data-range="month">This Month</button>
-                <button data-range="custom">Custom</button>
-                <input type="date" class="custom-date-input" id="payment-history-custom-date">
             </div>
             <div id="payment-history-list"></div>
         </div>
@@ -1353,8 +1355,6 @@
                 <button data-range="week">This Week</button>
                 <button data-range="month">This Month</button>
                 <button data-range="all">All Time</button>
-                <button data-range="custom">Custom</button>
-                <input type="date" class="custom-date-input" id="admin-custom-date">
             </div>
             <!-- Dashboard content will be rendered here by JS -->
         </div>
@@ -1869,7 +1869,46 @@
 
             if (historyData.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No history found for the selected dates.</p>`; return; }
             
-            container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => { const itemDetailsHtml = isOrder ? (item.items || []).map((i, index) => { const total = i.quantity * i.sellingPrice; return `<tr><td>${index + 1}</td><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(total)}</strong></td></tr>` }).join('') : ''; return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>${isOrder?"Customer":"Customer"}:</strong> ${item.customer.Customer}</p><p><strong>${isOrder?"Total":"Amount"}:</strong> ${formatPreciseCurrency(isOrder?item.total:item.amount)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p></div><div class="actions">${isOrder?`<button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`:""}<button class="history-action-btn delete-history-btn" data-type="${isOrder?"orders":"payments"}" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div>${isOrder?`<div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th>S.No.</th><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a>`:""}</div>`; }).join('');
+            container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item) => { 
+                const itemCount = isOrder && item.items ? item.items.length : 0;
+                const totalText = isOrder ? `<strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)` : `<strong>Amount:</strong> ${formatPreciseCurrency(item.amount)}`;
+                
+                const itemDetailsHtml = isOrder ? (item.items || []).map(i => { 
+                    const total = i.quantity * i.sellingPrice; 
+                    return `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(total)}</strong></td></tr>`;
+                }).join('') : ''; 
+
+                return `<div class="history-card" data-id="${item.id}">
+                            <div class="history-card-header">
+                                <div class="info">
+                                    <p><strong>Customer:</strong> ${item.customer.Customer}</p>
+                                    <p>${totalText}</p>
+                                    <p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p>
+                                </div>
+                                <div class="actions">
+                                    ${isOrder?`<button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`:""}
+                                    <button class="history-action-btn delete-history-btn" data-type="${isOrder?"orders":"payments"}" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                                </div>
+                            </div>
+                            ${isOrder?`<div class="history-card-body" id="details-${item.id}">
+                                        <div class="table-responsive-wrapper">
+                                            <table class="history-item-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="col-item-name">Item</th>
+                                                        <th class="numeric">Qty / Unit</th>
+                                                        <th class="numeric">Price</th>
+                                                        <th class="numeric">Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>${itemDetailsHtml}</tbody>
+                                            </table>
+                                        </div>
+                                      </div>
+                                      <a class="toggle-details" data-target="details-${item.id}">View Details</a>`
+                            : ""}
+                        </div>`; 
+            }).join('');
         };
         
         const getDateRange = (rangeKey, customDate = null) => {
@@ -1966,7 +2005,7 @@
 
         const renderAdminDashboard = () => { 
             const dashboardContent = document.getElementById("admin-dashboard-content");
-            const data = processAdminData(appState.reporting.dateRange, appState.reporting.customDate); 
+            const data = processAdminData(appState.reporting.dateRange); 
             const overallMargin=data.totalRevenue>0?(data.totalProfit/data.totalRevenue*100):0; 
             const salesListHtml=Object.entries(data.salesBySalesman).sort((a,b)=>b[1].revenue-a[1].revenue).map(([salesman,d])=>{const profit=d.revenue-d.cost;const margin=d.revenue>0?profit/d.revenue*100:0;return`<li class="data-list-item" data-salesman="${salesman}"><div class="item-main">${salesman}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary"><span class="${profit>=0?"profit":"loss"}">${formatPreciseCurrency(profit)} (${margin.toFixed(1)}%)</span></span></div></li>`}).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>'; 
             const topItemsHtml=data.topItems.map(([name,d])=>`<li class="data-list-item" style="cursor:default;"><div class="item-main">${name}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary">Qty: ${d.quantity}</span></div></li>`).join("")||'<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>'; 
@@ -1995,30 +2034,9 @@
             const filterBtn = e.target.closest('#admin-date-filter button');
             if(filterBtn) {
                 const range = filterBtn.dataset.range;
-                if(range === 'custom') {
-                    document.getElementById('admin-custom-date').click();
-                } else {
-                    appState.reporting.dateRange = range;
-                    appState.reporting.customDate = null;
-                    document.querySelector('#admin-date-filter .active').classList.remove('active');
-                    filterBtn.classList.add('active');
-                    const customBtn = document.querySelector('#admin-date-filter [data-range="custom"]');
-                    customBtn.textContent = 'Custom';
-                    renderAdminDashboard();
-                }
-            }
-        });
-
-        document.getElementById('admin-custom-date').addEventListener('change', e => {
-            const date = e.target.value;
-            if(date) {
-                appState.reporting.dateRange = 'custom';
-                appState.reporting.customDate = date;
+                appState.reporting.dateRange = range;
                 document.querySelector('#admin-date-filter .active').classList.remove('active');
-                const customBtn = document.querySelector('#admin-date-filter [data-range="custom"]');
-                customBtn.classList.add('active');
-                const d = new Date(date + 'T00:00:00'); // Ensure local date interpretation
-                customBtn.textContent = d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric'});
+                filterBtn.classList.add('active');
                 renderAdminDashboard();
             }
         });
@@ -2034,7 +2052,53 @@
         document.getElementById('back-to-admin-from-location-btn').addEventListener('click', () => showPage('page-admin-dashboard'));
 
         const renderCustomerProfile = () => { const c = appState.customer; document.getElementById('customer-profile-name').textContent = c.Customer; const content = document.getElementById('customer-profile-content'); content.innerHTML = `<div class="card"><p><strong>Name:</strong> ${c.Customer||'N/A'}</p><p><strong>Phone:</strong> ${c.Phone||'N/A'}</p><p><strong>Route:</strong> ${c.Route||'N/A'}</p><p><strong>Assigned Salesman:</strong> ${c.Salesman||'N/A'}</p></div>`; showPage('page-customer-profile'); };
-        const renderCustomerHistory = () => { const c = appState.customer; document.getElementById('customer-history-name').textContent = `History for ${c.Customer}`; const container = document.getElementById('customer-history-list'); const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === c.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)); if (customerOrders.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`; } else { container.innerHTML = customerOrders.map(item => { const itemDetailsHtml = (item.items || []).map((i, index) => { const total = i.quantity * i.sellingPrice; return `<tr><td>${index + 1}</td><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(total)}</strong></td></tr>` }).join(''); return `<div class="history-card" data-id="${item.id}"><div class="history-card-header"><div class="info"><p><strong>Total:</strong> ${formatPreciseCurrency(item.total)}</p><p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p></div><div class="actions"><button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button><button class="history-action-btn delete-history-btn" data-type="orders" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th>S.No.</th><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a></div>`; }).join(''); } showPage('page-customer-history'); };
+        const renderCustomerHistory = () => { 
+            const c = appState.customer; 
+            document.getElementById('customer-history-name').textContent = `History for ${c.Customer}`; 
+            const container = document.getElementById('customer-history-list'); 
+            const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === c.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)); 
+            if (customerOrders.length === 0) { 
+                container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`; 
+            } else { 
+                container.innerHTML = customerOrders.map(item => { 
+                    const itemCount = item.items ? item.items.length : 0;
+                    const itemDetailsHtml = (item.items || []).map(i => { 
+                        const total = i.quantity * i.sellingPrice; 
+                        return `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(total)}</strong></td></tr>`;
+                    }).join(''); 
+                    
+                    return `<div class="history-card" data-id="${item.id}">
+                                <div class="history-card-header">
+                                    <div class="info">
+                                        <p><strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)</p>
+                                        <p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p>
+                                    </div>
+                                    <div class="actions">
+                                        <button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+                                        <button class="history-action-btn delete-history-btn" data-type="orders" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                                    </div>
+                                </div>
+                                <div class="history-card-body" id="details-${item.id}">
+                                    <div class="table-responsive-wrapper">
+                                        <table class="history-item-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="col-item-name">Item</th>
+                                                    <th class="numeric">Qty / Unit</th>
+                                                    <th class="numeric">Price</th>
+                                                    <th class="numeric">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>${itemDetailsHtml}</tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <a class="toggle-details" data-target="details-${item.id}">View Details</a>
+                            </div>`; 
+                }).join(''); 
+            } 
+            showPage('page-customer-history'); 
+        };
         
         document.getElementById('page-salesman-selection').addEventListener('click', e => {
             if (e.target.matches('.button')) {
@@ -2439,52 +2503,31 @@
         document.getElementById('payment-history-list').addEventListener('click', handleHistoryClick);
         document.getElementById('customer-history-list').addEventListener('click', handleHistoryClick);
         
-        const setupDateFilter = (filterId, dateInputId, renderFn) => {
+        const setupDateFilter = (filterId, renderFn) => {
             const filterContainer = document.getElementById(filterId);
-            const dateInput = document.getElementById(dateInputId);
-
+            if (!filterContainer) return;
             filterContainer.addEventListener('click', e => {
                 if (e.target.matches('button')) {
                     const range = e.target.dataset.range;
-                    if (range === 'custom') {
-                        dateInput.click();
-                    } else {
-                        const customBtn = filterContainer.querySelector('[data-range="custom"]');
-                        if (customBtn) customBtn.textContent = 'Custom';
-                        filterContainer.querySelector('.active')?.classList.remove('active');
-                        e.target.classList.add('active');
-                        renderFn(getDateRange(range));
-                    }
-                }
-            });
-
-            dateInput.addEventListener('change', e => {
-                const date = e.target.value;
-                if (date) {
                     filterContainer.querySelector('.active')?.classList.remove('active');
-                    const customBtn = filterContainer.querySelector('[data-range="custom"]');
-                    customBtn.classList.add('active');
-                    const d = new Date(date + 'T00:00:00Z'); // Treat as UTC date to avoid timezone offset issues in display
-                    customBtn.textContent = d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', timeZone: 'UTC' });
-                    renderFn(getDateRange('custom', date));
+                    e.target.classList.add('active');
+                    renderFn(getDateRange(range));
                 }
             });
         };
 
-        setupDateFilter('order-history-date-filter', 'order-history-custom-date', (range) => renderHistory('customers', range));
-        setupDateFilter('payment-history-date-filter', 'payment-history-custom-date', (range) => renderHistory('payments', range));
-        setupDateFilter('admin-date-filter', 'admin-custom-date', (range) => {
+        setupDateFilter('order-history-date-filter', (range) => renderHistory('customers', range));
+        setupDateFilter('payment-history-date-filter', (range) => renderHistory('payments', range));
+        setupDateFilter('admin-date-filter', (range) => {
             const activeBtn = document.querySelector('#admin-date-filter .active');
             appState.reporting.dateRange = activeBtn.dataset.range;
-            appState.reporting.customDate = document.getElementById('admin-custom-date').value || null;
             renderAdminDashboard();
         });
 
 
         const printPaymentSummary = () => {
             const rangeKey = document.querySelector('#payment-history-date-filter .active').dataset.range;
-            const customDateVal = document.getElementById('payment-history-custom-date').value;
-            const { start, end } = getDateRange(rangeKey, rangeKey === 'custom' ? customDateVal : null);
+            const { start, end } = getDateRange(rangeKey);
 
             let salesmanPayments = appState.payments[appState.salesman] || [];
             if (start && end) {
@@ -2524,8 +2567,7 @@
         const renderSalesmanSummaryPage = () => { 
             const activeBtn = document.querySelector('#payment-history-date-filter .active');
             const rangeKey = activeBtn.dataset.range;
-            const customDateVal = document.getElementById('payment-history-custom-date').value;
-            const { start, end } = getDateRange(rangeKey, rangeKey === 'custom' ? customDateVal : null);
+            const { start, end } = getDateRange(rangeKey);
              
             let salesmanPayments = appState.payments[appState.salesman] || []; 
             if (start && end) { 
