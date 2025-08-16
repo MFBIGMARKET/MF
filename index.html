@@ -230,7 +230,7 @@
             stroke-width: 2;
         }
 
-        /* NEW History Page Styles */
+        /* UPDATED History Page Styles */
         .history-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); margin-bottom: 15px; overflow: hidden; transition: all 0.3s ease-out; /* Added for delete animation */ }
         .history-card-header { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
         .history-card-header .info { flex-grow: 1; }
@@ -604,16 +604,22 @@
         }
         
         /* Hidden Printable Documents */
-        #packing-slip-wrapper, #payment-receipt-wrapper, #payment-summary-print-wrapper { display: none; }
+        #packing-slip-wrapper { display: none; }
+        #payment-receipt-wrapper, #payment-summary-print-wrapper { display: none; }
         #collection-report-wrapper { position: absolute; left: -9999px; top: -9999px; }
         #collection-report { background: #fff; padding: 40px; }
         
-        /* REVISED: Packing Slip Styles with Price Column */
+        /* UPDATED: Packing Slip Styles with Price Column */
         #packing-slip-content { 
             font-family: 'Segoe UI', sans-serif; 
             color: #222; 
             padding: 0; 
             font-size: 14px;
+        }
+        .slip-page-number {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #555;
         }
         .slip-header { 
             text-align: center; 
@@ -996,22 +1002,46 @@
         }
         /* End of Admin Styles */
 
+        /* UPDATED: Print Media Query */
         @media print {
             @page { 
                 size: A4;
                 margin: 20mm;
             }
-            body, html { background: #fff; }
-            body > *:not(.printing) {
+
+            /* Reset body and html for printing - THIS IS THE FIX */
+            body, html { 
+                background: #fff !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            /* Hide everything in the body by default */
+            body > * {
                 display: none !important;
             }
+
+            /* ONLY show the specific wrapper we want to print and its contents */
             body.printing-packing-slip #packing-slip-wrapper,
             body.printing-receipt #payment-receipt-wrapper,
             body.printing-summary #payment-summary-print-wrapper {
                 display: block !important;
-                position: static;
+                position: static !important;
             }
-            #payment-summary-print-content { display: block; }
+            
+            #payment-summary-print-content { display: block !important; }
+
+            /* Print-specific rules for packing slip pagination */
+            .slip-page-break {
+                page-break-before: always;
+                margin-top: 20mm;
+            }
+            .slip-table thead {
+                display: table-header-group; /* Repeats header on each page */
+            }
+            .slip-table tr {
+                page-break-inside: avoid; /* Prevents a row from splitting across pages */
+            }
         }
     </style>
 </head>
@@ -1455,32 +1485,7 @@
     <!-- Hidden elements for generation -->
     <div id="packing-slip-wrapper">
         <div id="packing-slip-content">
-            <div class="slip-header">
-                <h2>MF BIGMARKET</h2>
-                <p>Packing Slip</p>
-            </div>
-            <div class="slip-details">
-                <div id="slip-customer-details"></div>
-                <div id="slip-date-details" style="text-align: right;"></div>
-            </div>
-            <table class="slip-table">
-                <thead>
-                    <tr>
-                        <th>S.No.</th>
-                        <th class="col-item-name">ITEM</th>
-                        <th class="col-qty">QTY / UNIT</th>
-                        <th class="col-price">PRICE</th>
-                        <th class="col-mrp">MRP</th>
-                    </tr>
-                </thead>
-                <tbody id="slip-table-body"></tbody>
-            </table>
-            <div class="slip-footer">
-                <div class="sorted-by">
-                    Sorted By:
-                    <div class="signature-line"></div>
-                </div>
-            </div>
+            <!-- This will be populated by the printPackingSlip function -->
         </div>
     </div>
     <div id="payment-receipt-wrapper"><div class="receipt-container"><div class="receipt-header"><h2>MF BIGMARKET</h2><p>Payment Receipt</p></div><div class="receipt-details"><p><strong>Date:</strong><span id="receipt-date"></span></p><p><strong>Salesman:</strong><span id="receipt-salesman"></span></p><p><strong>Customer:</strong><span id="receipt-customer"></span></p><p><strong>Pay Method:</strong><span id="receipt-method"></span></p></div><div class="receipt-amount"><div class="amount-label">Amount Received</div><div class="amount-value" id="receipt-amount"></div></div><div class="receipt-footer">Thank you for your business!</div></div></div>
@@ -2405,28 +2410,69 @@
             const allOrders = Object.values(appState.orders).flat();
             const orderToPrint = allOrders.find(o => o.id === orderId);
             if (!orderToPrint) { alert('Could not find order to print.'); return; }
-            document.getElementById('slip-customer-details').innerHTML = `<strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}`;
-            document.getElementById('slip-date-details').innerHTML = `<strong>Date:</strong> ${new Date(orderToPrint.date).toLocaleDateString()}<br><strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString()}`;
-            
-            const tableBodyHtml = orderToPrint.items.map((i, index) => {
-                let priceType = '<span class="price-type">C</span>';
-                if(i.item.Price2 && i.sellingPrice === i.item.Price2) priceType = '<span class="price-type">P2</span>';
-                else if (i.item.Price3 && i.sellingPrice === i.item.Price3) priceType = '<span class="price-type">P3</span>';
 
-                return `<tr>
-                            <td>${index + 1}</td>
-                            <td class="col-item-name">${i.item.ItemName}</td>
-                            <td class="col-qty">${i.quantity} ${i.item.Unit || ''}</td>
-                            <td class="col-price">${formatPreciseCurrency(i.sellingPrice)}${priceType}</td>
-                            <td class="col-mrp">${formatPreciseCurrency(i.item.Mrp)}</td>
-                        </tr>`;
-            }).join('');
+            const ITEMS_PER_PAGE = 27;
+            const pages = [];
+            for (let i = 0; i < orderToPrint.items.length; i += ITEMS_PER_PAGE) {
+                pages.push(orderToPrint.items.slice(i, i + ITEMS_PER_PAGE));
+            }
 
-            document.getElementById('slip-table-body').innerHTML = tableBodyHtml;
+            let slipHtml = '';
+            pages.forEach((pageItems, pageIndex) => {
+                const pageClass = pageIndex > 0 ? 'slip-page-break' : '';
+                const tableBodyHtml = pageItems.map((item, itemIndex) => {
+                    const serialNumber = (pageIndex * ITEMS_PER_PAGE) + itemIndex + 1;
+                    let priceType = '<span class="price-type">C</span>';
+                    if (item.item.Price2 && item.sellingPrice === item.item.Price2) priceType = '<span class="price-type">P2</span>';
+                    else if (item.item.Price3 && item.sellingPrice === item.item.Price3) priceType = '<span class="price-type">P3</span>';
+
+                    return `<tr>
+                                <td>${serialNumber}</td>
+                                <td class="col-item-name">${item.item.ItemName}</td>
+                                <td class="col-qty">${item.quantity} ${item.item.Unit || ''}</td>
+                                <td class="col-price">${formatPreciseCurrency(item.sellingPrice)}${priceType}</td>
+                                <td class="col-mrp">${formatPreciseCurrency(item.item.Mrp)}</td>
+                            </tr>`;
+                }).join('');
+                
+                const footerHtml = pageIndex === pages.length - 1 ? 
+                    `<div class="slip-footer">
+                        <div class="sorted-by">Sorted By:<div class="signature-line"></div></div>
+                    </div>` : '';
+
+                slipHtml += `
+                    <div class="${pageClass}">
+                        <div class="slip-header">
+                            <h2>MF BIGMARKET</h2>
+                            <p>Packing Slip</p>
+                        </div>
+                        <div class="slip-details">
+                            <div><strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}</div>
+                            <div style="text-align: right;"><strong>Date:</strong> ${new Date(orderToPrint.date).toLocaleDateString()}<br><strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString()}</div>
+                        </div>
+                        <div class="slip-page-number">Page ${pageIndex + 1} of ${pages.length}</div>
+                        <table class="slip-table">
+                            <thead>
+                                <tr>
+                                    <th>S.No.</th>
+                                    <th class="col-item-name">ITEM</th>
+                                    <th class="col-qty">QTY / UNIT</th>
+                                    <th class="col-price">PRICE</th>
+                                    <th class="col-mrp">MRP</th>
+                                </tr>
+                            </thead>
+                            <tbody>${tableBodyHtml}</tbody>
+                        </table>
+                        ${footerHtml}
+                    </div>
+                `;
+            });
+
+            document.getElementById('packing-slip-content').innerHTML = slipHtml;
             document.body.classList.add('printing', 'printing-packing-slip');
             setTimeout(() => window.print(), 100);
         };
-        
+
         const handleHistoryClick = (e) => {
             const deleteBtn = e.target.closest('.delete-history-btn');
             const printBtn = e.target.closest('.print-history-btn');
