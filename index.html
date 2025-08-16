@@ -231,12 +231,16 @@
         }
 
         /* UPDATED History Page Styles */
-        .history-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); margin-bottom: 15px; overflow: hidden; transition: all 0.3s ease-out; /* Added for delete animation */ }
+        .history-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); margin-bottom: 15px; overflow: hidden; transition: all 0.3s ease-out; /* Added for animations */ }
         .history-card-header { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
         .history-card-header .info { flex-grow: 1; }
         .history-card-header .actions { display: flex; gap: 15px; flex-shrink: 0; margin-left: 10px; }
         .history-card-header p { margin: 0 0 5px; }
         .history-card-header p strong { font-weight: 600; color: var(--primary-color); }
+        .history-card .date-display { font-size:0.9rem; color:#666; }
+        .history-card .date-editor { display: none; margin-top: 8px; }
+        .history-card .date-editor-actions { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
+        .history-card .date-editor-actions button { padding: 4px 8px; font-size: 0.8rem; border-radius: 6px; }
         .history-card .toggle-details { font-size: 0.9rem; font-weight: 500; color: var(--secondary-color); cursor: pointer; padding: 10px 15px; display: block; background: #f8f9fa; border-top: 1px solid #f0f0f0; }
         .history-card-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
         .history-card-body.visible { max-height: 5000px; /* Increased to accommodate many items */ transition: max-height 0.4s ease-in; }
@@ -259,6 +263,7 @@
         .history-action-btn svg { width: 20px; height: 20px; }
         .delete-history-btn svg { stroke: var(--danger-color); }
         .print-history-btn svg { stroke: var(--secondary-color); }
+        .edit-date-btn svg { stroke: var(--warning-color); }
 
         /* REFINED: Date range filter pills */
         .date-range-filter {
@@ -1883,17 +1888,30 @@
                     return `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(total)}</strong></td></tr>`;
                 }).join('') : ''; 
 
-                return `<div class="history-card" data-id="${item.id}">
+                const actionsHtml = isOrder ? `
+                    <button class="history-action-btn edit-date-btn" title="Change Date"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button>
+                    <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+                    <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                ` : `
+                    <button class="history-action-btn edit-date-btn" title="Change Date"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button>
+                    <button class="history-action-btn delete-history-btn" data-type="payments" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                `;
+
+                return `<div class="history-card" data-id="${item.id}" data-date="${item.date}" data-type="${isOrder ? 'orders' : 'payments'}">
                             <div class="history-card-header">
                                 <div class="info">
                                     <p><strong>Customer:</strong> ${item.customer.Customer}</p>
                                     <p>${totalText}</p>
-                                    <p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p>
+                                    <p class="date-display">${new Date(item.date).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p>
+                                    <div class="date-editor">
+                                        <input type="date" class="order-date-input" />
+                                        <div class="date-editor-actions">
+                                            <button class="button button-outline cancel-date-btn">Cancel</button>
+                                            <button class="button save-date-btn">Save</button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="actions">
-                                    ${isOrder?`<button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`:""}
-                                    <button class="history-action-btn delete-history-btn" data-type="${isOrder?"orders":"payments"}" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                                </div>
+                                <div class="actions">${actionsHtml}</div>
                             </div>
                             ${isOrder?`<div class="history-card-body" id="details-${item.id}">
                                         <div class="table-responsive-wrapper">
@@ -2072,15 +2090,23 @@
                         return `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(total)}</strong></td></tr>`;
                     }).join(''); 
                     
-                    return `<div class="history-card" data-id="${item.id}">
+                    return `<div class="history-card" data-id="${item.id}" data-date="${item.date}" data-type="orders">
                                 <div class="history-card-header">
                                     <div class="info">
                                         <p><strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)</p>
-                                        <p style="font-size:0.9rem; color:#666;">${new Date(item.date).toLocaleString()}</p>
+                                        <p class="date-display">${new Date(item.date).toLocaleString()}</p>
+                                        <div class="date-editor">
+                                            <input type="date" class="order-date-input" />
+                                            <div class="date-editor-actions">
+                                                <button class="button button-outline cancel-date-btn">Cancel</button>
+                                                <button class="button save-date-btn">Save</button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="actions">
-                                        <button class="history-action-btn print-history-btn" data-id="${item.id}" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
-                                        <button class="history-action-btn delete-history-btn" data-type="orders" data-id="${item.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                                        <button class="history-action-btn edit-date-btn" title="Change Date"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button>
+                                        <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+                                        <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                                     </div>
                                 </div>
                                 <div class="history-card-body" id="details-${item.id}">
@@ -2473,74 +2499,111 @@
             setTimeout(() => window.print(), 100);
         };
 
-        const handleHistoryClick = (e) => {
-            const deleteBtn = e.target.closest('.delete-history-btn');
-            const printBtn = e.target.closest('.print-history-btn');
-            const toggleBtn = e.target.closest('.toggle-details');
+        const handleHistoryClick = async (e) => {
+            const card = e.target.closest('.history-card');
+            if (!card) return;
 
-            if (deleteBtn) {
-                const type = deleteBtn.dataset.type;
-                const id = deleteBtn.dataset.id;
-                const cardElement = deleteBtn.closest('.history-card');
+            const id = card.dataset.id;
+            const type = e.target.closest('.delete-history-btn')?.dataset.type;
 
+            const toggleDateEditor = (show) => {
+                const dateDisplay = card.querySelector('.date-display');
+                const dateEditor = card.querySelector('.date-editor');
+                if (show) {
+                    const originalDate = new Date(card.dataset.date);
+                    const dateInput = card.querySelector('.order-date-input');
+                    // Format to YYYY-MM-DD for the input
+                    dateInput.value = originalDate.toISOString().split('T')[0];
+                    dateDisplay.style.display = 'none';
+                    dateEditor.style.display = 'block';
+                } else {
+                    dateDisplay.style.display = 'block';
+                    dateEditor.style.display = 'none';
+                }
+            };
+
+            if (e.target.closest('.delete-history-btn')) {
                 if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
-                    if (cardElement) {
-                        cardElement.style.opacity = '0';
-                        cardElement.style.transform = 'translateX(-20px)';
-                        setTimeout(() => cardElement.remove(), 300);
-                    }
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateX(-20px)';
+                    setTimeout(() => card.remove(), 300);
 
                     if (type === 'orders') {
-                        const salesmanOrders = appState.orders[appState.salesman] || [];
-                        const orderIndex = salesmanOrders.findIndex(o => o.id === id);
-                        if (orderIndex > -1) {
-                            const orderToDelete = salesmanOrders[orderIndex];
-                            salesmanOrders.splice(orderIndex, 1); 
-                            
-                            (async () => {
-                                try {
-                                    const batch = writeBatch(db);
-                                    batch.delete(doc(db, "orders", id));
-                                    for (const orderItem of orderToDelete.items) {
-                                        const itemRef = doc(db, "items", String(orderItem.item.Code));
-                                        const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
-                                        if (currentItem) {
-                                            const restoredStock = Number(currentItem.Clstock) + Number(orderItem.quantity);
-                                            batch.update(itemRef, { Clstock: restoredStock });
-                                        }
+                        const allOrders = Object.values(appState.orders).flat();
+                        const orderToDelete = allOrders.find(o => o.id === id);
+                        if (orderToDelete) {
+                            try {
+                                const batch = writeBatch(db);
+                                batch.delete(doc(db, "orders", id));
+                                for (const orderItem of orderToDelete.items) {
+                                    const itemRef = doc(db, "items", String(orderItem.item.Code));
+                                    const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
+                                    if (currentItem) {
+                                        const restoredStock = Number(currentItem.Clstock) + Number(orderItem.quantity);
+                                        batch.update(itemRef, { Clstock: restoredStock });
                                     }
-                                    await batch.commit();
-                                } catch (error) {
-                                    console.error("Error deleting order:", error);
-                                    alert("Failed to delete order. The item will reappear on refresh.");
-                                    renderHistory('customers', getDateRange('today')); 
                                 }
-                            })();
+                                await batch.commit();
+                            } catch (error) {
+                                console.error("Error deleting order:", error);
+                                showProfessionalModal('Error', 'Failed to delete order.');
+                            }
                         }
-                    } else { // Payments
-                        const salesmanPayments = appState.payments[appState.salesman] || [];
-                        const paymentIndex = salesmanPayments.findIndex(p => p.id === id);
-                        if (paymentIndex > -1) {
-                            salesmanPayments.splice(paymentIndex, 1);
-                            (async () => {
-                                try {
-                                    await deleteDoc(doc(db, "payments", id));
-                                } catch (error) {
-                                    console.error("Error deleting payment:", error);
-                                    alert("Failed to delete payment. The item will reappear on refresh.");
-                                    renderHistory('payments', getDateRange('today'));
-                                }
-                            })();
+                    } else if (type === 'payments') {
+                        try {
+                            await deleteDoc(doc(db, "payments", id));
+                        } catch (error) {
+                            console.error("Error deleting payment:", error);
+                            showProfessionalModal('Error', 'Failed to delete payment.');
                         }
                     }
                 }
-            } else if (printBtn) {
-                printPackingSlip(printBtn.dataset.id);
-            } else if (toggleBtn) {
+            } else if (e.target.closest('.print-history-btn')) {
+                printPackingSlip(id);
+            } else if (e.target.closest('.toggle-details')) {
                 e.preventDefault();
-                const targetElement = document.getElementById(toggleBtn.dataset.target);
-                if (targetElement) {
-                    targetElement.classList.toggle('visible');
+                const targetElement = document.getElementById(e.target.dataset.target);
+                if (targetElement) targetElement.classList.toggle('visible');
+            } else if (e.target.closest('.edit-date-btn')) {
+                toggleDateEditor(true);
+            } else if (e.target.closest('.cancel-date-btn')) {
+                toggleDateEditor(false);
+            } else if (e.target.closest('.save-date-btn')) {
+                const btn = e.target.closest('.save-date-btn');
+                const newDateValue = card.querySelector('.order-date-input').value;
+                if (!newDateValue) {
+                    alert('Please select a valid date.');
+                    return;
+                }
+                
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
+                
+                const cardType = card.dataset.type;
+                const originalDate = new Date(card.dataset.date);
+                const newDate = new Date(newDateValue + 'T00:00:00.000Z');
+                
+                originalDate.setUTCFullYear(newDate.getUTCFullYear());
+                originalDate.setUTCMonth(newDate.getUTCMonth());
+                originalDate.setUTCDate(newDate.getUTCDate());
+
+                const newIsoDate = originalDate.toISOString();
+
+                // Trigger animation BEFORE the database update
+                card.style.opacity = '0';
+                card.style.transform = 'translateX(20px)';
+                
+                try {
+                    await updateDoc(doc(db, cardType, id), { date: newIsoDate });
+                    // No need to manually update UI here. The snapshot listener will handle it.
+                } catch(error) {
+                    console.error("Error updating date:", error);
+                    showProfessionalModal('Error', 'Failed to update date.');
+                    // Revert animation if fails
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateX(0)';
+                } finally {
+                    // Button state will be reset on re-render, so no need to manage it here
                 }
             }
         };
