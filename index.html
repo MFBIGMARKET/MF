@@ -330,7 +330,7 @@
         .dashboard-grid { display: grid; gap: 20px; grid-template-columns: 1fr; }
         .kpi-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .kpi-card-small { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); padding: 15px; text-align: center; }
-        .kpi-card-small .value { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); line-height: 1.2; }
+        .kpi-card-small .value { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); line-height: 1.2; overflow-wrap: break-word; }
         .kpi-card-small .label { font-size: 0.85rem; color: #6c757d; margin-top: 5px; }
         .data-list-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); padding: 20px; display: flex; flex-direction: column; }
         .data-list-card h3 { border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
@@ -340,7 +340,7 @@
         .data-list-item:hover { background-color: var(--light-bg); }
         .data-list-item:last-child { border-bottom: none; }
         .data-list-item .item-main { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-        .data-list-item .item-details { text-align: right; flex-shrink: 0; }
+        .data-list-item .item-details { text-align: right; }
         .item-details .value-primary { font-weight: 600; color: var(--text-color); display: block; font-size: 1rem; }
         .item-details .value-secondary { font-size: 0.8rem; color: #6c757d; }
         .item-details .value-secondary .profit, .item-details .value-secondary .loss { color: var(--success-color); font-weight: 500; }
