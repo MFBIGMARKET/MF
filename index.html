@@ -307,7 +307,8 @@
         .slip-table th { background-color: #f2f2f2; font-weight: 600; font-size: 0.8rem; }
         .slip-table td { font-size: 0.85rem; vertical-align: top; }
         .slip-table .col-item-name { width: 45%; white-space: normal; }
-        .slip-table .col-qty, .slip-table .col-price, .slip-table .col-mrp { text-align: right; white-space: nowrap; }
+        .slip-table .col-qty, .slip-table .col-price { text-align: right; white-space: nowrap; }
+        .slip-table .col-mrp { white-space: nowrap; }
         .slip-table .price-type { font-size: 0.7em; color: #444; margin-left: 2px; }
         .slip-footer { margin-top: 25px; text-align: right; font-size: 0.85rem; }
         .slip-footer .sorted-by { display: inline-block; text-align: left; }
@@ -327,7 +328,7 @@
         .receipt-amount .amount-value { font-size: 2.5rem; font-weight: bold; color: black; }
         .receipt-footer { text-align: center; margin-top: 30px; font-size: 0.9rem; color: #777; border-top: 1px dashed #ccc; padding-top: 15px;}
         
-        .dashboard-grid { display: grid; gap: 20px; grid-template-columns: 1fr; }
+        .dashboard-grid { display: grid; gap: 15px; grid-template-columns: 1fr; }
         .kpi-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .kpi-card-small { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); padding: 15px; text-align: center; }
         .kpi-card-small .value { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); line-height: 1.2; overflow-wrap: break-word; }
@@ -445,6 +446,7 @@
         .stock-info { text-align: center; margin-top: 20px; font-weight: 500; }
 
         @media (max-width: 767px) {
+            #page-admin-dashboard .content { padding: 10px; }
             .dashboard-grid { grid-template-columns: 1fr; }
             .summary-totals-card { grid-template-columns: 1fr; }
         }
@@ -1216,7 +1218,7 @@
             
             let totalRevenue = 0, totalCost = 0, totalOrders = orders.length;
             const salesBySalesman = {};
-            const topItems = {};
+            const itemsSold = {};
             orders.forEach(order => {
                 const salesman = order.salesman || 'N/A';
                 if (!salesBySalesman[salesman]) salesBySalesman[salesman] = { revenue: 0, cost: 0, orderCount: 0 };
@@ -1227,8 +1229,9 @@
                     totalRevenue += revenue; totalCost += cost;
                     salesBySalesman[salesman].revenue += revenue; salesBySalesman[salesman].cost += cost;
                     const itemName = item.item.ItemName;
-                    if (!topItems[itemName]) topItems[itemName] = { quantity: 0, revenue: 0 };
-                    topItems[itemName].quantity += item.quantity; topItems[itemName].revenue += revenue;
+                    if (!itemsSold[itemName]) itemsSold[itemName] = { quantity: 0, revenue: 0 };
+                    itemsSold[itemName].quantity += item.quantity;
+                    itemsSold[itemName].revenue += revenue;
                 });
             });
             
@@ -1241,16 +1244,36 @@
                 else if (p.method === 'UPI') { collectionsBySalesman[salesman].upi += p.amount; grandTotalUPI += p.amount; }
             });
 
-            return { totalRevenue, totalProfit: totalRevenue - totalCost, totalOrders, salesBySalesman, topItems: Object.entries(topItems).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 10), collectionsBySalesman, grandTotalCash, grandTotalUPI };
+            const salesmanCashflow = {};
+            const allSalesmen = [...new Set([...Object.keys(salesBySalesman), ...Object.keys(collectionsBySalesman)])];
+            allSalesmen.forEach(salesman => {
+                const revenue = salesBySalesman[salesman]?.revenue || 0;
+                const collections = (collectionsBySalesman[salesman]?.cash || 0) + (collectionsBySalesman[salesman]?.upi || 0);
+                salesmanCashflow[salesman] = collections - revenue;
+            });
+
+            return { totalRevenue, totalProfit: totalRevenue - totalCost, totalOrders, salesBySalesman, itemsSold: Object.entries(itemsSold).sort((a, b) => b[1].revenue - a[1].revenue), collectionsBySalesman, grandTotalCash, grandTotalUPI, salesmanCashflow };
         };
 
         const renderAdminDashboard = () => {
             const dashboardContent = document.getElementById("admin-dashboard-content");
             const data = processAdminData();
             
+            const cashflowHtml = ['UNNI', 'RIYAS'].map(salesman => {
+                const cashflow = data.salesmanCashflow[salesman] || 0;
+                const cashflowClass = cashflow >= 0 ? "profit" : "loss";
+                return `
+                    <div class="kpi-card-small">
+                        <div class="value ${cashflowClass}">${formatPreciseCurrency(cashflow)}</div>
+                        <div class="label">${salesman}'s Net Cashflow</div>
+                    </div>
+                `;
+            }).join("");
+            const cashflowRowHtml = `<div class="kpi-row">${cashflowHtml}</div>`;
+            
             const overallMargin = data.totalRevenue > 0 ? (data.totalProfit / data.totalRevenue * 100) : 0;
             const salesListHtml = Object.entries(data.salesBySalesman).sort((a, b) => b[1].revenue - a[1].revenue).map(([salesman, d]) => { const profit = d.revenue - d.cost; const margin = d.revenue > 0 ? profit / d.revenue * 100 : 0; return `<li class="data-list-item" data-salesman="${salesman}"><div class="item-main">${salesman}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary"><span class="${profit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(profit)} (${margin.toFixed(1)}%)</span></span></div></li>` }).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>';
-            const topItemsHtml = data.topItems.map(([name, d]) => `<li class="data-list-item" style="cursor:default;"><div class="item-main">${name}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary">Qty: ${d.quantity}</span></div></li>`).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>';
+            const itemsSoldHtml = data.itemsSold.map(([name, d]) => `<li class="data-list-item" style="cursor:default;"><div class="item-main">${name}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary">Qty: ${d.quantity}</span></div></li>`).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>';
             const totalCollections = data.grandTotalCash + data.grandTotalUPI;
             const collectionsBreakdownHtml = Object.entries(data.collectionsBySalesman).map(([salesman, d]) => `<div class="salesman-header">${salesman}</div><ul class="salesman-breakdown"><li><span>Cash</span> <span>${formatPreciseCurrency(d.cash)}</span></li><li><span>UPI</span> <span>${formatPreciseCurrency(d.upi)}</span></li><li><span>Sub-Total</span> <span>${formatPreciseCurrency(d.cash + d.upi)}</span></li></ul>`).join("");
             const collectionsHtml = Object.keys(data.collectionsBySalesman).length > 0 ? collectionsBreakdownHtml : '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No collections in this period.</li>';
@@ -1258,7 +1281,19 @@
             const grid = dashboardContent.querySelector('.dashboard-grid');
             if (grid) grid.remove();
             
-            dashboardContent.insertAdjacentHTML('beforeend', `<div class="dashboard-grid"><div class="kpi-row"><div class="kpi-card-small"><div class="value">${formatPreciseCurrency(data.totalRevenue)}</div><div class="label">Total Revenue</div></div><div class="kpi-card-small"><div class="value">${formatPreciseCurrency(data.totalProfit)}</div><div class="label">Total Profit</div></div><div class="kpi-card-small"><div class="value">${data.totalOrders}</div><div class="label">Total Orders</div></div><div class="kpi-card-small"><div class="value ${overallMargin >= 0 ? "profit" : "loss"}">${overallMargin.toFixed(1)}%</div><div class="label">Overall Margin</div></div></div><div class="data-list-card"><h3>Sales by Salesman</h3><ul class="data-list-container">${salesListHtml}</ul></div><div class="data-list-card"><h3>Top Selling Items</h3><ul class="data-list-container">${topItemsHtml}</ul></div><div class="data-list-card"><h3>Collections</h3><ul class="payment-summary-list"><li><span>Total Cash</span><strong>${formatPreciseCurrency(data.grandTotalCash)}</strong></li><li><span>Total UPI</span><strong>${formatPreciseCurrency(data.grandTotalUPI)}</strong></li><li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatPreciseCurrency(totalCollections)}</strong></li>${collectionsHtml}</ul></div><div class="data-list-card"><h3>Operations</h3><button class="button button-outline" id="location-report-btn" style="margin-bottom: 10px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Location Report</button><button class="button button-outline" id="crm-module-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Send Bulk Offer</button></div></div>`);
+            dashboardContent.insertAdjacentHTML('beforeend', `<div class="dashboard-grid">
+                ${cashflowRowHtml}
+                <div class="kpi-row">
+                    <div class="kpi-card-small"><div class="value">${formatPreciseCurrency(data.totalRevenue)}</div><div class="label">Total Revenue</div></div>
+                    <div class="kpi-card-small"><div class="value">${formatPreciseCurrency(data.totalProfit)}</div><div class="label">Total Profit</div></div>
+                    <div class="kpi-card-small"><div class="value">${data.totalOrders}</div><div class="label">Total Orders</div></div>
+                    <div class="kpi-card-small"><div class="value ${overallMargin >= 0 ? "profit" : "loss"}">${overallMargin.toFixed(1)}%</div><div class="label">Overall Margin</div></div>
+                </div>
+                <div class="data-list-card"><h3>Sales by Salesman</h3><ul class="data-list-container">${salesListHtml}</ul></div>
+                <div class="data-list-card"><h3>Items Sold</h3><ul class="data-list-container">${itemsSoldHtml}</ul></div>
+                <div class="data-list-card"><h3>Collections</h3><ul class="payment-summary-list"><li><span>Total Cash</span><strong>${formatPreciseCurrency(data.grandTotalCash)}</strong></li><li><span>Total UPI</span><strong>${formatPreciseCurrency(data.grandTotalUPI)}</strong></li><li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatPreciseCurrency(totalCollections)}</strong></li>${collectionsHtml}</ul></div>
+                <div class="data-list-card"><h3>Operations</h3><button class="button button-outline" id="location-report-btn" style="margin-bottom: 10px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Location Report</button><button class="button button-outline" id="crm-module-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Send Bulk Offer</button></div>
+            </div>`);
         };
 
         const renderLocationReportPage = () => { 
@@ -1307,6 +1342,7 @@
             if (start && end) {
                 salesmanOrders = salesmanOrders.filter(o => { const orderDate = new Date(o.date); return orderDate >= start && orderDate <= end; });
             }
+            const totalOrders = salesmanOrders.length;
 
             const customerSales = {};
             let totalRevenue = 0, totalProfit = 0;
@@ -1328,7 +1364,17 @@
             const customerListHtml = Object.entries(customerSales).sort((a, b) => b[1].revenue - a[1].revenue).map(([customerName, data]) => `<li class="data-list-item" data-customer="${customerName}"><div class="item-main">${customerName}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(data.revenue)}</span><span class="value-secondary"><span class="${data.profit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(data.profit)} (${(data.revenue > 0 ? (data.profit / data.revenue) * 100 : 0).toFixed(1)}%)</span></span></div></li>`).join('');
             const overallMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
             
-            contentEl.innerHTML = `<div class="report-header-card"><div><div class="label">Total Revenue</div><div class="value">${formatPreciseCurrency(totalRevenue)}</div></div><div><div class="label">Total Profit</div><div class="value ${totalProfit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(totalProfit)}</div></div><div><div class="label">Profit Margin</div><div class="value ${overallMargin >= 0 ? "profit" : "loss"}">${overallMargin.toFixed(1)}%</div></div></div><div class="data-list-card"><h3>Sales by Customer</h3><ul class="data-list-container">${customerListHtml || '<li style="text-align:center;padding:20px;">No customers found.</li>'}</ul></div>`;
+            contentEl.innerHTML = `
+                <div class="report-header-card">
+                    <div><div class="label">Total Revenue</div><div class="value">${formatPreciseCurrency(totalRevenue)}</div></div>
+                    <div><div class="label">Total Orders</div><div class="value">${totalOrders}</div></div>
+                    <div><div class="label">Total Profit</div><div class="value ${totalProfit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(totalProfit)}</div></div>
+                    <div><div class="label">Profit Margin</div><div class="value ${overallMargin >= 0 ? "profit" : "loss"}">${overallMargin.toFixed(1)}%</div></div>
+                </div>
+                <div class="data-list-card">
+                    <h3>Sales by Customer</h3>
+                    <ul class="data-list-container">${customerListHtml || '<li style="text-align:center;padding:20px;">No customers found.</li>'}</ul>
+                </div>`;
             showPage("page-salesman-report");
         };
 
@@ -1618,9 +1664,15 @@
             let slipHtml = '';
             pages.forEach((pageItems, pageIndex) => {
                 const pageClass = pageIndex > 0 ? 'slip-page-break' : '';
-                const tableBodyHtml = pageItems.map((item, itemIndex) => { const serialNumber = (pageIndex * ITEMS_PER_PAGE) + itemIndex + 1; let priceType = '<span class="price-type">C</span>'; if (item.item.Price2 && item.sellingPrice === item.item.Price2) priceType = '<span class="price-type">P2</span>'; else if (item.item.Price3 && item.sellingPrice === item.item.Price3) priceType = '<span class="price-type">P3</span>'; return `<tr><td>${serialNumber}</td><td class="col-item-name">${item.item.ItemName}</td><td class="col-qty">${item.quantity} ${item.item.Unit || ''}</td><td class="col-price">${formatPreciseCurrency(item.sellingPrice)}${priceType}</td><td class="col-mrp">${formatPreciseCurrency(item.item.Mrp)}</td></tr>`; }).join('');
+                const tableBodyHtml = pageItems.map((item, itemIndex) => { 
+                    const serialNumber = (pageIndex * ITEMS_PER_PAGE) + itemIndex + 1; 
+                    let priceType = '<span class="price-type">C</span>'; 
+                    if (item.item.Price2 && item.sellingPrice === item.item.Price2) priceType = '<span class="price-type">P2</span>'; 
+                    else if (item.item.Price3 && item.sellingPrice === item.item.Price3) priceType = '<span class="price-type">P3</span>'; 
+                    return `<tr><td>${serialNumber}</td><td class="col-mrp">${formatPreciseCurrency(item.item.Mrp)}</td><td class="col-item-name">${item.item.ItemName}</td><td class="col-qty">${item.quantity} ${item.item.Unit || ''}</td><td class="col-price">${formatPreciseCurrency(item.sellingPrice)}${priceType}</td></tr>`; 
+                }).join('');
                 const footerHtml = pageIndex === pages.length - 1 ? `<div class="slip-footer"><div class="sorted-by">Sorted By:<div class="signature-line"></div></div></div>` : '';
-                slipHtml += `<div class="${pageClass}"><div class="slip-header"><h2>MF BIGMARKET</h2><p>Packing Slip</p></div><div class="slip-details"><div><strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}</div><div style="text-align: right;"><strong>Date:</strong> ${new Date(orderToPrint.date).toLocaleDateString()}<br><strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString()}</div></div><div class="slip-page-number">Page ${pageIndex + 1} of ${pages.length}</div><table class="slip-table"><thead><tr><th>S.No.</th><th class="col-item-name">ITEM</th><th class="col-qty">QTY / UNIT</th><th class="col-price">PRICE</th><th class="col-mrp">MRP</th></tr></thead><tbody>${tableBodyHtml}</tbody></table>${footerHtml}</div>`;
+                slipHtml += `<div class="${pageClass}"><div class="slip-header"><h2>MF BIGMARKET</h2><p>Packing Slip</p></div><div class="slip-details"><div><strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}</div><div style="text-align: right;"><strong>Date:</strong> ${new Date(orderToPrint.date).toLocaleDateString()}<br><strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString()}</div></div><div class="slip-page-number">Page ${pageIndex + 1} of ${pages.length}</div><table class="slip-table"><thead><tr><th>S.No.</th><th class="col-mrp">MRP</th><th class="col-item-name">ITEM</th><th class="col-qty">QTY / UNIT</th><th class="col-price">PRICE</th></tr></thead><tbody>${tableBodyHtml}</tbody></table>${footerHtml}</div>`;
             });
             document.getElementById('packing-slip-content').innerHTML = slipHtml; document.body.classList.add('printing', 'printing-packing-slip'); setTimeout(() => window.print(), 100);
         };
