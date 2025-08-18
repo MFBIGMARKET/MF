@@ -601,7 +601,20 @@
             <h1 id="payment-customer-name">Collect Payment</h1>
             <div class="icon-button" style="width: 24px;"></div>
         </div>
-        <div class="content"><div class="card"><input type="number" id="payment-amount" placeholder="Enter Amount" min="0"><div class="payment-method-options"><div class="payment-method-option selected" data-method="Cash">Cash</div><div class="payment-method-option" data-method="UPI">UPI</div></div><button id="confirm-payment-btn" class="button">Confirm Payment</button><button id="print-receipt-btn" class="button button-outline" style="display:none; margin-top: 10px;">Print Receipt</button></div></div>
+        <div class="content">
+            <div class="card">
+                <input type="number" id="payment-amount" placeholder="Enter Amount" min="0">
+                <div class="payment-method-options">
+                    <div class="payment-method-option selected" data-method="Cash">Cash</div>
+                    <div class="payment-method-option" data-method="UPI">UPI</div>
+                </div>
+                <button id="confirm-payment-btn" class="button">Confirm Payment</button>
+                <div id="payment-actions-container" style="display: none; flex-direction: row; gap: 10px; margin-top: 10px;">
+                    <button id="print-receipt-btn" class="button button-outline" style="margin: 0; flex: 1;">Print Receipt</button>
+                    <button id="share-receipt-btn" class="button button-outline" style="margin: 0; flex: 1;">Share Receipt</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="page-order-history" class="page">
@@ -872,7 +885,7 @@
 
     <!-- Hidden elements for generation -->
     <div id="packing-slip-wrapper"><div id="packing-slip-content"></div></div>
-    <div id="payment-receipt-wrapper"><div class="receipt-container"><div class="receipt-header"><h2>MF BIGMARKET</h2><p>Payment Receipt</p></div><div class="receipt-details"><p><strong>Date:</strong><span id="receipt-date"></span></p><p><strong>Salesman:</strong><span id="receipt-salesman"></span></p><p><strong>Customer:</strong><span id="receipt-customer"></span></p><p><strong>Pay Method:</strong><span id="receipt-method"></span></p></div><div class="receipt-amount"><div class="amount-label">Amount Received</div><div class="amount-value" id="receipt-amount"></div></div><div class="receipt-footer">Thank you for your business!</div></div></div>
+    <div id="payment-receipt-wrapper"><div class="receipt-container"><div class="receipt-header"><h2>MF BIGMARKET</h2><p>Payment Receipt</p></div><div class="receipt-details"><p><strong>Date:</strong><span id="receipt-date"></span></p><p><strong>Salesman:</strong><span id="receipt-salesman"></span></p><p><strong>Customer:</strong><span id="receipt-customer"></span></p><p><strong>Pay Method:</strong><span id="receipt-method"></span></p></div><div class="receipt-amount"><div class="amount-label">Amount Received</div><div class="amount-value" id="receipt-amount"></div></div><div class="receipt-footer">Thank you for your business!<br>For queries, contact: 9961195050</div></div></div>
     <div id="collection-report-wrapper"><div id="collection-report"><div class="report-header"><h2>MF BIGMARKET</h2><p>Daily Collection Report</p></div><div class="report-details"><div id="report-salesman"></div><div id="report-date"></div></div><table class="report-table"><thead><tr><th>CUSTOMER</th><th class="col-method">MODE</th><th class="col-amount">AMOUNT</th></tr></thead><tbody id="report-table-body"></tbody></table><div class="report-footer"><div id="report-totals"></div><div class="grand-total" id="report-grand-total"></div></div></div></div>
     <div id="flyer-template-wrapper"></div>
     <div id="payment-summary-print-wrapper"><div id="payment-summary-print-content"><div class="print-header"><h2>MF BIGMARKET</h2><p>Collection Summary Report</p></div><div class="print-details"><div id="print-summary-salesman"></div><div id="print-summary-daterange"></div></div><table class="print-table"><thead><tr><th>Date & Time</th><th>Customer</th><th>Mode</th><th class="numeric">Amount</th></tr></thead><tbody id="print-summary-table-body"></tbody></table><div class="print-totals-footer"><div><span>Total Cash:</span> <span id="print-summary-cash"></span></div><div><span>Total UPI:</span> <span id="print-summary-upi"></span></div><div class="grand-total"><span>Grand Total:</span> <span id="print-summary-grandtotal"></span></div></div></div></div>
@@ -1458,7 +1471,7 @@
                 document.getElementById('payment-customer-name').textContent = `For ${appState.currentPayment.customer.Customer}`; 
                 document.getElementById('payment-amount').value = ''; 
                 document.getElementById('confirm-payment-btn').style.display = 'block'; 
-                document.getElementById('print-receipt-btn').style.display = 'none'; 
+                document.getElementById('payment-actions-container').style.display = 'none'; 
                 showPage('page-payment'); 
             }
         });
@@ -1547,11 +1560,55 @@
             const newPayment = { customer: { Customer: appState.currentPayment.customer.Customer }, amount, method, salesman: appState.salesman, date: new Date().toISOString() }; 
             await setDoc(doc(collection(db, "payments")), newPayment); 
             appState.currentPayment = newPayment; 
-            document.getElementById('confirm-payment-btn').style.display = 'none'; document.getElementById('print-receipt-btn').style.display = 'block'; 
+            document.getElementById('confirm-payment-btn').style.display = 'none';
+            document.getElementById('payment-actions-container').style.display = 'flex';
             showProfessionalModal('Success', 'The payment has been recorded successfully.');
         });
         
         document.getElementById('print-receipt-btn').addEventListener('click', () => { const p = appState.currentPayment; document.getElementById('receipt-date').textContent = new Date(p.date).toLocaleString(); document.getElementById('receipt-salesman').textContent = appState.salesman; document.getElementById('receipt-customer').textContent = p.customer.Customer; document.getElementById('receipt-amount').textContent = formatPreciseCurrency(p.amount); document.getElementById('receipt-method').textContent = p.method; document.body.classList.add('printing', 'printing-receipt'); setTimeout(() => window.print(), 100); });
+        
+        document.getElementById('share-receipt-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('share-receipt-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Preparing...';
+
+            const receiptElement = document.querySelector('#payment-receipt-wrapper .receipt-container');
+            if (!receiptElement) {
+                alert('Error: Receipt element not found.');
+                btn.disabled = false; btn.textContent = originalText; return;
+            }
+
+            const p = appState.currentPayment;
+            document.getElementById('receipt-date').textContent = new Date(p.date).toLocaleString();
+            document.getElementById('receipt-salesman').textContent = appState.salesman;
+            document.getElementById('receipt-customer').textContent = p.customer.Customer;
+            document.getElementById('receipt-amount').textContent = formatPreciseCurrency(p.amount);
+            document.getElementById('receipt-method').textContent = p.method;
+
+            const wrapper = document.getElementById('payment-receipt-wrapper');
+            const originalStyles = { position: wrapper.style.position, left: wrapper.style.left, top: wrapper.style.top, display: wrapper.style.display, };
+            wrapper.style.position = 'absolute'; wrapper.style.left = '-9999px'; wrapper.style.top = '-9999px'; wrapper.style.display = 'block';
+
+            try {
+                const canvas = await html2canvas(receiptElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+                const file = new File([blob], `Receipt-${p.customer.Customer}.jpg`, { type: 'image/jpeg' });
+
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: `Payment Receipt for ${p.customer.Customer}`, text: `Payment receipt from MF BigMarket.` });
+                } else {
+                    alert("Sharing not supported on this browser. Please take a screenshot of the receipt to share it.");
+                }
+            } catch (error) {
+                console.error('Sharing failed:', error);
+                alert("Could not generate receipt image for sharing. Please try taking a screenshot.");
+            } finally {
+                wrapper.style.position = originalStyles.position; wrapper.style.left = originalStyles.left; wrapper.style.top = originalStyles.top; wrapper.style.display = originalStyles.display;
+                btn.disabled = false; btn.textContent = originalText;
+            }
+        });
+
         window.onafterprint = () => { document.body.classList.remove('printing', 'printing-receipt', 'printing-packing-slip', 'printing-summary'); };
         
         const printPackingSlip = (orderId) => {
