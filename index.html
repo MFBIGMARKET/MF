@@ -245,18 +245,14 @@
         .history-card-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
         .history-card-body.visible { max-height: 5000px; /* Increased to accommodate many items */ transition: max-height 0.4s ease-in; }
         .history-item-table { width: 100%; border-collapse: collapse; }
-        .history-item-table th, .history-item-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+        .history-item-table th, .history-item-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; }
         .history-item-table th { font-size: 0.8rem; color: #888; text-transform: uppercase; }
-        .history-item-table td.numeric, .history-item-table th.numeric { text-align: right; }
+        .history-item-table td.numeric, .history-item-table th.numeric { text-align: right; white-space: nowrap; }
         .history-item-table tr:last-child td { border-bottom: none; }
         .history-item-table .col-item-name {
+            width: 45%;
             white-space: normal;
             word-break: break-word;
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 2;
-            overflow: hidden;
-            text-overflow: ellipsis;
             line-height: 1.4;
         }
         .history-action-btn { background: none; border: none; cursor: pointer; padding: 0; }
