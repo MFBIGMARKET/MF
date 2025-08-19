@@ -111,7 +111,6 @@
         .filter-bar input, .filter-bar select { margin-bottom: 0; }
         .filter-bar select { border-radius: 50px; }
 
-        /* NEW Between Date Filter Styles */
         .between-date-filter {
             display: flex;
             gap: 10px;
@@ -173,7 +172,6 @@
             padding: 0;
             pointer-events: none;
         }
-
 
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #fff; border-radius: var(--border-radius); margin-bottom: 12px; box-shadow: var(--card-shadow); transition: transform 0.2s ease, box-shadow 0.2s; }
         .list-item:active { transform: scale(0.99); box-shadow: 0 2px 8px rgba(0, 95, 115, 0.1); }
@@ -329,7 +327,6 @@
         .receipt-footer { text-align: center; margin-top: 30px; font-size: 0.9rem; color: #777; border-top: 1px dashed #ccc; padding-top: 15px;}
         
         .dashboard-grid { display: grid; gap: 15px; grid-template-columns: 1fr; }
-        .kpi-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .kpi-card-small { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); padding: 15px; text-align: center; }
         .kpi-card-small .value { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); line-height: 1.2; overflow-wrap: break-word; }
         .kpi-card-small .label { font-size: 0.85rem; color: #6c757d; margin-top: 5px; }
@@ -363,6 +360,14 @@
         .payment-summary-list .salesman-header { font-weight: 600; color: var(--secondary-color); margin-top: 15px; padding-bottom: 5px; border-bottom: 1px solid var(--border-color); }
         .payment-summary-list .salesman-breakdown li { padding-left: 20px; font-size: 0.9rem; }
         .payment-summary-list .salesman-breakdown li:last-child { font-weight: bold; }
+
+        /* FIX: Added rule to unify admin dashboard card widths */
+        #page-admin-dashboard .between-date-filter,
+        #page-admin-dashboard .dashboard-grid {
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
         #crm-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         #crm-filters select { margin-bottom: 0; }
@@ -451,7 +456,6 @@
             .summary-totals-card { grid-template-columns: 1fr; }
         }
         @media (min-width: 768px) {
-            .kpi-row { grid-template-columns: repeat(4, 1fr); }
             .report-header-card > div > .label { font-size: 0.9rem; }
             .report-header-card > div > .value { font-size: 1.5rem; }
         }
@@ -1269,7 +1273,6 @@
                     </div>
                 `;
             }).join("");
-            const cashflowRowHtml = `<div class="kpi-row">${cashflowHtml}</div>`;
             
             const overallMargin = data.totalRevenue > 0 ? (data.totalProfit / data.totalRevenue * 100) : 0;
             const salesListHtml = Object.entries(data.salesBySalesman).sort((a, b) => b[1].revenue - a[1].revenue).map(([salesman, d]) => { const profit = d.revenue - d.cost; const margin = d.revenue > 0 ? profit / d.revenue * 100 : 0; return `<li class="data-list-item" data-salesman="${salesman}"><div class="item-main">${salesman}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary"><span class="${profit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(profit)} (${margin.toFixed(1)}%)</span></span></div></li>` }).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>';
@@ -1282,13 +1285,11 @@
             if (grid) grid.remove();
             
             dashboardContent.insertAdjacentHTML('beforeend', `<div class="dashboard-grid">
-                ${cashflowRowHtml}
-                <div class="kpi-row">
-                    <div class="kpi-card-small"><div class="value">${formatPreciseCurrency(data.totalRevenue)}</div><div class="label">Total Revenue</div></div>
-                    <div class="kpi-card-small"><div class="value">${formatPreciseCurrency(data.totalProfit)}</div><div class="label">Total Profit</div></div>
-                    <div class="kpi-card-small"><div class="value">${data.totalOrders}</div><div class="label">Total Orders</div></div>
-                    <div class="kpi-card-small"><div class="value ${overallMargin >= 0 ? "profit" : "loss"}">${overallMargin.toFixed(1)}%</div><div class="label">Overall Margin</div></div>
-                </div>
+                ${cashflowHtml}
+                <div class="kpi-card-small"><div class="value">${formatPreciseCurrency(data.totalRevenue)}</div><div class="label">Total Revenue</div></div>
+                <div class="kpi-card-small"><div class="value">${formatPreciseCurrency(data.totalProfit)}</div><div class="label">Total Profit</div></div>
+                <div class="kpi-card-small"><div class="value">${data.totalOrders}</div><div class="label">Total Orders</div></div>
+                <div class="kpi-card-small"><div class="value ${overallMargin >= 0 ? "profit" : "loss"}">${overallMargin.toFixed(1)}%</div><div class="label">Overall Margin</div></div>
                 <div class="data-list-card"><h3>Sales by Salesman</h3><ul class="data-list-container">${salesListHtml}</ul></div>
                 <div class="data-list-card"><h3>Items Sold</h3><ul class="data-list-container">${itemsSoldHtml}</ul></div>
                 <div class="data-list-card"><h3>Collections</h3><ul class="payment-summary-list"><li><span>Total Cash</span><strong>${formatPreciseCurrency(data.grandTotalCash)}</strong></li><li><span>Total UPI</span><strong>${formatPreciseCurrency(data.grandTotalUPI)}</strong></li><li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatPreciseCurrency(totalCollections)}</strong></li>${collectionsHtml}</ul></div>
