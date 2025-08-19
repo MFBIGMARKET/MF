@@ -15,7 +15,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- LeafletJS for Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha2256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <!-- FIREBASE SDKs -->
@@ -196,9 +196,6 @@
         .history-card-header p { margin: 0 0 5px; }
         .history-card-header p strong { font-weight: 600; color: var(--primary-color); }
         .history-card .date-display { font-size:0.9rem; color:#666; }
-        .history-card .date-editor { display: none; margin-top: 8px; }
-        .history-card .date-editor-actions { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
-        .history-card .date-editor-actions button { padding: 4px 8px; font-size: 0.8rem; border-radius: 6px; }
         .history-card .toggle-details { font-size: 0.9rem; font-weight: 500; color: var(--secondary-color); cursor: pointer; padding: 10px 15px; display: block; background: #f8f9fa; border-top: 1px solid #f0f0f0; }
         .history-card-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
         .history-card-body.visible { max-height: 5000px; transition: max-height 0.4s ease-in; }
@@ -212,7 +209,7 @@
         .history-action-btn svg { width: 20px; height: 20px; }
         .delete-history-btn svg { stroke: var(--danger-color); }
         .print-history-btn svg { stroke: var(--secondary-color); }
-        .edit-date-btn svg { stroke: var(--warning-color); }
+        .edit-packing-slip-btn svg { stroke: var(--warning-color); }
         
         .payment-method-options { display: flex; gap: 10px; margin: 15px 0; }
         .payment-method-option { flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
@@ -450,6 +447,15 @@
         .price-item .value { font-size: 1.2rem; font-weight: 700; color: var(--primary-color); }
         .stock-info { text-align: center; margin-top: 20px; font-weight: 500; }
 
+        #edit-slip-item-list .order-item-card { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; background: #fff; border-radius: var(--border-radius); padding: 15px; box-shadow: var(--card-shadow); }
+        #edit-slip-item-list .item-primary-row { display: flex; justify-content: space-between; align-items: center; }
+        #edit-slip-item-list .item-name { font-weight: 600; flex-grow: 1; margin-right: 10px; }
+        #edit-slip-item-list .delete-btn svg { stroke: var(--danger-color); }
+        #edit-slip-item-list .item-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: center; padding-top: 10px; margin-top: 10px; border-top: 1px solid #f0f0f0; }
+        #edit-slip-item-list .form-group { margin-bottom: 0; }
+        #edit-slip-item-list .form-group label { font-size: 0.8rem; color: #555; font-weight: 500; margin-bottom: 4px; }
+        #edit-slip-item-list input { margin-bottom: 0; padding: 10px; }
+
         @media (max-width: 767px) {
             #page-admin-dashboard .content { padding: 10px; }
             .dashboard-grid { grid-template-columns: 1fr; }
@@ -595,7 +601,7 @@
             <div id="order-summary-grand-total"></div>
         </div>
         <div style="padding: 20px; flex-shrink: 0;">
-            <button id="confirm-order-btn" class="button button-accent">Confirm Order</button>
+            <button id="confirm-order-btn" class="button button-accent">Save Packing Slip</button>
         </div>
     </div>
 
@@ -632,6 +638,10 @@
             <div class="icon-button" style="width: 24px;"></div>
         </div>
         <div class="content">
+            <div class="search-toggle-buttons" style="margin-bottom: 15px; margin-top: 0;">
+                <button class="toggle-btn active" data-history-type="packing-slips">Packing Slips</button>
+                <button class="toggle-btn" data-history-type="confirmed-orders">Confirmed Orders</button>
+            </div>
             <div id="order-history-date-filter" class="between-date-filter">
                 <input type="date" class="date-input start-date-input">
                 <button class="date-btn start-date-btn">
@@ -822,6 +832,33 @@
         </div>
     </div>
 
+    <div id="page-edit-packing-slip" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-history-from-edit-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1 id="edit-packing-slip-header">Edit Packing Slip</h1>
+            <div class="icon-button" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+            <div class="card">
+                <h3>Add Item</h3>
+                <div class="search-bar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="edit-slip-item-search-input" placeholder="Search all items...">
+                    <div id="edit-slip-item-search-results"></div>
+                </div>
+            </div>
+            <h3 style="margin-bottom: 10px;">Current Items</h3>
+            <div id="edit-slip-item-list"></div>
+            <div id="edit-slip-grand-total" style="margin-top: 20px; padding: 15px; background-color: var(--primary-color); color: white; font-size: 1.2rem; font-weight: bold; border-radius: var(--border-radius); display: flex; justify-content: space-between; align-items: center;"></div>
+        </div>
+        <div style="padding: 20px; flex-shrink: 0; display: flex; gap: 10px;">
+            <button id="save-packing-slip-btn" class="button button-outline" style="flex: 1; margin:0;">Save Changes</button>
+            <button id="confirm-packing-slip-btn" class="button button-accent" style="flex: 1; margin:0;">Confirm Order</button>
+        </div>
+    </div>
+
     <div id="page-location-report" class="page">
         <div class="header">
             <button class="icon-button" id="back-to-admin-from-location-btn">
@@ -920,8 +957,10 @@
         let appState = {
             salesman: null, customer: null, items: [], customers: [],
             salesmanItems: [], 
-            orders: {}, payments: {}, currentOrder: [],
-            currentPayment: {}, currentView: 'customers', editing: { type: null, id: null },
+            orders: {}, payments: {}, confirmedOrders: {}, currentOrder: [],
+            currentPayment: {}, currentView: 'customers', currentHistoryView: 'packing-slips',
+            editing: { type: null, id: null },
+            editingPackingSlip: { id: null, data: { items: [] } },
             reporting: { 
                 salesman: null, 
                 customer: null, 
@@ -941,7 +980,6 @@
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
             const page = document.getElementById(pageId);
             page.classList.add('active'); 
-            // Update filter UI whenever a page with a filter is shown
             if (page.querySelector('.between-date-filter')) {
                 updateFilterUI(page.querySelector('.between-date-filter').id);
             }
@@ -1012,10 +1050,13 @@
             onSnapshot(query(collection(db, "orders")), (snapshot) => { 
                 appState.orders = {}; 
                 snapshot.docs.forEach(doc => { const order = { id: doc.id, ...doc.data() }; if (!appState.orders[order.salesman]) appState.orders[order.salesman] = []; appState.orders[order.salesman].push(order); }); 
-                if (appState.salesman === 'ADMIN') {
-                    if (document.getElementById('page-admin-dashboard').classList.contains('active')) renderAdminDashboard();
-                    if (document.getElementById('page-location-report').classList.contains('active')) renderLocationReportPage();
-                }
+                if (document.getElementById('page-order-history').classList.contains('active') && appState.currentHistoryView === 'packing-slips') renderHistoryTabs();
+            });
+            onSnapshot(query(collection(db, "confirmed_orders")), (snapshot) => {
+                appState.confirmedOrders = {};
+                snapshot.docs.forEach(doc => { const order = { id: doc.id, ...doc.data() }; if (!appState.confirmedOrders[order.salesman]) appState.confirmedOrders[order.salesman] = []; appState.confirmedOrders[order.salesman].push(order); });
+                if (document.getElementById('page-order-history').classList.contains('active') && appState.currentHistoryView === 'confirmed-orders') renderHistoryTabs();
+                if (appState.salesman === 'ADMIN' && document.getElementById('page-admin-dashboard').classList.contains('active')) renderAdminDashboard();
             });
             onSnapshot(query(collection(db, "payments")), (snapshot) => { 
                 appState.payments = {}; 
@@ -1152,37 +1193,64 @@
             totalCont.style.display = 'flex'; 
         };
 
-        const renderHistory = (type, dateRange) => {
-            const isOrder = type === 'customers';
-            const container = document.getElementById(isOrder ? 'order-history-list' : 'payment-history-list');
-            let historyData = isOrder ? (appState.orders[appState.salesman] || []) : (appState.payments[appState.salesman] || []);
+        const renderHistoryTabs = () => {
+            const isPackingSlips = appState.currentHistoryView === 'packing-slips';
+            const isPaymentHistory = document.getElementById('page-payment-history').classList.contains('active');
+            const container = isPaymentHistory ? document.getElementById('payment-history-list') : document.getElementById('order-history-list');
             
-            if (dateRange && dateRange.start && dateRange.end) {
-                const { start, end } = dateRange;
-                historyData = historyData.filter(item => { const itemDate = new Date(item.date); return itemDate >= start && itemDate <= end; });
+            let historyData;
+            if (isPaymentHistory) {
+                historyData = appState.payments[appState.salesman] || [];
+            } else {
+                historyData = isPackingSlips ? (appState.orders[appState.salesman] || []) : (appState.confirmedOrders[appState.salesman] || []);
+            }
+            
+            const { start, end } = getReportDateRange();
+            if (start && end) {
+                historyData = historyData.filter(item => {
+                    const itemDate = new Date(isPackingSlips ? item.date : (item.confirmedDate || item.date));
+                    return itemDate >= start && itemDate <= end;
+                });
             }
 
-            if (historyData.length === 0) { container.innerHTML = `<p class="card" style="text-align:center;">No history found for the selected dates.</p>`; return; }
-            
-            container.innerHTML = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item) => { 
-                const itemCount = isOrder && item.items ? item.items.length : 0;
-                const totalText = isOrder ? `<strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)` : `<strong>Amount:</strong> ${formatPreciseCurrency(item.amount)}`;
-                const itemDetailsHtml = isOrder ? (item.items || []).map(i => `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(i.quantity * i.sellingPrice)}</strong></td></tr>`).join('') : ''; 
-                const actionsHtml = isOrder ? `
-                    <button class="history-action-btn edit-date-btn" title="Change Date"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button>
-                    <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
-                    <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>` : `
-                    <button class="history-action-btn edit-date-btn" title="Change Date"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button>
-                    <button class="history-action-btn delete-history-btn" data-type="payments" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
+            if (historyData.length === 0) {
+                container.innerHTML = `<p class="card" style="text-align:center;">No history found for the selected dates.</p>`;
+                return;
+            }
 
-                return `<div class="history-card" data-id="${item.id}" data-date="${item.date}" data-type="${isOrder ? 'orders' : 'payments'}">
+            historyData.sort((a, b) => new Date(isPackingSlips ? b.date : (b.confirmedDate || b.date)) - new Date(isPackingSlips ? a.date : (a.confirmedDate || a.date)));
+
+            container.innerHTML = historyData.map((item) => {
+                const isOrderType = !isPaymentHistory;
+                const itemCount = isOrderType && item.items ? item.items.length : 0;
+                const totalText = isOrderType ? `<strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)` : `<strong>Amount:</strong> ${formatPreciseCurrency(item.amount)}`;
+                const itemDetailsHtml = isOrderType ? (item.items || []).map(i => `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit || ""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(i.quantity * i.sellingPrice)}</strong></td></tr>`).join('') : '';
+
+                let actionsHtml = '';
+                if (isPaymentHistory) {
+                     actionsHtml = `<button class="history-action-btn delete-history-btn" data-type="payments" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
+                } else if (isPackingSlips) {
+                    actionsHtml = `
+                        <button class="history-action-btn edit-packing-slip-btn" title="Edit Slip"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                        <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+                        <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
+                } else { // Confirmed Orders
+                    actionsHtml = `<button class="history-action-btn delete-history-btn" data-type="confirmed_orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
+                }
+                
+                const dateToDisplay = new Date(isPackingSlips ? item.date : (item.confirmedDate || item.date));
+
+                return `<div class="history-card" data-id="${item.id}" data-type="${isPaymentHistory ? 'payments' : (isPackingSlips ? 'orders' : 'confirmed_orders')}">
                             <div class="history-card-header">
-                                <div class="info"><p><strong>Customer:</strong> ${item.customer.Customer}</p><p>${totalText}</p><p class="date-display">${new Date(item.date).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p>
-                                    <div class="date-editor"><input type="date" class="order-date-input" /><div class="date-editor-actions"><button class="button button-outline cancel-date-btn">Cancel</button><button class="button save-date-btn">Save</button></div></div>
-                                </div><div class="actions">${actionsHtml}</div>
+                                <div class="info">
+                                    <p><strong>Customer:</strong> ${item.customer.Customer}</p>
+                                    <p>${totalText}</p>
+                                    <p class="date-display">${dateToDisplay.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+                                </div>
+                                <div class="actions">${actionsHtml}</div>
                             </div>
-                            ${isOrder?`<div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a>`:""}
-                        </div>`; 
+                            ${isOrderType ? `<div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a>` : ""}
+                        </div>`;
             }).join('');
         };
         
@@ -1212,11 +1280,11 @@
             const { start, end } = getReportDateRange();
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
             
-            let orders = Object.values(appState.orders).flat();
+            let orders = Object.values(appState.confirmedOrders).flat();
             let payments = Object.values(appState.payments).flat();
 
             if (start && end) {
-                orders = orders.filter(o => { const orderDate = new Date(o.date); return orderDate >= start && orderDate <= end; });
+                orders = orders.filter(o => { const orderDate = new Date(o.confirmedDate); return orderDate >= start && orderDate <= end; });
                 payments = payments.filter(p => { const paymentDate = new Date(p.date); return paymentDate >= start && paymentDate <= end; });
             }
             
@@ -1339,9 +1407,9 @@
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             const { start, end } = getReportDateRange();
-            let salesmanOrders = appState.orders[salesman] || [];
+            let salesmanOrders = appState.confirmedOrders[salesman] || [];
             if (start && end) {
-                salesmanOrders = salesmanOrders.filter(o => { const orderDate = new Date(o.date); return orderDate >= start && orderDate <= end; });
+                salesmanOrders = salesmanOrders.filter(o => { const orderDate = new Date(o.confirmedDate); return orderDate >= start && orderDate <= end; });
             }
             const totalOrders = salesmanOrders.length;
 
@@ -1386,9 +1454,9 @@
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             const { start, end } = getReportDateRange();
-            let customerOrders = (appState.orders[salesman] || []).filter(o => o.customer.Customer === customerName);
+            let customerOrders = (appState.confirmedOrders[salesman] || []).filter(o => o.customer.Customer === customerName);
             if (start && end) {
-                customerOrders = customerOrders.filter(o => { const orderDate = new Date(o.date); return orderDate >= start && orderDate <= end; });
+                customerOrders = customerOrders.filter(o => { const orderDate = new Date(o.confirmedDate); return orderDate >= start && orderDate <= end; });
             }
 
             const itemsSold = {};
@@ -1438,7 +1506,7 @@
                 container.innerHTML = customerOrders.map(item => { 
                     const itemCount = item.items ? item.items.length : 0;
                     const itemDetailsHtml = (item.items || []).map(i => `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(i.quantity * i.sellingPrice)}</strong></td></tr>`).join(''); 
-                    return `<div class="history-card" data-id="${item.id}" data-date="${item.date}" data-type="orders"><div class="history-card-header"><div class="info"><p><strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)</p><p class="date-display">${new Date(item.date).toLocaleString()}</p><div class="date-editor"><input type="date" class="order-date-input" /><div class="date-editor-actions"><button class="button button-outline cancel-date-btn">Cancel</button><button class="button save-date-btn">Save</button></div></div></div><div class="actions"><button class="history-action-btn edit-date-btn" title="Change Date"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button><button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button><button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a></div>`; 
+                    return `<div class="history-card" data-id="${item.id}" data-type="orders"><div class="history-card-header"><div class="info"><p><strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)</p><p class="date-display">${new Date(item.date).toLocaleString()}</p></div><div class="actions"><button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button><button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a></div>`; 
                 }).join(''); 
             } 
             showPage('page-customer-history'); 
@@ -1483,7 +1551,11 @@
             const isOrder = appState.currentView === 'customers';
             const pageId = isOrder ? 'page-order-history' : 'page-payment-history';
             showPage(pageId);
-            renderHistory(isOrder ? 'customers' : 'payments', getReportDateRange());
+            if (isOrder) {
+                renderHistoryTabs();
+            } else {
+                renderHistoryTabs(); // This now handles payment history too
+            }
         });
         
         document.getElementById('product-info-icon-btn').addEventListener('click', () => showPage('page-product-info'));
@@ -1578,24 +1650,23 @@
 
         document.getElementById('page-order-summary').querySelector('#confirm-order-btn').addEventListener('click', async (e) => {
             const btn = e.currentTarget;
-            if (appState.currentOrder.length === 0) { alert('Cannot confirm an empty order.'); return; }
+            if (appState.currentOrder.length === 0) { alert('Cannot save an empty packing slip.'); return; }
             if (!appState.currentOrderLocation) { alert("Location data was lost. Please go back and start the order again."); return; }
-            btn.disabled = true; btn.textContent = 'Saving Order...';
+            btn.disabled = true; btn.textContent = 'Saving Slip...';
             try {
                 const total = appState.currentOrder.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
-                const newOrder = { customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone }, items: appState.currentOrder.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3 }, quantity: i.quantity, sellingPrice: i.sellingPrice })), total, salesman: appState.salesman, date: new Date().toISOString(), location: appState.currentOrderLocation };
-                const stockUpdateBatch = writeBatch(db);
-                stockUpdateBatch.set(doc(collection(db, "orders")), newOrder);
-                appState.currentOrder.forEach(orderItem => {
-                    const itemRef = doc(db, "items", String(orderItem.item.Code));
-                    const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
-                    const newStock = (currentItem ? Number(currentItem.Clstock) : 0) - orderItem.quantity;
-                    stockUpdateBatch.update(itemRef, { Clstock: newStock });
-                });
-                await stockUpdateBatch.commit();
-                showProfessionalModal('Success', 'The order has been saved successfully.', () => { appState.currentOrder = []; updateCartBadge(); showPage('page-main-view'); });
-            } catch (error) { console.error("Error confirming order:", error); alert(`Failed to save order. Reason: ${error.message}`);
-            } finally { btn.disabled = false; btn.textContent = 'Confirm Order'; appState.currentOrderLocation = null; }
+                const newOrder = { 
+                    customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone }, 
+                    items: appState.currentOrder.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3 }, quantity: i.quantity, sellingPrice: i.sellingPrice })), 
+                    total, 
+                    salesman: appState.salesman, 
+                    date: new Date().toISOString(), 
+                    location: appState.currentOrderLocation 
+                };
+                await setDoc(doc(collection(db, "orders")), newOrder);
+                showProfessionalModal('Success', 'The packing slip has been saved.', () => { appState.currentOrder = []; updateCartBadge(); showPage('page-main-view'); });
+            } catch (error) { console.error("Error saving packing slip:", error); alert(`Failed to save slip. Reason: ${error.message}`);
+            } finally { btn.disabled = false; btn.textContent = 'Save Packing Slip'; appState.currentOrderLocation = null; }
         });
 
         document.querySelector('.payment-method-options').addEventListener('click', e => { if (e.target.matches('.payment-method-option')) { document.querySelectorAll('.payment-method-option').forEach(el => el.classList.remove('selected')); e.target.classList.add('selected'); } });
@@ -1679,46 +1750,55 @@
         };
 
         const handleHistoryClick = async (e) => {
-            const card = e.target.closest('.history-card'); if (!card) return;
+            const card = e.target.closest('.history-card');
+            if (!card) return;
             const id = card.dataset.id;
-            const type = e.target.closest('.delete-history-btn')?.dataset.type;
-
-            const toggleDateEditor = (show) => {
-                const dateDisplay = card.querySelector('.date-display'); const dateEditor = card.querySelector('.date-editor');
-                if (show) { const originalDate = new Date(card.dataset.date); card.querySelector('.order-date-input').value = originalDate.toISOString().split('T')[0]; dateDisplay.style.display = 'none'; dateEditor.style.display = 'block'; }
-                else { dateDisplay.style.display = 'block'; dateEditor.style.display = 'none'; }
-            };
+            const type = card.dataset.type;
 
             if (e.target.closest('.delete-history-btn')) {
                 if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
                     card.style.opacity = '0'; card.style.transform = 'translateX(-20px)'; setTimeout(() => card.remove(), 300);
-                    if (type === 'orders') {
-                        const orderToDelete = Object.values(appState.orders).flat().find(o => o.id === id);
-                        if (orderToDelete) {
-                            try {
-                                const batch = writeBatch(db); batch.delete(doc(db, "orders", id));
+                    try {
+                        if (type === 'orders') {
+                            await deleteDoc(doc(db, "orders", id));
+                        } else if (type === 'confirmed_orders') {
+                            const orderToDelete = Object.values(appState.confirmedOrders).flat().find(o => o.id === id);
+                            if (orderToDelete) {
+                                const batch = writeBatch(db);
+                                batch.delete(doc(db, "confirmed_orders", id));
                                 for (const orderItem of orderToDelete.items) {
-                                    const itemRef = doc(db, "items", String(orderItem.item.Code)); const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
-                                    if (currentItem) { const restoredStock = Number(currentItem.Clstock) + Number(orderItem.quantity); batch.update(itemRef, { Clstock: restoredStock }); }
+                                    const itemRef = doc(db, "items", String(orderItem.item.Code));
+                                    const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
+                                    if (currentItem) {
+                                        const restoredStock = Number(currentItem.Clstock) + Number(orderItem.quantity);
+                                        batch.update(itemRef, { Clstock: restoredStock });
+                                    }
                                 }
                                 await batch.commit();
-                            } catch (error) { console.error("Error deleting order:", error); showProfessionalModal('Error', 'Failed to delete order.'); }
+                            }
+                        } else if (type === 'payments') {
+                            await deleteDoc(doc(db, "payments", id));
                         }
-                    } else if (type === 'payments') { try { await deleteDoc(doc(db, "payments", id)); } catch (error) { console.error("Error deleting payment:", error); showProfessionalModal('Error', 'Failed to delete payment.'); } }
+                    } catch (error) {
+                        console.error(`Error deleting from ${type}:`, error);
+                        showProfessionalModal('Error', `Failed to delete the entry.`);
+                        card.style.opacity = '1'; card.style.transform = 'translateX(0)';
+                    }
                 }
-            } else if (e.target.closest('.print-history-btn')) { printPackingSlip(id);
-            } else if (e.target.closest('.toggle-details')) { e.preventDefault(); const target = document.getElementById(e.target.dataset.target); if (target) target.classList.toggle('visible');
-            } else if (e.target.closest('.edit-date-btn')) { toggleDateEditor(true);
-            } else if (e.target.closest('.cancel-date-btn')) { toggleDateEditor(false);
-            } else if (e.target.closest('.save-date-btn')) {
-                const btn = e.target.closest('.save-date-btn'); const newDateValue = card.querySelector('.order-date-input').value; if (!newDateValue) { alert('Please select a valid date.'); return; }
-                btn.disabled = true; btn.textContent = 'Saving...';
-                const cardType = card.dataset.type; const originalDate = new Date(card.dataset.date); const newDate = new Date(newDateValue + 'T00:00:00.000Z');
-                originalDate.setUTCFullYear(newDate.getUTCFullYear()); originalDate.setUTCMonth(newDate.getUTCMonth()); originalDate.setUTCDate(newDate.getUTCDate());
-                const newIsoDate = originalDate.toISOString();
-                card.style.opacity = '0'; card.style.transform = 'translateX(20px)';
-                try { await updateDoc(doc(db, cardType, id), { date: newIsoDate }); }
-                catch(error) { console.error("Error updating date:", error); showProfessionalModal('Error', 'Failed to update date.'); card.style.opacity = '1'; card.style.transform = 'translateX(0)'; }
+            } else if (e.target.closest('.print-history-btn')) {
+                printPackingSlip(id);
+            } else if (e.target.closest('.toggle-details')) {
+                e.preventDefault();
+                const target = document.getElementById(e.target.dataset.target);
+                if (target) target.classList.toggle('visible');
+            } else if (e.target.closest('.edit-packing-slip-btn')) {
+                const orderData = (appState.orders[appState.salesman] || []).find(o => o.id === id);
+                if (orderData) {
+                    appState.editingPackingSlip.id = id;
+                    appState.editingPackingSlip.data = JSON.parse(JSON.stringify(orderData));
+                    renderEditPackingSlipPage();
+                    showPage('page-edit-packing-slip');
+                }
             }
         };
 
@@ -1774,9 +1854,19 @@
         };
 
         setupBetweenDateFilter('admin-date-filter', renderAdminDashboard);
-        setupBetweenDateFilter('order-history-date-filter', () => renderHistory('customers', getReportDateRange()));
-        setupBetweenDateFilter('payment-history-date-filter', () => renderHistory('payments', getReportDateRange()));
+        setupBetweenDateFilter('order-history-date-filter', renderHistoryTabs);
+        setupBetweenDateFilter('payment-history-date-filter', renderHistoryTabs);
         setupBetweenDateFilter('location-report-date-filter', renderLocationReportPage);
+
+        document.querySelector('#page-order-history .search-toggle-buttons').addEventListener('click', e => {
+            if (e.target.matches('.toggle-btn')) {
+                const historyType = e.target.dataset.historyType;
+                appState.currentHistoryView = historyType;
+                document.querySelectorAll('#page-order-history .toggle-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                renderHistoryTabs();
+            }
+        });
 
         const printPaymentSummary = () => {
             const { start, end } = getReportDateRange();
@@ -1852,6 +1942,131 @@
         document.getElementById('info-salesman-item-search-results').addEventListener('click', (e) => handleInfoItemSelection(e.target.closest('.search-result-item')));
         document.getElementById('info-item-search-results').addEventListener('click', (e) => handleInfoItemSelection(e.target.closest('.search-result-item')));
 
+        // --- EDIT PACKING SLIP PAGE LOGIC ---
+        document.getElementById('back-to-history-from-edit-btn').addEventListener('click', () => showPage('page-order-history'));
+
+        const renderEditPackingSlipPage = () => {
+            const { data } = appState.editingPackingSlip;
+            document.getElementById('edit-packing-slip-header').textContent = `Edit Slip: ${data.customer.Customer}`;
+            renderEditSlipItemList();
+        };
+
+        const updateEditSlipTotal = () => {
+            const { items } = appState.editingPackingSlip.data;
+            const total = items.reduce((sum, item) => sum + (item.quantity * item.sellingPrice), 0);
+            appState.editingPackingSlip.data.total = total;
+            document.getElementById('edit-slip-grand-total').innerHTML = `<span>Grand Total:</span><span>${formatPreciseCurrency(total)}</span>`;
+        };
+
+        const renderEditSlipItemList = () => {
+            const listContainer = document.getElementById('edit-slip-item-list');
+            const { items } = appState.editingPackingSlip.data;
+            if (items.length === 0) {
+                listContainer.innerHTML = '<p class="card" style="text-align:center;">No items in this slip. Add one using the search bar.</p>';
+            } else {
+                listContainer.innerHTML = items.map((orderItem, index) => `
+                    <div class="order-item-card" data-index="${index}">
+                        <div class="item-primary-row">
+                            <div class="item-name">${orderItem.item.ItemName}</div>
+                            <button class="item-action-btn delete-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        </div>
+                        <div class="item-controls-grid">
+                            <div class="form-group"><label>Quantity</label><input type="number" class="edit-slip-qty" value="${orderItem.quantity}"></div>
+                            <div class="form-group"><label>Price</label><input type="number" class="edit-slip-price" value="${orderItem.sellingPrice}"></div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            updateEditSlipTotal();
+        };
+        
+        document.getElementById('edit-slip-item-search-input').addEventListener('input', (e) => renderItemSearchResults(e.target.value, 'edit-slip-item-search-results'));
+        document.getElementById('edit-slip-item-search-results').addEventListener('click', (e) => {
+            const resultItem = e.target.closest('.search-result-item');
+            if (resultItem) {
+                const code = resultItem.dataset.itemCode;
+                const fullItem = appState.items.find(i => i.Code == code);
+                if (fullItem) {
+                    const existing = appState.editingPackingSlip.data.items.find(i => i.item.Code === fullItem.Code);
+                    if (existing) {
+                        alert('Item is already in the slip. You can edit the quantity below.');
+                    } else {
+                        appState.editingPackingSlip.data.items.push({ item: fullItem, quantity: 1, sellingPrice: fullItem.Price2 });
+                        renderEditSlipItemList();
+                    }
+                }
+                document.getElementById('edit-slip-item-search-input').value = '';
+                document.getElementById('edit-slip-item-search-results').innerHTML = '';
+            }
+        });
+        
+        document.getElementById('edit-slip-item-list').addEventListener('click', (e) => {
+            if (e.target.closest('.delete-btn')) {
+                const index = e.target.closest('.order-item-card').dataset.index;
+                appState.editingPackingSlip.data.items.splice(index, 1);
+                renderEditSlipItemList();
+            }
+        });
+        
+        document.getElementById('edit-slip-item-list').addEventListener('input', (e) => {
+            const card = e.target.closest('.order-item-card');
+            if (!card) return;
+            const index = card.dataset.index;
+            const item = appState.editingPackingSlip.data.items[index];
+            if (e.target.classList.contains('edit-slip-qty')) {
+                item.quantity = parseFloat(e.target.value) || 0;
+            } else if (e.target.classList.contains('edit-slip-price')) {
+                item.sellingPrice = parseFloat(e.target.value) || 0;
+            }
+            updateEditSlipTotal();
+        });
+
+        document.getElementById('save-packing-slip-btn').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            btn.disabled = true; btn.textContent = 'Saving...';
+            try {
+                const { id, data } = appState.editingPackingSlip;
+                await updateDoc(doc(db, "orders", id), data);
+                showProfessionalModal('Success', 'Packing slip changes have been saved.', () => showPage('page-order-history'));
+            } catch (error) {
+                console.error("Error saving slip:", error);
+                showProfessionalModal('Error', 'Failed to save changes.');
+            } finally {
+                btn.disabled = false; btn.textContent = 'Save Changes';
+            }
+        });
+
+        document.getElementById('confirm-packing-slip-btn').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            if (!confirm('Are you sure you want to confirm this order? This will finalize the sale and deduct stock. This action cannot be undone.')) return;
+            
+            btn.disabled = true; btn.textContent = 'Confirming...';
+            try {
+                const { id, data } = appState.editingPackingSlip;
+                const confirmedOrder = { ...data, confirmedDate: new Date().toISOString() };
+                
+                const batch = writeBatch(db);
+                batch.set(doc(collection(db, "confirmed_orders")), confirmedOrder);
+                batch.delete(doc(db, "orders", id));
+
+                for (const orderItem of data.items) {
+                    const itemRef = doc(db, "items", String(orderItem.item.Code));
+                    const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
+                    if (currentItem) {
+                        const newStock = Number(currentItem.Clstock) - Number(orderItem.quantity);
+                        batch.update(itemRef, { Clstock: newStock });
+                    }
+                }
+                await batch.commit();
+                showProfessionalModal('Success', 'Order has been confirmed and stock updated.', () => showPage('page-order-history'));
+            } catch (error) {
+                console.error("Error confirming order:", error);
+                showProfessionalModal('Error', 'Failed to confirm order.');
+            } finally {
+                btn.disabled = false; btn.textContent = 'Confirm Order';
+            }
+        });
+        
         const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v3'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
         
         setupPWA();
