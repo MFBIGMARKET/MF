@@ -189,7 +189,7 @@
         .action-button:active { background-color: rgba(0, 95, 115, 0.1); }
         .action-button svg { width: 28px; height: 28px; stroke: var(--primary-color); stroke-width: 2; }
 
-        .history-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); margin-bottom: 15px; overflow: hidden; transition: all 0.3s ease-out; }
+        .history-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); margin-bottom: 15px; overflow: hidden; transition: all 0.4s ease-out; }
         .history-card-header { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
         .history-card-header .info { flex-grow: 1; }
         .history-card-header .actions { display: flex; gap: 15px; flex-shrink: 0; margin-left: 10px; }
@@ -210,6 +210,17 @@
         .delete-history-btn svg { stroke: var(--danger-color); }
         .print-history-btn svg { stroke: var(--secondary-color); }
         .edit-packing-slip-btn svg { stroke: var(--warning-color); }
+        .history-card.removing {
+            opacity: 0;
+            transform: scale(0.95);
+            max-height: 0 !important;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-bottom: 0;
+            overflow: hidden;
+            border-top: none;
+            border-bottom: none;
+        }
         
         .payment-method-options { display: flex; gap: 10px; margin: 15px 0; }
         .payment-method-option { flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
@@ -334,7 +345,16 @@
         .data-list-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 5px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background-color 0.2s; }
         .data-list-item:hover { background-color: var(--light-bg); }
         .data-list-item:last-child { border-bottom: none; }
-        .data-list-item .item-main { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+        .data-list-item .item-main {
+            font-weight: 600;
+            white-space: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
         .data-list-item .item-details { text-align: right; }
         .item-details .value-primary { font-weight: 600; color: var(--text-color); display: block; font-size: 1rem; }
         .item-details .value-secondary { font-size: 0.8rem; color: #6c757d; }
@@ -1291,7 +1311,9 @@
             let totalRevenue = 0, totalCost = 0, totalOrders = orders.length;
             const salesBySalesman = {};
             const itemsSold = {};
+            const customerSet = new Set();
             orders.forEach(order => {
+                customerSet.add(order.customer.Customer);
                 const salesman = order.salesman || 'N/A';
                 if (!salesBySalesman[salesman]) salesBySalesman[salesman] = { revenue: 0, cost: 0, orderCount: 0 };
                 salesBySalesman[salesman].orderCount++;
@@ -1324,25 +1346,39 @@
                 salesmanCashflow[salesman] = collections - revenue;
             });
 
-            return { totalRevenue, totalProfit: totalRevenue - totalCost, totalOrders, salesBySalesman, itemsSold: Object.entries(itemsSold).sort((a, b) => b[1].revenue - a[1].revenue), collectionsBySalesman, grandTotalCash, grandTotalUPI, salesmanCashflow };
+            return { totalRevenue, totalProfit: totalRevenue - totalCost, totalOrders, uniqueCustomers: customerSet.size, salesBySalesman, itemsSold: Object.entries(itemsSold).sort((a, b) => b[1].revenue - a[1].revenue), collectionsBySalesman, grandTotalCash, grandTotalUPI, salesmanCashflow };
         };
 
         const renderAdminDashboard = () => {
             const dashboardContent = document.getElementById("admin-dashboard-content");
             const data = processAdminData();
+
+            const margin = data.totalRevenue > 0 ? (data.totalProfit / data.totalRevenue) * 100 : 0;
+            const riyasSales = data.salesBySalesman['RIYAS']?.revenue || 0;
+            const unniSales = data.salesBySalesman['UNNI']?.revenue || 0;
+            const riyasCollection = (data.collectionsBySalesman['RIYAS']?.cash || 0) + (data.collectionsBySalesman['RIYAS']?.upi || 0);
+            const unniCollection = (data.collectionsBySalesman['UNNI']?.cash || 0) + (data.collectionsBySalesman['UNNI']?.upi || 0);
+
+            const kpiItems = [
+                { title: 'Total Sales', value: formatPreciseCurrency(data.totalRevenue) },
+                { title: 'RIYAS Sales', value: formatPreciseCurrency(riyasSales) },
+                { title: 'RIYAS Collection', value: formatPreciseCurrency(riyasCollection) },
+                { title: 'UNNI Sales', value: formatPreciseCurrency(unniSales) },
+                { title: 'UNNI Collection', value: formatPreciseCurrency(unniCollection) },
+                { title: 'Overall Profit', value: formatPreciseCurrency(data.totalProfit), class: data.totalProfit >= 0 ? 'profit' : 'loss' },
+                { title: 'Overall Margin', value: `${margin.toFixed(1)}%`, class: margin >= 0 ? 'profit' : 'loss' },
+                { title: 'Overall Unique Customers', value: data.uniqueCustomers }
+            ];
+
+            const kpiListHtml = kpiItems.map(item => `
+                <li class="data-list-item" style="cursor:default;">
+                    <div class="item-main">${item.title}</div>
+                    <div class="item-details"><span class="value-primary ${item.class || ''}">${item.value}</span></div>
+                </li>
+            `).join('');
             
-            const cashflowHtml = ['UNNI', 'RIYAS'].map(salesman => {
-                const cashflow = data.salesmanCashflow[salesman] || 0;
-                const cashflowClass = cashflow >= 0 ? "profit" : "loss";
-                return `
-                    <div class="kpi-card-small">
-                        <div class="value ${cashflowClass}">${formatPreciseCurrency(cashflow)}</div>
-                        <div class="label">${salesman}'s Net Cashflow</div>
-                    </div>
-                `;
-            }).join("");
-            
-            const overallMargin = data.totalRevenue > 0 ? (data.totalProfit / data.totalRevenue * 100) : 0;
+            const kpiCardHtml = `<div class="data-list-card"><h3>Key Performance Indicators</h3><ul class="data-list-container" style="max-height: none;">${kpiListHtml}</ul></div>`;
+
             const salesListHtml = Object.entries(data.salesBySalesman).sort((a, b) => b[1].revenue - a[1].revenue).map(([salesman, d]) => { const profit = d.revenue - d.cost; const margin = d.revenue > 0 ? profit / d.revenue * 100 : 0; return `<li class="data-list-item" data-salesman="${salesman}"><div class="item-main">${salesman}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary"><span class="${profit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(profit)} (${margin.toFixed(1)}%)</span></span></div></li>` }).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>';
             const itemsSoldHtml = data.itemsSold.map(([name, d]) => `<li class="data-list-item" style="cursor:default;"><div class="item-main">${name}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary">Qty: ${d.quantity}</span></div></li>`).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>';
             const totalCollections = data.grandTotalCash + data.grandTotalUPI;
@@ -1353,18 +1389,14 @@
             if (grid) grid.remove();
             
             dashboardContent.insertAdjacentHTML('beforeend', `<div class="dashboard-grid">
-                ${cashflowHtml}
-                <div class="kpi-card-small"><div class="value">${formatPreciseCurrency(data.totalRevenue)}</div><div class="label">Total Revenue</div></div>
-                <div class="kpi-card-small"><div class="value">${formatPreciseCurrency(data.totalProfit)}</div><div class="label">Total Profit</div></div>
-                <div class="kpi-card-small"><div class="value">${data.totalOrders}</div><div class="label">Total Orders</div></div>
-                <div class="kpi-card-small"><div class="value ${overallMargin >= 0 ? "profit" : "loss"}">${overallMargin.toFixed(1)}%</div><div class="label">Overall Margin</div></div>
+                ${kpiCardHtml}
                 <div class="data-list-card"><h3>Sales by Salesman</h3><ul class="data-list-container">${salesListHtml}</ul></div>
                 <div class="data-list-card"><h3>Items Sold</h3><ul class="data-list-container">${itemsSoldHtml}</ul></div>
                 <div class="data-list-card"><h3>Collections</h3><ul class="payment-summary-list"><li><span>Total Cash</span><strong>${formatPreciseCurrency(data.grandTotalCash)}</strong></li><li><span>Total UPI</span><strong>${formatPreciseCurrency(data.grandTotalUPI)}</strong></li><li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatPreciseCurrency(totalCollections)}</strong></li>${collectionsHtml}</ul></div>
                 <div class="data-list-card"><h3>Operations</h3><button class="button button-outline" id="location-report-btn" style="margin-bottom: 10px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Location Report</button><button class="button button-outline" id="crm-module-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Send Bulk Offer</button></div>
             </div>`);
         };
-
+        
         const renderLocationReportPage = () => { 
             const contentEl = document.getElementById('location-report-content');
             const allSalesmen = ['UNNI', 'RIYAS'];
@@ -1757,10 +1789,18 @@
 
             if (e.target.closest('.delete-history-btn')) {
                 if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
-                    card.style.opacity = '0'; card.style.transform = 'translateX(-20px)'; setTimeout(() => card.remove(), 300);
+                    card.classList.add('removing');
                     try {
                         if (type === 'orders') {
+                            const orderToDelete = Object.values(appState.orders).flat().find(o => o.id === id);
                             await deleteDoc(doc(db, "orders", id));
+                            if (orderToDelete) {
+                                const salesman = orderToDelete.salesman;
+                                if (appState.orders[salesman]) {
+                                    const index = appState.orders[salesman].findIndex(o => o.id === id);
+                                    if (index > -1) appState.orders[salesman].splice(index, 1);
+                                }
+                            }
                         } else if (type === 'confirmed_orders') {
                             const orderToDelete = Object.values(appState.confirmedOrders).flat().find(o => o.id === id);
                             if (orderToDelete) {
@@ -1775,14 +1815,30 @@
                                     }
                                 }
                                 await batch.commit();
+                                const salesman = orderToDelete.salesman;
+                                if (appState.confirmedOrders[salesman]) {
+                                    const indexToDelete = appState.confirmedOrders[salesman].findIndex(o => o.id === id);
+                                    if (indexToDelete > -1) {
+                                        appState.confirmedOrders[salesman].splice(indexToDelete, 1);
+                                    }
+                                }
                             }
                         } else if (type === 'payments') {
+                            const paymentToDelete = Object.values(appState.payments).flat().find(p => p.id === id);
                             await deleteDoc(doc(db, "payments", id));
+                            if (paymentToDelete) {
+                                const salesman = paymentToDelete.salesman;
+                                if (appState.payments[salesman]) {
+                                    const index = appState.payments[salesman].findIndex(p => p.id === id);
+                                    if (index > -1) appState.payments[salesman].splice(index, 1);
+                                }
+                            }
                         }
+                        setTimeout(() => card.remove(), 400);
                     } catch (error) {
                         console.error(`Error deleting from ${type}:`, error);
                         showProfessionalModal('Error', `Failed to delete the entry.`);
-                        card.style.opacity = '1'; card.style.transform = 'translateX(0)';
+                        card.classList.remove('removing');
                     }
                 }
             } else if (e.target.closest('.print-history-btn')) {
@@ -2058,7 +2114,14 @@
                     }
                 }
                 await batch.commit();
-                showProfessionalModal('Success', 'Order has been confirmed and stock updated.', () => showPage('page-order-history'));
+                showProfessionalModal('Success', 'Order has been confirmed and stock updated.', () => {
+                    const historyCard = document.querySelector(`#page-order-history .history-card[data-id="${id}"]`);
+                    if (historyCard) {
+                        historyCard.classList.add('removing');
+                        setTimeout(() => historyCard.remove(), 400);
+                    }
+                    showPage('page-order-history');
+                });
             } catch (error) {
                 console.error("Error confirming order:", error);
                 showProfessionalModal('Error', 'Failed to confirm order.');
