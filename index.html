@@ -759,6 +759,7 @@
                         <option value="ALL">All Routes</option>
                     </select>
                 </div>
+                <button id="outstanding-sort-btn" class="button button-outline" style="margin: 0; flex: 1; min-width: 150px; padding: 10px; font-size: 0.9rem;">Sort by Amount</button>
             </div>
             <div class="card">
                 <div class="kpi-card-small" style="padding: 20px; box-shadow: none; border: 1px solid var(--border-color);">
@@ -1055,6 +1056,7 @@
             flyerBuilder: { items: [], editingIndex: null },
             currentOrderLocation: null,
             outstandingUpdateTimeout: null,
+            outstandingSort: 'default', // 'default', 'desc', 'asc'
         };
 
         const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc } = window.firebaseTools;
@@ -1829,18 +1831,57 @@
 
         document.querySelector('.payment-method-options').addEventListener('click', e => { if (e.target.matches('.payment-method-option')) { document.querySelectorAll('.payment-method-option').forEach(el => el.classList.remove('selected')); e.target.classList.add('selected'); } });
         
-        document.getElementById('confirm-payment-btn').addEventListener('click', async () => { 
-            const amount = parseFloat(document.getElementById('payment-amount').value); 
-            if (isNaN(amount) || amount <= 0) { alert('Please enter a valid amount.'); return; } 
-            const method = document.querySelector('.payment-method-option.selected').dataset.method; 
-            const newPayment = { customer: { Customer: appState.currentPayment.customer.Customer }, amount, method, salesman: appState.salesman, date: new Date().toISOString() }; 
-            await setDoc(doc(collection(db, "payments")), newPayment); 
-            appState.currentPayment = newPayment; 
-            document.getElementById('confirm-payment-btn').style.display = 'none';
-            document.getElementById('payment-actions-container').style.display = 'flex';
-            showProfessionalModal('Success', 'The payment has been recorded successfully.');
+        // MODIFICATION START: Auto-deduct outstanding balance on payment
+        document.getElementById('confirm-payment-btn').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            const amount = parseFloat(document.getElementById('payment-amount').value);
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid amount.');
+                btn.disabled = false;
+                btn.textContent = 'Confirm Payment';
+                return;
+            }
+            const method = document.querySelector('.payment-method-option.selected').dataset.method;
+            const customerForPayment = appState.currentPayment.customer;
+            
+            try {
+                // 1. Record the new payment
+                const newPayment = {
+                    customer: { Customer: customerForPayment.Customer },
+                    amount,
+                    method,
+                    salesman: appState.salesman,
+                    date: new Date().toISOString()
+                };
+                await setDoc(doc(collection(db, "payments")), newPayment);
+                appState.currentPayment = newPayment; // Update current payment for receipt generation
+
+                // 2. Deduct amount from customer's outstanding balance
+                if (customerForPayment.id) {
+                    const customerRef = doc(db, "customers", customerForPayment.id);
+                    const currentOutstanding = Number(customerForPayment.Outstanding) || 0;
+                    const newOutstanding = currentOutstanding - amount;
+                    await updateDoc(customerRef, { Outstanding: newOutstanding });
+                }
+
+                // 3. Update UI
+                document.getElementById('confirm-payment-btn').style.display = 'none';
+                document.getElementById('payment-actions-container').style.display = 'flex';
+                showProfessionalModal('Success', 'Payment recorded and outstanding balance updated successfully.');
+
+            } catch (error) {
+                console.error("Error processing payment: ", error);
+                alert("An error occurred. Please check your connection and try again.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Confirm Payment';
+            }
         });
-        
+        // MODIFICATION END
+
         const generateAndShareReceipt = async (receiptType, customer, amount) => {
              const receiptElement = document.querySelector('#payment-receipt-wrapper .receipt-container');
              if (!receiptElement) { alert('Error: Receipt element not found.'); return; }
@@ -2332,14 +2373,20 @@
             const searchFilter = document.getElementById('outstanding-search-input').value.toLowerCase();
             const selectedRoute = document.getElementById('outstanding-route-filter').value;
 
-            const allSalesmanCustomers = appState.customers.filter(c => c.Salesman && c.Salesman.toUpperCase() === appState.salesman);
+            let filteredCustomers = appState.customers
+                .filter(c => c.Salesman && c.Salesman.toUpperCase() === appState.salesman && (c.Customer || '').toLowerCase().includes(searchFilter) && (selectedRoute === 'ALL' || c.Route === selectedRoute));
 
-            const totalOutstanding = allSalesmanCustomers.reduce((sum, c) => sum + (c.Outstanding || 0), 0);
+            const totalOutstanding = filteredCustomers.reduce((sum, c) => sum + (c.Outstanding || 0), 0);
             totalValueEl.textContent = formatCurrency(totalOutstanding);
             
-            const filteredCustomers = allSalesmanCustomers
-                .filter(c => (c.Customer || '').toLowerCase().includes(searchFilter) && (selectedRoute === 'ALL' || c.Route === selectedRoute))
-                .sort((a, b) => (a.Customer || '').localeCompare(b.Customer || ''));
+            // Apply sorting
+            if (appState.outstandingSort === 'desc') {
+                filteredCustomers.sort((a, b) => (b.Outstanding || 0) - (a.Outstanding || 0));
+            } else if (appState.outstandingSort === 'asc') {
+                filteredCustomers.sort((a, b) => (a.Outstanding || 0) - (b.Outstanding || 0));
+            } else {
+                filteredCustomers.sort((a, b) => (a.Customer || '').localeCompare(b.Customer || ''));
+            }
 
             if (filteredCustomers.length === 0) {
                 container.innerHTML = `<p class="card" style="text-align: center;">No customers found for the selected filters.</p>`;
@@ -2347,7 +2394,7 @@
             }
 
             container.innerHTML = filteredCustomers.map(c => `
-                <div class="list-item" data-customer-id="${c.id}">
+                <div class="list-item" data-customer-id="${c.id}" data-customer-name="${c.Customer}">
                     <div class="info">${c.Customer}</div>
                     <input type="number" class="outstanding-balance" value="${c.Outstanding || 0}" />
                     <button class="reminder-btn" data-customer='${JSON.stringify(c)}'>
@@ -2360,29 +2407,67 @@
         document.getElementById('outstanding-search-input').addEventListener('input', renderOutstandingBalancesPage);
         document.getElementById('outstanding-route-filter').addEventListener('change', renderOutstandingBalancesPage);
         
-        document.getElementById('outstanding-list-container').addEventListener('input', e => {
+        document.getElementById('outstanding-sort-btn').addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            if (appState.outstandingSort === 'default') {
+                appState.outstandingSort = 'desc';
+                btn.textContent = 'Sort: High to Low';
+            } else if (appState.outstandingSort === 'desc') {
+                appState.outstandingSort = 'asc';
+                btn.textContent = 'Sort: Low to High';
+            } else {
+                appState.outstandingSort = 'default';
+                btn.textContent = 'Sort by Amount';
+            }
+            renderOutstandingBalancesPage();
+        });
+        
+        const outstandingListContainer = document.getElementById('outstanding-list-container');
+
+        outstandingListContainer.addEventListener('focusin', e => {
             if (e.target.classList.contains('outstanding-balance')) {
-                clearTimeout(appState.outstandingUpdateTimeout);
+                e.target.dataset.originalValue = e.target.value;
+            }
+        });
+
+        outstandingListContainer.addEventListener('change', async e => {
+            if (e.target.classList.contains('outstanding-balance')) {
                 const input = e.target;
-                const customerId = input.closest('.list-item').dataset.customerId;
+                const listItem = input.closest('.list-item');
+                const customerId = listItem.dataset.customerId;
+                const customerName = listItem.dataset.customerName;
+                const originalBalance = parseFloat(input.dataset.originalValue);
                 const newBalance = parseFloat(input.value);
 
-                if (!isNaN(newBalance) && customerId) {
-                    appState.outstandingUpdateTimeout = setTimeout(async () => {
-                        try {
-                            const customerRef = doc(db, "customers", customerId);
-                            await updateDoc(customerRef, { Outstanding: newBalance });
-                            showToast('Balance updated!');
-                        } catch (error) {
-                            console.error("Error updating balance:", error);
-                            showToast('Update failed!');
-                        }
-                    }, 800);
+                if (isNaN(newBalance) || !customerId) {
+                    input.value = originalBalance;
+                    return;
+                }
+
+                if (newBalance === originalBalance) {
+                    return; 
+                }
+
+                const confirmed = confirm(`Are you sure you want to change the balance for ${customerName} to ${formatCurrency(newBalance)}?`);
+
+                if (confirmed) {
+                    try {
+                        const customerRef = doc(db, "customers", customerId);
+                        await updateDoc(customerRef, { Outstanding: newBalance });
+                        showToast('Balance updated!');
+                        input.dataset.originalValue = newBalance;
+                    } catch (error) {
+                        console.error("Error updating balance:", error);
+                        showToast('Update failed!');
+                        input.value = originalBalance;
+                    }
+                } else {
+                    input.value = originalBalance;
                 }
             }
         });
-        
-        document.getElementById('outstanding-list-container').addEventListener('click', async (e) => {
+
+        outstandingListContainer.addEventListener('click', async (e) => {
             const reminderBtn = e.target.closest('.reminder-btn');
             if (reminderBtn) {
                 reminderBtn.disabled = true;
