@@ -1121,7 +1121,16 @@
             const selectedRoute = document.getElementById('payment-route-filter').value;
             const filteredCustomers = appState.customers.filter(c => c.Salesman && c.Salesman.toUpperCase() === appState.salesman && (c.Customer || '').toLowerCase().includes(searchFilter) && (selectedRoute === 'ALL' || c.Route === selectedRoute));
             if (filteredCustomers.length === 0) { container.innerHTML = `<div class="card" style="text-align: center;">No customers found.</div>`; return; }
-            container.innerHTML = filteredCustomers.map(c => `<div class="list-item"><span class="info">${c.Customer}</span><button class="list-item-action" data-customer='${JSON.stringify(c)}'>Collect</button></div>`).join('');
+            container.innerHTML = filteredCustomers.map(c => `
+                <div class="list-item">
+                    <div class="info">
+                        ${c.Customer}
+                        <div style="font-size: 0.9rem; color: var(--danger-color); font-weight: 500; margin-top: 4px;">
+                           Bal: ${formatCurrency(c.Outstanding || 0)}
+                        </div>
+                    </div>
+                    <button class="list-item-action" data-customer='${JSON.stringify(c)}'>Collect</button>
+                </div>`).join('');
         };
         
         const renderSalesmanItemSearchResults = (filter = '', resultsContainerId) => {
@@ -1526,7 +1535,21 @@
         document.getElementById('back-to-salesman-report-btn').addEventListener('click', () => showPage('page-salesman-report'));
         document.getElementById('back-to-admin-from-location-btn').addEventListener('click', () => showPage('page-admin-dashboard'));
 
-        const renderCustomerProfile = () => { const c = appState.customer; document.getElementById('customer-profile-name').textContent = c.Customer; const content = document.getElementById('customer-profile-content'); content.innerHTML = `<div class="card"><p><strong>Name:</strong> ${c.Customer||'N/A'}</p><p><strong>Phone:</strong> ${c.Phone||'N/A'}</p><p><strong>Route:</strong> ${c.Route||'N/A'}</p><p><strong>Assigned Salesman:</strong> ${c.Salesman||'N/A'}</p></div>`; showPage('page-customer-profile'); };
+        const renderCustomerProfile = () => { 
+            const c = appState.customer; 
+            document.getElementById('customer-profile-name').textContent = c.Customer; 
+            const content = document.getElementById('customer-profile-content'); 
+            content.innerHTML = `
+                <div class="card">
+                    <p><strong>Name:</strong> ${c.Customer||'N/A'}</p>
+                    <p><strong>Phone:</strong> ${c.Phone||'N/A'}</p>
+                    <p><strong>Route:</strong> ${c.Route||'N/A'}</p>
+                    <p><strong>Assigned Salesman:</strong> ${c.Salesman||'N/A'}</p>
+                    <p><strong>Outstanding Balance:</strong> ${formatCurrency(c.Outstanding || 0)}</p>
+                    <button id="edit-profile-btn" class="button button-outline" style="margin-top: 20px;">Edit Profile</button>
+                </div>`; 
+            showPage('page-customer-profile'); 
+        };
         const renderCustomerHistory = () => { 
             const c = appState.customer; 
             document.getElementById('customer-history-name').textContent = `History for ${c.Customer}`; 
@@ -1615,10 +1638,19 @@
                 } else if (action === 'offer') { handleGenerateOffer(appState.customer); }
             }
         });
+        
+        document.getElementById('customer-profile-content').addEventListener('click', (e) => {
+            if (e.target.id === 'edit-profile-btn') {
+                appState.editing.type = 'customers';
+                appState.editing.id = appState.customer.id;
+                openEditModal();
+            }
+        });
 
         document.getElementById('payment-customer-list-container').addEventListener('click', (e) => { 
-            if (e.target.matches('.list-item-action')) { 
-                appState.currentPayment.customer = JSON.parse(e.target.dataset.customer); 
+            const collectBtn = e.target.closest('.list-item-action');
+            if (collectBtn) { 
+                appState.currentPayment.customer = JSON.parse(collectBtn.dataset.customer); 
                 document.getElementById('payment-customer-name').textContent = `For ${appState.currentPayment.customer.Customer}`; 
                 document.getElementById('payment-amount').value = ''; 
                 document.getElementById('confirm-payment-btn').style.display = 'block'; 
@@ -1980,8 +2012,54 @@
         document.getElementById('customer-file-upload').addEventListener('change', (e) => { uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
         document.getElementById('item-file-upload').addEventListener('change', (e) => { uploadCSV(e.target.files[0], 'items'); e.target.value = ''; });
         document.getElementById('salesman-item-file-upload').addEventListener('change', (e) => { uploadSalesmanItemsCSV(e.target.files[0]); e.target.value = ''; });
-        const editModal = document.getElementById('edit-modal'); document.getElementById('edit-customers-btn').addEventListener('click', () => { appState.editing.type = 'customers'; showPage('page-edit-data'); renderEditDataList(); }); document.getElementById('edit-items-btn').addEventListener('click', () => { appState.editing.type = 'items'; showPage('page-edit-data'); renderEditDataList(); }); document.getElementById('edit-data-search').addEventListener('input', (e) => renderEditDataList(e.target.value)); const renderEditDataList = (filter = '') => { const isCustomers = appState.editing.type === 'customers'; const data = isCustomers ? appState.customers : appState.items; const container = document.getElementById('edit-data-list'); document.getElementById('edit-data-header').textContent = isCustomers ? 'Edit Customers' : 'Edit Items'; const filtered = data.filter(item => ((isCustomers ? item.Customer : item.ItemName) || '').toLowerCase().includes(filter.toLowerCase())); container.innerHTML = filtered.map(item => `<div class="list-item"><span class="info">${isCustomers ? item.Customer : item.ItemName}</span><button class="list-item-action" data-id="${item.id}">Edit</button></div>`).join(''); }; document.getElementById('edit-data-list').addEventListener('click', (e) => { if(e.target.matches('.list-item-action')) { appState.editing.id = e.target.dataset.id; openEditModal(); } }); const openEditModal = () => { const isCustomers = appState.editing.type === 'customers'; const item = (isCustomers ? appState.customers : appState.items).find(i => i.id === appState.editing.id); if (!item) return; const modalBody = document.getElementById('edit-modal-body'); document.getElementById('edit-modal-title').textContent = `Edit ${isCustomers ? 'Customer' : 'Item'}`; if (isCustomers) { modalBody.innerHTML = `<div class="form-group"><label>Customer Name</label><input type="text" id="edit-Customer" value="${item.Customer}"></div><div class="form-group"><label>Salesman</label><select id="edit-Salesman"><option>UNNI</option><option>RIYAS</option></select></div><div class="form-group"><label>Phone</label><input type="text" id="edit-Phone" value="${item.Phone || ''}"></div>`; document.getElementById('edit-Salesman').value = item.Salesman; } else { modalBody.innerHTML = `<div class="form-group"><label>Item Name</label><input type="text" id="edit-ItemName" value="${item.ItemName}"></div><div class="form-group"><label>Cost Rate</label><input type="number" id="edit-CostRate" value="${item.CostRate}"></div><div class="form-group"><label>Price 1</label><input type="number" id="edit-Price1" value="${item.Price1}"></div><div class="form-group"><label>Price 2</label><input type="number" id="edit-Price2" value="${item.Price2}"></div><div class="form-group"><label>Price 3</label><input type="number" id="edit-Price3" value="${item.Price3}"></div>`; } editModal.classList.add('active'); };
-        const closeEditModal = () => { editModal.classList.remove('active'); }; document.getElementById('close-edit-modal-btn').addEventListener('click', closeEditModal); document.getElementById('save-edit-btn').addEventListener('click', async () => { const isCustomers = appState.editing.type === 'customers'; const id = appState.editing.id; let updatedData = {}; if (isCustomers) { updatedData = { Customer: document.getElementById('edit-Customer').value, Salesman: document.getElementById('edit-Salesman').value, Phone: document.getElementById('edit-Phone').value }; } else { const fields = ['ItemName', 'CostRate', 'Price1', 'Price2', 'Price3']; fields.forEach(field => { const input = document.getElementById(`edit-${field}`); updatedData[field] = input.type === 'number' ? parseFloat(input.value) : input.value; }); } await updateDoc(doc(db, isCustomers ? 'customers' : 'items', id), updatedData); closeEditModal(); alert('Record updated successfully!'); });
+        
+        const editModal = document.getElementById('edit-modal'); 
+        document.getElementById('edit-customers-btn').addEventListener('click', () => { appState.editing.type = 'customers'; showPage('page-edit-data'); renderEditDataList(); }); 
+        document.getElementById('edit-items-btn').addEventListener('click', () => { appState.editing.type = 'items'; showPage('page-edit-data'); renderEditDataList(); }); 
+        document.getElementById('edit-data-search').addEventListener('input', (e) => renderEditDataList(e.target.value)); 
+        
+        const renderEditDataList = (filter = '') => { 
+            const isCustomers = appState.editing.type === 'customers'; 
+            const data = isCustomers ? appState.customers : appState.items; 
+            const container = document.getElementById('edit-data-list'); 
+            document.getElementById('edit-data-header').textContent = isCustomers ? 'Edit Customers' : 'Edit Items'; 
+            const filtered = data.filter(item => ((isCustomers ? item.Customer : item.ItemName) || '').toLowerCase().includes(filter.toLowerCase())); 
+            container.innerHTML = filtered.map(item => `<div class="list-item"><span class="info">${isCustomers ? item.Customer : item.ItemName}</span><button class="list-item-action" data-id="${item.id}">Edit</button></div>`).join(''); 
+        }; 
+        
+        document.getElementById('edit-data-list').addEventListener('click', (e) => { 
+            if(e.target.matches('.list-item-action')) { 
+                appState.editing.id = e.target.dataset.id; 
+                openEditModal(); 
+            } 
+        }); 
+        
+        const openEditModal = () => { 
+            const isCustomers = appState.editing.type === 'customers'; 
+            const item = (isCustomers ? appState.customers : appState.items).find(i => i.id === appState.editing.id); 
+            if (!item) return; 
+            const modalBody = document.getElementById('edit-modal-body'); 
+            document.getElementById('edit-modal-title').textContent = `Edit ${isCustomers ? 'Customer' : 'Item'}`; 
+            if (isCustomers) { 
+                modalBody.innerHTML = `
+                    <div class="form-group"><label>Customer Name</label><input type="text" id="edit-Customer" value="${item.Customer || ''}"></div>
+                    <div class="form-group"><label>Salesman</label><select id="edit-Salesman"><option>UNNI</option><option>RIYAS</option></select></div>
+                    <div class="form-group"><label>Phone</label><input type="text" id="edit-Phone" value="${item.Phone || ''}"></div>
+                    <div class="form-group"><label>Outstanding Balance</label><input type="number" id="edit-Outstanding" value="${item.Outstanding || '0'}"></div>
+                `; 
+                document.getElementById('edit-Salesman').value = item.Salesman; 
+            } else { 
+                modalBody.innerHTML = `
+                    <div class="form-group"><label>Item Name</label><input type="text" id="edit-ItemName" value="${item.ItemName}"></div>
+                    <div class="form-group"><label>Cost Rate</label><input type="number" id="edit-CostRate" value="${item.CostRate}"></div>
+                    <div class="form-group"><label>Price 1</label><input type="number" id="edit-Price1" value="${item.Price1}"></div>
+                    <div class="form-group"><label>Price 2</label><input type="number" id="edit-Price2" value="${item.Price2}"></div>
+                    <div class="form-group"><label>Price 3</label><input type="number" id="edit-Price3" value="${item.Price3}"></div>
+                `; 
+            } 
+            editModal.classList.add('active'); 
+        };
+        const closeEditModal = () => { editModal.classList.remove('active'); }; document.getElementById('close-edit-modal-btn').addEventListener('click', closeEditModal); document.getElementById('save-edit-btn').addEventListener('click', async () => { const isCustomers = appState.editing.type === 'customers'; const id = appState.editing.id; let updatedData = {}; if (isCustomers) { updatedData = { Customer: document.getElementById('edit-Customer').value, Salesman: document.getElementById('edit-Salesman').value, Phone: document.getElementById('edit-Phone').value, Outstanding: parseFloat(document.getElementById('edit-Outstanding').value) || 0 }; } else { const fields = ['ItemName', 'CostRate', 'Price1', 'Price2', 'Price3']; fields.forEach(field => { const input = document.getElementById(`edit-${field}`); updatedData[field] = input.type === 'number' ? parseFloat(input.value) : input.value; }); } await updateDoc(doc(db, isCustomers ? 'customers' : 'items', id), updatedData); closeEditModal(); if (document.getElementById('page-customer-profile').classList.contains('active')) { appState.customer = { ...appState.customer, ...updatedData }; renderCustomerProfile(); } showProfessionalModal('Success', 'Record updated successfully!'); });
         const pageCrm = document.getElementById('page-crm'); const renderCrmModule = () => { appState.flyerBuilder.items = []; const salesmanFilter = document.getElementById('crm-salesman-filter'); const routeFilter = document.getElementById('crm-route-filter'); const salesmen = [...new Set(appState.customers.map(c => c.Salesman).filter(Boolean))].sort(); salesmanFilter.innerHTML = '<option value="ALL">All Salesmen</option>' + salesmen.map(s => `<option value="${s}">${s}</option>`).join(''); const routes = [...new Set(appState.customers.map(c => c.Route).filter(Boolean))].sort(); routeFilter.innerHTML = '<option value="ALL">All Routes</option>' + routes.map(r => `<option value="${r}">${r}</option>`).join(''); updateCrmCustomerCount(); document.getElementById('crm-flyer-headline').value = ''; document.getElementById('crm-flyer-preview-container').innerHTML = `<p style="color:#888;">Flyer preview will appear here.</p>`; document.getElementById('share-bulk-flyer-btn').style.display = 'none'; document.getElementById('generate-bulk-flyer-btn').style.display = 'block'; document.getElementById('crm-flyer-builder-content').style.display = 'block'; renderCrmFlyerItems(); }; const renderCrmFlyerItems = () => { const listContainer = document.getElementById('crm-flyer-item-list'); if (appState.flyerBuilder.items.length === 0) { listContainer.innerHTML = `<p style="text-align:center; color:#888;">No items added to flyer yet.</p>`; return; } listContainer.innerHTML = appState.flyerBuilder.items.map((flyerItem, index) => `<div class="offer-builder-item"><div class="item-info"><div class="item-name">${flyerItem.item.ItemName}</div><div class="item-price">Offer Price: ${formatPreciseCurrency(flyerItem.price)}</div></div><button class="item-action-btn edit-btn" data-index="${index}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="item-action-btn delete-btn" data-index="${index}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>`).join(''); }; pageCrm.addEventListener('input', e => { if(e.target.id === 'offer-item-search-input-bulk') { renderItemSearchResults(e.target.value, 'offer-item-search-results-bulk'); } }); pageCrm.addEventListener('click', e => { const resultItem = e.target.closest('#offer-item-search-results-bulk .search-result-item'); if(resultItem) { const code = resultItem.dataset.itemCode; const fullItem = appState.items.find(i => i.Code == code); if (fullItem && !appState.flyerBuilder.items.some(fi => fi.item.Code === fullItem.Code)) { appState.flyerBuilder.items.push({ item: fullItem, price: fullItem.Price2 }); renderCrmFlyerItems(); } document.getElementById('offer-item-search-input-bulk').value = ''; document.getElementById('offer-item-search-results-bulk').innerHTML = ''; } const deleteBtn = e.target.closest('#crm-flyer-item-list .delete-btn'); if(deleteBtn) { appState.flyerBuilder.items.splice(parseInt(deleteBtn.dataset.index), 1); renderCrmFlyerItems(); } const editBtn = e.target.closest('#crm-flyer-item-list .edit-btn'); if (editBtn) { const index = parseInt(editBtn.dataset.index); const flyerItem = appState.flyerBuilder.items[index]; const newPrice = prompt(`Enter new offer price for ${flyerItem.item.ItemName}:`, flyerItem.price); if (newPrice !== null && !isNaN(parseFloat(newPrice))) { flyerItem.price = parseFloat(newPrice); renderCrmFlyerItems(); } } }); const updateCrmCustomerCount = () => { const selectedSalesman = document.getElementById('crm-salesman-filter').value; const selectedRoute = document.getElementById('crm-route-filter').value; const targetCustomers = appState.customers.filter(c => { const hasPhone = c.Phone && c.Phone.trim().length > 5; const matchesSalesman = selectedSalesman === 'ALL' || c.Salesman === selectedSalesman; const matchesRoute = selectedRoute === 'ALL' || c.Route === selectedRoute; return hasPhone && matchesSalesman && matchesRoute; }); document.getElementById('crm-customer-count').textContent = `Targeted Customers: ${targetCustomers.length}`; }; const generateBulkFlyer = async () => { const generateBtn = document.getElementById('generate-bulk-flyer-btn'); const previewContainer = document.getElementById('crm-flyer-preview-container'); if (appState.flyerBuilder.items.length === 0) { alert("Please add at least one item to the flyer."); return; } generateBtn.disabled = true; generateBtn.innerHTML = 'Generating...'; previewContainer.innerHTML = '...'; const headline = document.getElementById('crm-flyer-headline').value.trim() || 'A Special Offer For You!'; const itemsHtml = appState.flyerBuilder.items.map(item => `<li class="flyer-item"><span class="flyer-item-name">${item.item.ItemName}</span><span class="flyer-item-price">${formatPreciseCurrency(item.price)}</span></li>`).join(''); document.getElementById('flyer-template-wrapper').innerHTML = `<div id="flyer-content"><div id="flyer-header"><h2 id="flyer-logo">MF BIGMARKET</h2><p id="flyer-tagline">Quality Products, Delivered.</p></div><div id="flyer-offer-details"><h3 id="flyer-headline">${headline}</h3><ul id="flyer-item-list">${itemsHtml}</ul></div><div id="flyer-footer"><p>Contact your salesman to order today!</p></div></div>`; try { const canvas = await html2canvas(document.getElementById('flyer-template-wrapper'), { scale: 2, useCORS: true, backgroundColor: null }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9)); appState.bulkFlyerBlob = blob; const imgEl = document.createElement('img'); imgEl.src = URL.createObjectURL(blob); previewContainer.innerHTML = ''; previewContainer.appendChild(imgEl); document.getElementById('share-bulk-flyer-btn').style.display = 'block'; } catch (error) { console.error("Bulk flyer generation error:", error); previewContainer.innerHTML = '<p style="color:red;">Error generating flyer image.</p>'; } finally { generateBtn.disabled = false; generateBtn.innerHTML = 'Generate Flyer Preview'; } };
         document.getElementById('generate-bulk-flyer-btn').addEventListener('click', generateBulkFlyer); document.getElementById('share-bulk-flyer-btn').addEventListener('click', async () => { const flyerBlob = appState.bulkFlyerBlob; if (!flyerBlob) { alert('Please generate a flyer first.'); return; } const targetCount = document.getElementById('crm-customer-count').textContent; if(!confirm(`Your flyer is ready. You will now be prompted to share it with your selected ${targetCount}. Continue?`)){ return; } try { const file = new File([flyerBlob], 'MF-BigMarket-Offer.jpg', { type: 'image/jpeg' }); const shareText = document.getElementById('crm-flyer-headline').value.trim() || 'Check out our latest deals!'; if (navigator.share && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'MF BigMarket Offer', text: shareText }); } else { alert("Sharing not supported on this browser. You can save the image by long-pressing it and share manually."); } } catch (error) { console.error('Bulk Share failed:', error); alert("Could not share automatically. Please save the image and send it manually."); } });
         document.getElementById('back-to-admin-from-crm-btn').addEventListener('click', () => showPage('page-admin-dashboard')); document.getElementById('crm-salesman-filter').addEventListener('change', updateCrmCustomerCount); document.getElementById('crm-route-filter').addEventListener('change', updateCrmCustomerCount);
