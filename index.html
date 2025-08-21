@@ -475,11 +475,42 @@
         #edit-slip-item-list .form-group { margin-bottom: 0; }
         #edit-slip-item-list .form-group label { font-size: 0.8rem; color: #555; font-weight: 500; margin-bottom: 4px; }
         #edit-slip-item-list input { margin-bottom: 0; padding: 10px; }
+        
+        #outstanding-list-container .list-item { display: grid; grid-template-columns: 1fr auto auto; gap: 15px; align-items: center; padding: 12px 15px; }
+        #outstanding-list-container .outstanding-balance { font-size: 1rem; font-weight: 600; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); text-align: right; background-color: #f8f9fa; -moz-appearance: textfield; max-width: 120px; }
+        #outstanding-list-container .outstanding-balance::-webkit-outer-spin-button,
+        #outstanding-list-container .outstanding-balance::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        #outstanding-list-container .outstanding-balance:focus { outline: none; border-color: var(--secondary-color); box-shadow: 0 0 0 2px rgba(10, 147, 150, 0.2); }
+        #outstanding-list-container .reminder-btn { background: none; border: none; cursor: pointer; padding: 5px; }
+        #outstanding-list-container .reminder-btn svg { width: 28px; height: 28px; stroke: var(--secondary-color); stroke-width: 2; }
+        
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--success-color);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease, bottom 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .toast-notification.show {
+            opacity: 1;
+            bottom: 30px;
+        }
+
 
         @media (max-width: 767px) {
             #page-admin-dashboard .content { padding: 10px; }
             .dashboard-grid { grid-template-columns: 1fr; }
             .summary-totals-card { grid-template-columns: 1fr; }
+            #page-outstanding-balances .filter-bar { flex-direction: column; align-items: stretch; }
         }
         @media (min-width: 768px) {
             .report-header-card > div > .label { font-size: 0.9rem; }
@@ -520,6 +551,9 @@
             <div class="header-actions">
                 <button class="icon-button" id="product-info-icon-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                </button>
+                 <button class="icon-button" id="pending-balance-btn" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 </button>
                 <button class="icon-button" id="history-icon-btn">
                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
@@ -703,6 +737,36 @@
                 <button class="filter-action-btn clear-btn">Clear</button>
             </div>
             <div id="payment-history-list"></div>
+        </div>
+    </div>
+    
+    <div id="page-outstanding-balances" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-main-from-outstanding-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Pending Balances</h1>
+            <div class="icon-button" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+            <div class="filter-bar">
+                <div class="search-bar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="outstanding-search-input" placeholder="Search customers...">
+                </div>
+                <div class="form-group">
+                    <select id="outstanding-route-filter">
+                        <option value="ALL">All Routes</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card">
+                <div class="kpi-card-small" style="padding: 20px; box-shadow: none; border: 1px solid var(--border-color);">
+                    <div id="total-outstanding-value" class="value" style="color: var(--danger-color);"></div>
+                    <div class="label">Total Outstanding Balance</div>
+                </div>
+            </div>
+            <div id="outstanding-list-container"></div>
         </div>
     </div>
 
@@ -948,7 +1012,7 @@
 
     <!-- Hidden elements for generation -->
     <div id="packing-slip-wrapper"><div id="packing-slip-content"></div></div>
-    <div id="payment-receipt-wrapper"><div class="receipt-container"><div class="receipt-header"><h2>MF BIGMARKET</h2><p>Payment Receipt</p></div><div class="receipt-details"><p><strong>Date:</strong><span id="receipt-date"></span></p><p><strong>Salesman:</strong><span id="receipt-salesman"></span></p><p><strong>Customer:</strong><span id="receipt-customer"></span></p><p><strong>Pay Method:</strong><span id="receipt-method"></span></p></div><div class="receipt-amount"><div class="amount-label">Amount Received</div><div class="amount-value" id="receipt-amount"></div></div><div class="receipt-footer">Thank you for your business!<br>For queries, contact: 9961195050</div></div></div>
+    <div id="payment-receipt-wrapper"><div class="receipt-container"><div class="receipt-header"><h2 id="receipt-title">Payment Receipt</h2><p>MF BIGMARKET</p></div><div class="receipt-details"><p><strong>Date:</strong><span id="receipt-date"></span></p><p><strong>Salesman:</strong><span id="receipt-salesman"></span></p><p><strong>Customer:</strong><span id="receipt-customer"></span></p><p id="receipt-method-container"><strong>Pay Method:</strong><span id="receipt-method"></span></p></div><div class="receipt-amount"><div id="receipt-amount-label" class="amount-label">Amount Received</div><div class="amount-value" id="receipt-amount"></div></div><div class="receipt-footer">Thank you for your business!<br>For queries, contact: 9961195050</div></div></div>
     <div id="collection-report-wrapper"><div id="collection-report"><div class="report-header"><h2>MF BIGMARKET</h2><p>Daily Collection Report</p></div><div class="report-details"><div id="report-salesman"></div><div id="report-date"></div></div><table class="report-table"><thead><tr><th>CUSTOMER</th><th class="col-method">MODE</th><th class="col-amount">AMOUNT</th></tr></thead><tbody id="report-table-body"></tbody></table><div class="report-footer"><div id="report-totals"></div><div class="grand-total" id="report-grand-total"></div></div></div></div>
     <div id="flyer-template-wrapper"></div>
     <div id="payment-summary-print-wrapper"><div id="payment-summary-print-content"><div class="print-header"><h2>MF BIGMARKET</h2><p>Collection Summary Report</p></div><div class="print-details"><div id="print-summary-salesman"></div><div id="print-summary-daterange"></div></div><table class="print-table"><thead><tr><th>Date & Time</th><th>Customer</th><th>Mode</th><th class="numeric">Amount</th></tr></thead><tbody id="print-summary-table-body"></tbody></table><div class="print-totals-footer"><div><span>Total Cash:</span> <span id="print-summary-cash"></span></div><div><span>Total UPI:</span> <span id="print-summary-upi"></span></div><div class="grand-total"><span>Grand Total:</span> <span id="print-summary-grandtotal"></span></div></div></div></div>
@@ -964,7 +1028,6 @@
             return;
         }
         
-        // Helper to get default date range (current day)
         const getDefaultDateRange = () => {
             const now = new Date();
             const toYYYYMMDD = (d) => d.toISOString().split('T')[0];
@@ -991,6 +1054,7 @@
             bulkFlyerBlob: null,
             flyerBuilder: { items: [], editingIndex: null },
             currentOrderLocation: null,
+            outstandingUpdateTimeout: null,
         };
 
         const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc } = window.firebaseTools;
@@ -1043,6 +1107,21 @@
             closeBtn.addEventListener('click', closeModal, { once: true });
             modal.classList.add('active');
         };
+        
+        const showToast = (message) => {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 2000);
+            }, 10);
+        };
+
 
         const getCurrentLocation = () => {
             return new Promise((resolve, reject) => {
@@ -1059,6 +1138,7 @@
             onSnapshot(collection(db, "customers"), (snapshot) => { 
                 appState.customers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
                 if(appState.salesman !== 'ADMIN') renderCurrentView();
+                if(document.getElementById('page-outstanding-balances').classList.contains('active')) renderOutstandingBalancesPage();
             });
             onSnapshot(collection(db, "items"), (snapshot) => { 
                 appState.items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
@@ -1545,8 +1625,7 @@
                     <p><strong>Phone:</strong> ${c.Phone||'N/A'}</p>
                     <p><strong>Route:</strong> ${c.Route||'N/A'}</p>
                     <p><strong>Assigned Salesman:</strong> ${c.Salesman||'N/A'}</p>
-                    <p><strong>Outstanding Balance:</strong> ${formatCurrency(c.Outstanding || 0)}</p>
-                    <button id="edit-profile-btn" class="button button-outline" style="margin-top: 20px;">Edit Profile</button>
+                    <p><strong>Outstanding Balance:</strong> <span style="font-weight: bold; color: var(--danger-color);">${formatCurrency(c.Outstanding || 0)}</span></p>
                 </div>`; 
             showPage('page-customer-profile'); 
         };
@@ -1593,7 +1672,23 @@
         document.getElementById('admin-logout-btn').addEventListener('click', handleLogout);
         
         const customerView = document.getElementById('customer-view'), paymentView = document.getElementById('payment-view'), mainHeader = document.getElementById('main-view-header');
-        const renderCurrentView = () => { if (appState.salesman === 'ADMIN') return; if (appState.currentView === 'customers') { mainHeader.textContent = 'Customers'; renderCustomerList(); } else { mainHeader.textContent = 'Payments'; renderPaymentCustomerList(); } };
+        const productInfoBtn = document.getElementById('product-info-icon-btn');
+        const pendingBalanceBtn = document.getElementById('pending-balance-btn');
+
+        const renderCurrentView = () => {
+             if (appState.salesman === 'ADMIN') return; 
+             if (appState.currentView === 'customers') { 
+                 mainHeader.textContent = 'Customers';
+                 productInfoBtn.style.display = 'flex';
+                 pendingBalanceBtn.style.display = 'none';
+                 renderCustomerList(); 
+            } else { 
+                mainHeader.textContent = 'Payments'; 
+                productInfoBtn.style.display = 'none';
+                pendingBalanceBtn.style.display = 'flex';
+                renderPaymentCustomerList();
+             } 
+        };
         
         document.getElementById('customer-search-input').addEventListener('input', () => renderCustomerList());
         document.getElementById('customer-route-filter').addEventListener('change', () => renderCustomerList());
@@ -1609,12 +1704,19 @@
             if (isOrder) {
                 renderHistoryTabs();
             } else {
-                renderHistoryTabs(); // This now handles payment history too
+                renderHistoryTabs();
             }
         });
         
         document.getElementById('product-info-icon-btn').addEventListener('click', () => showPage('page-product-info'));
+        document.getElementById('pending-balance-btn').addEventListener('click', () => {
+            renderOutstandingBalancesPage();
+            showPage('page-outstanding-balances');
+        });
+
         document.getElementById('back-to-main-from-info-btn').addEventListener('click', () => showPage('page-main-view'));
+        document.getElementById('back-to-main-from-outstanding-btn').addEventListener('click', () => showPage('page-main-view'));
+
 
         document.getElementById('customer-list-container').addEventListener('click', async (e) => {
             const header = e.target.closest('.customer-item-header');
@@ -1639,14 +1741,6 @@
             }
         });
         
-        document.getElementById('customer-profile-content').addEventListener('click', (e) => {
-            if (e.target.id === 'edit-profile-btn') {
-                appState.editing.type = 'customers';
-                appState.editing.id = appState.customer.id;
-                openEditModal();
-            }
-        });
-
         document.getElementById('payment-customer-list-container').addEventListener('click', (e) => { 
             const collectBtn = e.target.closest('.list-item-action');
             if (collectBtn) { 
@@ -1747,49 +1841,70 @@
             showProfessionalModal('Success', 'The payment has been recorded successfully.');
         });
         
-        document.getElementById('print-receipt-btn').addEventListener('click', () => { const p = appState.currentPayment; document.getElementById('receipt-date').textContent = new Date(p.date).toLocaleString(); document.getElementById('receipt-salesman').textContent = appState.salesman; document.getElementById('receipt-customer').textContent = p.customer.Customer; document.getElementById('receipt-amount').textContent = formatPreciseCurrency(p.amount); document.getElementById('receipt-method').textContent = p.method; document.body.classList.add('printing', 'printing-receipt'); setTimeout(() => window.print(), 100); });
-        
-        document.getElementById('share-receipt-btn').addEventListener('click', async () => {
-            const btn = document.getElementById('share-receipt-btn');
-            const originalText = btn.textContent;
-            btn.disabled = true;
-            btn.textContent = 'Preparing...';
+        const generateAndShareReceipt = async (receiptType, customer, amount) => {
+             const receiptElement = document.querySelector('#payment-receipt-wrapper .receipt-container');
+             if (!receiptElement) { alert('Error: Receipt element not found.'); return; }
+             
+             document.getElementById('receipt-date').textContent = new Date().toLocaleString();
+             document.getElementById('receipt-salesman').textContent = appState.salesman;
+             document.getElementById('receipt-customer').textContent = customer.Customer;
+             document.getElementById('receipt-amount').textContent = formatCurrency(amount);
 
-            const receiptElement = document.querySelector('#payment-receipt-wrapper .receipt-container');
-            if (!receiptElement) {
-                alert('Error: Receipt element not found.');
-                btn.disabled = false; btn.textContent = originalText; return;
-            }
+             if (receiptType === 'payment') {
+                 document.getElementById('receipt-title').textContent = 'Payment Receipt';
+                 document.getElementById('receipt-amount-label').textContent = 'Amount Received';
+                 document.getElementById('receipt-method-container').style.display = 'flex';
+                 document.getElementById('receipt-method').textContent = appState.currentPayment.method;
+             } else if (receiptType === 'outstanding') {
+                 document.getElementById('receipt-title').textContent = 'Outstanding Balance';
+                 document.getElementById('receipt-amount-label').textContent = 'Total Amount Due';
+                 document.getElementById('receipt-method-container').style.display = 'none';
+             }
 
-            const p = appState.currentPayment;
-            document.getElementById('receipt-date').textContent = new Date(p.date).toLocaleString();
-            document.getElementById('receipt-salesman').textContent = appState.salesman;
-            document.getElementById('receipt-customer').textContent = p.customer.Customer;
-            document.getElementById('receipt-amount').textContent = formatPreciseCurrency(p.amount);
-            document.getElementById('receipt-method').textContent = p.method;
+             const wrapper = document.getElementById('payment-receipt-wrapper');
+             const originalStyles = { position: wrapper.style.position, left: wrapper.style.left, top: wrapper.style.top, display: wrapper.style.display, };
+             wrapper.style.position = 'absolute'; wrapper.style.left = '-9999px'; wrapper.style.top = '-9999px'; wrapper.style.display = 'block';
 
-            const wrapper = document.getElementById('payment-receipt-wrapper');
-            const originalStyles = { position: wrapper.style.position, left: wrapper.style.left, top: wrapper.style.top, display: wrapper.style.display, };
-            wrapper.style.position = 'absolute'; wrapper.style.left = '-9999px'; wrapper.style.top = '-9999px'; wrapper.style.display = 'block';
+             try {
+                 const canvas = await html2canvas(receiptElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+                 const fileName = receiptType === 'payment' ? `Receipt-${customer.Customer}.jpg` : `Reminder-${customer.Customer}.jpg`;
+                 const file = new File([blob], fileName, { type: 'image/jpeg' });
 
-            try {
-                const canvas = await html2canvas(receiptElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
-                const file = new File([blob], `Receipt-${p.customer.Customer}.jpg`, { type: 'image/jpeg' });
-
-                if (navigator.share && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: `Payment Receipt for ${p.customer.Customer}`, text: `Payment receipt from MF BigMarket.` });
-                } else {
-                    alert("Sharing not supported on this browser. Please take a screenshot of the receipt to share it.");
-                }
-            } catch (error) {
-                console.error('Sharing failed:', error);
-                alert("Could not generate receipt image for sharing. Please try taking a screenshot.");
-            } finally {
+                 if (navigator.share && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: `${receiptType.charAt(0).toUpperCase() + receiptType.slice(1)} for ${customer.Customer}` });
+                 } else {
+                     alert("Sharing not supported. Please take a screenshot to share.");
+                 }
+             } catch (error) {
+                 console.error('Sharing failed:', error);
+                 alert("Could not generate image. Please try taking a screenshot.");
+             } finally {
                 wrapper.style.position = originalStyles.position; wrapper.style.left = originalStyles.left; wrapper.style.top = originalStyles.top; wrapper.style.display = originalStyles.display;
-                btn.disabled = false; btn.textContent = originalText;
-            }
+             }
+        };
+
+        document.getElementById('print-receipt-btn').addEventListener('click', () => { 
+            const p = appState.currentPayment; 
+            document.getElementById('receipt-title').textContent = 'Payment Receipt';
+            document.getElementById('receipt-amount-label').textContent = 'Amount Received';
+            document.getElementById('receipt-method-container').style.display = 'flex';
+            document.getElementById('receipt-method').textContent = p.method;
+            document.getElementById('receipt-date').textContent = new Date(p.date).toLocaleString(); 
+            document.getElementById('receipt-salesman').textContent = appState.salesman; 
+            document.getElementById('receipt-customer').textContent = p.customer.Customer; 
+            document.getElementById('receipt-amount').textContent = formatPreciseCurrency(p.amount); 
+            document.body.classList.add('printing', 'printing-receipt'); 
+            setTimeout(() => window.print(), 100); 
         });
+        
+        document.getElementById('share-receipt-btn').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            btn.disabled = true;
+            await generateAndShareReceipt('payment', appState.currentPayment.customer, appState.currentPayment.amount);
+            btn.disabled = false;
+        });
+
 
         window.onafterprint = () => { document.body.classList.remove('printing', 'printing-receipt', 'printing-packing-slip', 'printing-summary'); };
         
@@ -2208,6 +2323,76 @@
             }
         });
         
+        // --- OUTSTANDING BALANCES PAGE LOGIC ---
+        const renderOutstandingBalancesPage = () => {
+            const container = document.getElementById('outstanding-list-container');
+            const totalValueEl = document.getElementById('total-outstanding-value');
+            
+            populateRoutes('outstanding-route-filter');
+            const searchFilter = document.getElementById('outstanding-search-input').value.toLowerCase();
+            const selectedRoute = document.getElementById('outstanding-route-filter').value;
+
+            const allSalesmanCustomers = appState.customers.filter(c => c.Salesman && c.Salesman.toUpperCase() === appState.salesman);
+
+            const totalOutstanding = allSalesmanCustomers.reduce((sum, c) => sum + (c.Outstanding || 0), 0);
+            totalValueEl.textContent = formatCurrency(totalOutstanding);
+            
+            const filteredCustomers = allSalesmanCustomers
+                .filter(c => (c.Customer || '').toLowerCase().includes(searchFilter) && (selectedRoute === 'ALL' || c.Route === selectedRoute))
+                .sort((a, b) => (a.Customer || '').localeCompare(b.Customer || ''));
+
+            if (filteredCustomers.length === 0) {
+                container.innerHTML = `<p class="card" style="text-align: center;">No customers found for the selected filters.</p>`;
+                return;
+            }
+
+            container.innerHTML = filteredCustomers.map(c => `
+                <div class="list-item" data-customer-id="${c.id}">
+                    <div class="info">${c.Customer}</div>
+                    <input type="number" class="outstanding-balance" value="${c.Outstanding || 0}" />
+                    <button class="reminder-btn" data-customer='${JSON.stringify(c)}'>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </button>
+                </div>
+            `).join('');
+        };
+        
+        document.getElementById('outstanding-search-input').addEventListener('input', renderOutstandingBalancesPage);
+        document.getElementById('outstanding-route-filter').addEventListener('change', renderOutstandingBalancesPage);
+        
+        document.getElementById('outstanding-list-container').addEventListener('input', e => {
+            if (e.target.classList.contains('outstanding-balance')) {
+                clearTimeout(appState.outstandingUpdateTimeout);
+                const input = e.target;
+                const customerId = input.closest('.list-item').dataset.customerId;
+                const newBalance = parseFloat(input.value);
+
+                if (!isNaN(newBalance) && customerId) {
+                    appState.outstandingUpdateTimeout = setTimeout(async () => {
+                        try {
+                            const customerRef = doc(db, "customers", customerId);
+                            await updateDoc(customerRef, { Outstanding: newBalance });
+                            showToast('Balance updated!');
+                        } catch (error) {
+                            console.error("Error updating balance:", error);
+                            showToast('Update failed!');
+                        }
+                    }, 800);
+                }
+            }
+        });
+        
+        document.getElementById('outstanding-list-container').addEventListener('click', async (e) => {
+            const reminderBtn = e.target.closest('.reminder-btn');
+            if (reminderBtn) {
+                reminderBtn.disabled = true;
+                const customer = JSON.parse(reminderBtn.dataset.customer);
+                await generateAndShareReceipt('outstanding', customer, customer.Outstanding || 0);
+                reminderBtn.disabled = false;
+            }
+        });
+
+
         const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v3'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
         
         setupPWA();
