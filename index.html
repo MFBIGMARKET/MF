@@ -1175,6 +1175,7 @@
                 appState.payments = {}; 
                 snapshot.docs.forEach(doc => { const payment = { id: doc.id, ...doc.data() }; if (!appState.payments[payment.salesman]) appState.payments[payment.salesman] = []; appState.payments[payment.salesman].push(payment); });
                 if (appState.salesman === 'ADMIN' && document.getElementById('page-admin-dashboard').classList.contains('active')) renderAdminDashboard();
+                 if (document.getElementById('page-payment-history').classList.contains('active')) renderHistoryTabs();
             });
         };
 
@@ -2267,8 +2268,7 @@
             document.getElementById('print-summary-upi').textContent = formatPreciseCurrency(totalUPI);
             document.getElementById('print-summary-grandtotal').textContent = formatPreciseCurrency(grandTotal);
 
-            document.getElementById('print-summary-table-body').innerHTML = salesman
-payments.map(p => `<tr><td>${new Date(p.date).toLocaleString()}</td><td>${p.customer.Customer}</td><td>${p.method}</td><td class="numeric">${formatPreciseCurrency(p.amount)}</td></tr>`).join('');
+            document.getElementById('print-summary-table-body').innerHTML = salesmanPayments.map(p => `<tr><td>${new Date(p.date).toLocaleString()}</td><td>${p.customer.Customer}</td><td>${p.method}</td><td class="numeric">${formatPreciseCurrency(p.amount)}</td></tr>`).join('');
             document.body.classList.add('printing', 'printing-summary'); setTimeout(() => window.print(), 100);
         };
 
