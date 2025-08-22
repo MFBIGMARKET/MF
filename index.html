@@ -1044,7 +1044,7 @@
         let appState = {
             salesman: null, customer: null, items: [], customers: [],
             salesmanItems: [], 
-            orders: {}, payments: {}, confirmedOrders: {}, currentOrder: [],
+            orders: {}, payments: {}, confirmedOrders: {}, customerCarts: {},
             editingPackingSlipId: null,
             currentPayment: {}, currentView: 'customers', currentHistoryView: 'packing-slips',
             editing: { type: null, id: null },
@@ -1064,6 +1064,14 @@
 
         const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc } = window.firebaseTools;
         const db = window.firebaseDB;
+
+        const getActiveCart = () => {
+            if (!appState.customer || !appState.customer.id) return [];
+            if (!appState.customerCarts[appState.customer.id]) {
+                appState.customerCarts[appState.customer.id] = [];
+            }
+            return appState.customerCarts[appState.customer.id];
+        };
        
         const showPage = (pageId) => { 
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
@@ -1274,7 +1282,8 @@
 
         const updateCartBadge = () => {
             const badge = document.getElementById('cart-item-count');
-            const count = appState.currentOrder.length;
+            const cart = getActiveCart();
+            const count = cart.length;
             badge.style.display = count > 0 ? 'block' : 'none';
             badge.textContent = count;
         };
@@ -1282,9 +1291,10 @@
         const renderOrderSummaryPage = () => { 
             const listCont = document.getElementById('order-summary-list');
             const totalCont = document.getElementById('order-summary-grand-total'); 
+            const cart = getActiveCart();
             let grandTotalRevenue = 0, grandTotalCost = 0;
-            if (appState.currentOrder.length === 0) { listCont.innerHTML = '<p class="card" style="text-align:center;">Your cart is empty.</p>'; totalCont.style.display = 'none'; return; } 
-            listCont.innerHTML = appState.currentOrder.map((o, idx) => { 
+            if (cart.length === 0) { listCont.innerHTML = '<p class="card" style="text-align:center;">Your cart is empty.</p>'; totalCont.style.display = 'none'; return; } 
+            listCont.innerHTML = cart.map((o, idx) => { 
                 const lineItemRevenue = o.quantity * o.sellingPrice; 
                 const lineItemCost = o.quantity * (parseFloat(o.item.CostRate) || 0); 
                 grandTotalRevenue += lineItemRevenue; 
@@ -1362,7 +1372,9 @@
                         <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
                         <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
                 } else { // Confirmed Orders
-                    actionsHtml = `<button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`;
+                    actionsHtml = `<button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+                        <button class="history-action-btn" data-action="undo-confirmed" title="Undo Confirmation (Move to Packing Slips)"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${'var(--warning-color)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a8.5 8.5 0 0 1 0 17H11"/></svg></button>
+                        <button class="history-action-btn delete-history-btn" data-action="delete-confirmed" title="Delete Permanently"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
                 }
                 
                 const dateToDisplay = new Date(isPackingSlips ? item.date : (item.confirmedDate || item.date));
@@ -1684,7 +1696,7 @@
         });
 
         const handleLogout = () => { 
-            appState.salesman = null; localStorage.removeItem('lastSalesman'); appState.currentOrder = []; showPage('page-salesman-selection'); 
+            appState.salesman = null; localStorage.removeItem('lastSalesman'); appState.customerCarts = {}; showPage('page-salesman-selection'); 
         };
         document.getElementById('logout-btn').addEventListener('click', handleLogout);
         document.getElementById('admin-logout-btn').addEventListener('click', handleLogout);
@@ -1775,10 +1787,9 @@
         
         document.getElementById('back-to-customers-btn').addEventListener('click', () => {
             const destinationPage = appState.editingPackingSlipId ? 'page-order-history' : 'page-main-view';
-            if (appState.currentOrder.length > 0 && !confirm("You have items in your cart. Are you sure you want to go back? Your changes will not be saved.")) return;
-            appState.currentOrder = [];
-            appState.editingPackingSlipId = null;
-            appState.currentOrderLocation = null; 
+            if (appState.editingPackingSlipId) {
+                appState.editingPackingSlipId = null;
+            }
             showPage(destinationPage);
         });
 
@@ -1813,7 +1824,7 @@
                 if (!isNaN(customPrice) && customPrice > 0) price = customPrice;
                 else if (activePriceBox) price = item[activePriceBox.dataset.priceType === 'p2' ? 'Price2' : 'Price3'];
                 else { alert('Please select a price or enter a custom price.'); return; }
-                appState.currentOrder.push({ item, quantity: qty, sellingPrice: price }); updateCartBadge();
+                getActiveCart().push({ item, quantity: qty, sellingPrice: price }); updateCartBadge();
                 addBtn.textContent = 'Added!'; addBtn.classList.add('added'); setTimeout(() => { addBtn.textContent = 'Add'; addBtn.classList.remove('added'); }, 1000);
                 qtyInput.value = ''; tile.querySelector('.custom-price-input').value = ''; tile.querySelectorAll('.price-box').forEach(b => b.classList.remove('active')); tile.querySelector('[data-price-type="p2"]').classList.add('active');
             }
@@ -1822,21 +1833,22 @@
         document.getElementById('item-tiles-container').addEventListener('input', e => { if (e.target.matches('.custom-price-input')) e.target.closest('.item-tile').querySelectorAll('.price-box').forEach(box => box.classList.remove('active')); });
         document.getElementById('cart-icon-btn').addEventListener('click', () => { renderOrderSummaryPage(); showPage('page-order-summary'); });
         document.getElementById('back-to-order-btn').addEventListener('click', () => showPage('page-order'));
-        document.getElementById('order-summary-list').addEventListener('click', e => { const deleteBtn = e.target.closest('.delete-btn'); if (deleteBtn) { appState.currentOrder.splice(parseInt(deleteBtn.dataset.index), 1); renderOrderSummaryPage(); updateCartBadge(); } });
+        document.getElementById('order-summary-list').addEventListener('click', e => { const deleteBtn = e.target.closest('.delete-btn'); if (deleteBtn) { getActiveCart().splice(parseInt(deleteBtn.dataset.index), 1); renderOrderSummaryPage(); updateCartBadge(); } });
 
         document.getElementById('save-update-slip-btn').addEventListener('click', async (e) => {
             const btn = e.currentTarget;
-            if (appState.currentOrder.length === 0) { alert('Cannot save an empty packing slip.'); return; }
+            const cart = getActiveCart();
+            if (cart.length === 0) { alert('Cannot save an empty packing slip.'); return; }
             if (!appState.currentOrderLocation) { alert("Location data is missing. Please start the order again to capture location."); return; }
 
             btn.disabled = true;
             btn.textContent = 'Saving...';
             
             try {
-                const total = appState.currentOrder.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
+                const total = cart.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
                 const orderData = {
                     customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone },
-                    items: appState.currentOrder.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3 }, quantity: i.quantity, sellingPrice: i.sellingPrice })),
+                    items: cart.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3 }, quantity: i.quantity, sellingPrice: i.sellingPrice })),
                     total,
                     salesman: appState.salesman,
                     date: new Date().toISOString(),
@@ -1846,12 +1858,20 @@
                 if (appState.editingPackingSlipId) {
                     await updateDoc(doc(db, "orders", appState.editingPackingSlipId), orderData);
                     showProfessionalModal('Success', 'The packing slip has been updated.', () => {
-                        appState.currentOrder = []; appState.editingPackingSlipId = null; updateCartBadge(); showPage('page-order-history');
+                        appState.customerCarts[appState.customer.id] = [];
+                        appState.editingPackingSlipId = null;
+                        updateCartBadge();
+                        showPage('page-order-history');
+                        if (appState.currentHistoryView === 'packing-slips') {
+                            renderHistoryTabs(); 
+                        }
                     });
                 } else {
                     await setDoc(doc(collection(db, "orders")), orderData);
                     showProfessionalModal('Success', 'The packing slip has been saved.', () => {
-                        appState.currentOrder = []; updateCartBadge(); showPage('page-main-view');
+                        appState.customerCarts[appState.customer.id] = [];
+                        updateCartBadge();
+                        showPage('page-main-view');
                     });
                 }
             } catch (error) {
@@ -1869,11 +1889,13 @@
             if (!confirm('Are you sure you want to confirm this order? This will finalize the sale and deduct stock. This action cannot be undone.')) return;
             
             btn.disabled = true; btn.textContent = 'Confirming...';
+            const cart = getActiveCart();
+
             try {
-                const total = appState.currentOrder.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
+                const total = cart.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
                 const confirmedOrder = {
                     customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone },
-                    items: appState.currentOrder,
+                    items: cart,
                     total,
                     salesman: appState.salesman,
                     date: new Date().toISOString(),
@@ -1885,7 +1907,7 @@
                 batch.set(doc(collection(db, "confirmed_orders")), confirmedOrder);
                 batch.delete(doc(db, "orders", appState.editingPackingSlipId));
 
-                for (const orderItem of appState.currentOrder) {
+                for (const orderItem of cart) {
                     const itemRef = doc(db, "items", String(orderItem.item.Code));
                     const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
                     if (currentItem) {
@@ -1895,7 +1917,7 @@
                 }
                 await batch.commit();
                 showProfessionalModal('Success', 'Order has been confirmed and stock updated.', () => {
-                    appState.currentOrder = [];
+                    appState.customerCarts[appState.customer.id] = [];
                     appState.editingPackingSlipId = null;
                     appState.currentOrderLocation = null;
                     showPage('page-order-history');
@@ -2051,15 +2073,91 @@
             const id = card.dataset.id;
             const type = card.dataset.type;
 
-            if (e.target.closest('.delete-history-btn')) {
-                if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
+            if (e.target.closest('.delete-history-btn[data-type="orders"]')) {
+                if (confirm('Are you sure you want to delete this packing slip? This action cannot be undone.')) {
                     card.classList.add('removing');
                     try {
-                        await deleteDoc(doc(db, type, id));
+                        await deleteDoc(doc(db, "orders", id));
                         setTimeout(() => card.remove(), 400);
                     } catch (error) {
-                        console.error(`Error deleting from ${type}:`, error);
+                        console.error(`Error deleting from orders:`, error);
                         showProfessionalModal('Error', `Failed to delete the entry.`);
+                        card.classList.remove('removing');
+                    }
+                }
+            } else if (e.target.closest('.delete-history-btn[data-type="payments"]')) {
+                const paymentToDelete = Object.values(appState.payments).flat().find(p => p.id === id);
+                if (!paymentToDelete) {
+                    alert('Error: Could not find the payment to delete.');
+                    return;
+                }
+                if (confirm(`Are you sure you want to delete this payment of ${formatCurrency(paymentToDelete.amount)}? The customer's balance will be updated.`)) {
+                    const customerToUpdate = appState.customers.find(c => c.Customer === paymentToDelete.customer.Customer);
+                    if (!customerToUpdate || !customerToUpdate.id) {
+                        alert('Error: Could not find the associated customer to update their balance.');
+                        return;
+                    }
+                    card.classList.add('removing');
+                    try {
+                        const batch = writeBatch(db);
+                        const paymentRef = doc(db, "payments", id);
+                        const customerRef = doc(db, "customers", customerToUpdate.id);
+                        const newOutstanding = (customerToUpdate.Outstanding || 0) + paymentToDelete.amount;
+                        
+                        batch.delete(paymentRef);
+                        batch.update(customerRef, { Outstanding: newOutstanding });
+                        
+                        await batch.commit();
+                        showToast('Payment deleted and balance updated.');
+                        setTimeout(() => card.remove(), 400);
+                    } catch (error) {
+                        console.error('Error deleting payment and updating balance:', error);
+                        showProfessionalModal('Error', 'Failed to delete payment. Please try again.');
+                        card.classList.remove('removing');
+                    }
+                }
+            } else if (e.target.closest('.delete-history-btn[data-action="delete-confirmed"]')) {
+                if (confirm('Are you sure you want to PERMANENTLY DELETE this confirmed order? This will not restore stock levels.')) {
+                    card.classList.add('removing');
+                    try {
+                        await deleteDoc(doc(db, 'confirmed_orders', id));
+                        setTimeout(() => card.remove(), 400);
+                    } catch (error) {
+                        console.error(`Error deleting from confirmed_orders:`, error);
+                        showProfessionalModal('Error', 'Failed to delete the confirmed order.');
+                        card.classList.remove('removing');
+                    }
+                }
+            } else if (e.target.closest('[data-action="undo-confirmed"]')) {
+                if (confirm('Are you sure you want to undo this order? It will be moved back to Packing Slips and stock will be restored.')) {
+                    const confirmedOrder = Object.values(appState.confirmedOrders).flat().find(o => o.id === id);
+                    if (!confirmedOrder) {
+                        alert('Error: Could not find the order to undo.');
+                        return;
+                    }
+                    card.classList.add('removing');
+                    try {
+                        const batch = writeBatch(db);
+                        for (const orderItem of confirmedOrder.items) {
+                            const itemRef = doc(db, "items", String(orderItem.item.Code));
+                            const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
+                            if (currentItem) {
+                                const newStock = Number(currentItem.Clstock) + Number(orderItem.quantity);
+                                batch.update(itemRef, { Clstock: newStock });
+                            }
+                        }
+                        const newPackingSlipData = { ...confirmedOrder };
+                        delete newPackingSlipData.id;
+                        delete newPackingSlipData.confirmedDate;
+                        batch.set(doc(collection(db, "orders")), newPackingSlipData);
+                        batch.delete(doc(db, "confirmed_orders", id));
+                        await batch.commit();
+
+                        showProfessionalModal('Success', 'Order has been moved back to packing slips and stock restored.');
+                        setTimeout(() => card.remove(), 400);
+                    } catch (error) {
+                        console.error("Error undoing order:", error);
+                        showProfessionalModal('Error', 'Failed to undo the order.');
                         card.classList.remove('removing');
                     }
                 }
@@ -2073,7 +2171,7 @@
                 const orderData = (appState.orders[appState.salesman] || []).find(o => o.id === id);
                 if (orderData) {
                     appState.customer = appState.customers.find(c => c.Customer === orderData.customer.Customer) || orderData.customer;
-                    appState.currentOrder = orderData.items.map(i => ({...i})); // Deep copy
+                    appState.customerCarts[appState.customer.id] = orderData.items.map(i => ({...i}));
                     appState.editingPackingSlipId = id;
                     appState.currentOrderLocation = orderData.location;
                     
@@ -2169,7 +2267,8 @@
             document.getElementById('print-summary-upi').textContent = formatPreciseCurrency(totalUPI);
             document.getElementById('print-summary-grandtotal').textContent = formatPreciseCurrency(grandTotal);
 
-            document.getElementById('print-summary-table-body').innerHTML = salesmanPayments.map(p => `<tr><td>${new Date(p.date).toLocaleString()}</td><td>${p.customer.Customer}</td><td>${p.method}</td><td class="numeric">${formatPreciseCurrency(p.amount)}</td></tr>`).join('');
+            document.getElementById('print-summary-table-body').innerHTML = salesman
+payments.map(p => `<tr><td>${new Date(p.date).toLocaleString()}</td><td>${p.customer.Customer}</td><td>${p.method}</td><td class="numeric">${formatPreciseCurrency(p.amount)}</td></tr>`).join('');
             document.body.classList.add('printing', 'printing-summary'); setTimeout(() => window.print(), 100);
         };
 
