@@ -276,6 +276,8 @@
         
         #order-summary-grand-total { margin-top: 20px; padding: 15px; background-color: var(--primary-color); color: white; font-size: 1.2rem; font-weight: bold; border-radius: var(--border-radius); display: flex; justify-content: space-between; align-items: center; }
         .total-margin-badge { font-size: 1rem; font-weight: 700; color: #fff; padding: 4px 10px; border-radius: 50px; }
+        
+        #order-summary-actions { padding: 15px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; }
 
         .search-toggle-buttons { display: flex; gap: 10px; margin-top: 15px; margin-bottom: 15px; }
         .toggle-btn { flex: 1; padding: 10px; font-size: 0.9rem; font-weight: 500; text-align: center; color: var(--primary-color); background-color: #fff; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
@@ -646,7 +648,7 @@
             <button class="icon-button" id="back-to-order-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
-            <h1>Order Summary</h1>
+            <h1 id="order-summary-header">Order Summary</h1>
             <div class="icon-button" style="width: 24px;"></div>
         </div>
         <div class="content">
@@ -654,8 +656,9 @@
             <div id="order-summary-list"></div>
             <div id="order-summary-grand-total"></div>
         </div>
-        <div style="padding: 20px; flex-shrink: 0;">
-            <button id="confirm-order-btn" class="button button-accent">Save Packing Slip</button>
+        <div id="order-summary-actions">
+            <button id="save-update-slip-btn" class="button">Save Packing Slip</button>
+            <button id="confirm-slip-btn" class="button button-accent" style="display: none;">Confirm & Finalize Order</button>
         </div>
     </div>
 
@@ -1042,9 +1045,9 @@
             salesman: null, customer: null, items: [], customers: [],
             salesmanItems: [], 
             orders: {}, payments: {}, confirmedOrders: {}, currentOrder: [],
+            editingPackingSlipId: null,
             currentPayment: {}, currentView: 'customers', currentHistoryView: 'packing-slips',
             editing: { type: null, id: null },
-            editingPackingSlip: { id: null, data: { items: [] } },
             reporting: { 
                 salesman: null, 
                 customer: null, 
@@ -1302,6 +1305,19 @@
             let marginBgColor = marginPercent >= 5 ? 'var(--success-color)' : marginPercent >= 4 ? 'var(--warning-color)' : 'var(--danger-color)';
             totalCont.innerHTML = `<span>Grand Total: ${formatPreciseCurrency(grandTotalRevenue)}</span><span class="total-margin-badge" style="background-color: ${marginBgColor};">${marginPercent.toFixed(2)}%</span>`;
             totalCont.style.display = 'flex'; 
+
+            const saveUpdateBtn = document.getElementById('save-update-slip-btn');
+            const confirmBtn = document.getElementById('confirm-slip-btn');
+
+            if(appState.editingPackingSlipId) {
+                document.getElementById('order-summary-header').textContent = 'Edit Slip Summary';
+                saveUpdateBtn.textContent = 'Update Packing Slip';
+                confirmBtn.style.display = 'block';
+            } else {
+                document.getElementById('order-summary-header').textContent = 'Order Summary';
+                saveUpdateBtn.textContent = 'Save Packing Slip';
+                confirmBtn.style.display = 'none';
+            }
         };
 
         const renderHistoryTabs = () => {
@@ -1346,7 +1362,7 @@
                         <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
                         <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
                 } else { // Confirmed Orders
-                    actionsHtml = ``; // No actions for confirmed orders
+                    actionsHtml = `<button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`;
                 }
                 
                 const dateToDisplay = new Date(isPackingSlips ? item.date : (item.confirmedDate || item.date));
@@ -1703,11 +1719,7 @@
             const isOrder = appState.currentView === 'customers';
             const pageId = isOrder ? 'page-order-history' : 'page-payment-history';
             showPage(pageId);
-            if (isOrder) {
-                renderHistoryTabs();
-            } else {
-                renderHistoryTabs();
-            }
+            renderHistoryTabs();
         });
         
         document.getElementById('product-info-icon-btn').addEventListener('click', () => showPage('page-product-info'));
@@ -1733,7 +1745,7 @@
                     try {
                         const location = await getCurrentLocation();
                         appState.currentOrderLocation = location;
-                        document.getElementById('order-customer-name').textContent = appState.customer.Customer; 
+                        document.getElementById('order-customer-name').textContent = `New Order: ${appState.customer.Customer}`; 
                         updateCartBadge(); renderPreviousItemsAsTiles(); showPage('page-order');
                     } catch (error) { alert(`Could not start order. Location is required.\n\nError: ${error.message}`);
                     } finally { actionButton.disabled = false; }
@@ -1762,8 +1774,12 @@
         document.querySelectorAll('#back-to-main-btn-order-history, #back-to-main-btn-payment-history, #back-to-main-btn-payment').forEach(btn => btn.addEventListener('click', () => showPage('page-main-view')));
         
         document.getElementById('back-to-customers-btn').addEventListener('click', () => {
-            if (appState.currentOrder.length > 0 && !confirm("You have items in your cart. Are you sure you want to go back? Your cart will be saved for this session.")) return;
-            appState.currentOrderLocation = null; showPage('page-main-view');
+            const destinationPage = appState.editingPackingSlipId ? 'page-order-history' : 'page-main-view';
+            if (appState.currentOrder.length > 0 && !confirm("You have items in your cart. Are you sure you want to go back? Your changes will not be saved.")) return;
+            appState.currentOrder = [];
+            appState.editingPackingSlipId = null;
+            appState.currentOrderLocation = null; 
+            showPage(destinationPage);
         });
 
         document.getElementById('back-from-settings-btn').addEventListener('click', () => { if(appState.salesman === 'ADMIN') showPage('page-admin-dashboard'); else showPage('page-main-view'); });
@@ -1808,30 +1824,92 @@
         document.getElementById('back-to-order-btn').addEventListener('click', () => showPage('page-order'));
         document.getElementById('order-summary-list').addEventListener('click', e => { const deleteBtn = e.target.closest('.delete-btn'); if (deleteBtn) { appState.currentOrder.splice(parseInt(deleteBtn.dataset.index), 1); renderOrderSummaryPage(); updateCartBadge(); } });
 
-        document.getElementById('page-order-summary').querySelector('#confirm-order-btn').addEventListener('click', async (e) => {
+        document.getElementById('save-update-slip-btn').addEventListener('click', async (e) => {
             const btn = e.currentTarget;
             if (appState.currentOrder.length === 0) { alert('Cannot save an empty packing slip.'); return; }
-            if (!appState.currentOrderLocation) { alert("Location data was lost. Please go back and start the order again."); return; }
-            btn.disabled = true; btn.textContent = 'Saving Slip...';
+            if (!appState.currentOrderLocation) { alert("Location data is missing. Please start the order again to capture location."); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            
             try {
                 const total = appState.currentOrder.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
-                const newOrder = { 
-                    customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone }, 
-                    items: appState.currentOrder.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3 }, quantity: i.quantity, sellingPrice: i.sellingPrice })), 
-                    total, 
-                    salesman: appState.salesman, 
-                    date: new Date().toISOString(), 
-                    location: appState.currentOrderLocation 
+                const orderData = {
+                    customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone },
+                    items: appState.currentOrder.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3 }, quantity: i.quantity, sellingPrice: i.sellingPrice })),
+                    total,
+                    salesman: appState.salesman,
+                    date: new Date().toISOString(),
+                    location: appState.currentOrderLocation
                 };
-                await setDoc(doc(collection(db, "orders")), newOrder);
-                showProfessionalModal('Success', 'The packing slip has been saved.', () => { appState.currentOrder = []; updateCartBadge(); showPage('page-main-view'); });
-            } catch (error) { console.error("Error saving packing slip:", error); alert(`Failed to save slip. Reason: ${error.message}`);
-            } finally { btn.disabled = false; btn.textContent = 'Save Packing Slip'; appState.currentOrderLocation = null; }
+                
+                if (appState.editingPackingSlipId) {
+                    await updateDoc(doc(db, "orders", appState.editingPackingSlipId), orderData);
+                    showProfessionalModal('Success', 'The packing slip has been updated.', () => {
+                        appState.currentOrder = []; appState.editingPackingSlipId = null; updateCartBadge(); showPage('page-order-history');
+                    });
+                } else {
+                    await setDoc(doc(collection(db, "orders")), orderData);
+                    showProfessionalModal('Success', 'The packing slip has been saved.', () => {
+                        appState.currentOrder = []; updateCartBadge(); showPage('page-main-view');
+                    });
+                }
+            } catch (error) {
+                console.error("Error saving packing slip:", error);
+                alert(`Failed to save slip. Reason: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                appState.currentOrderLocation = null;
+            }
+        });
+
+        document.getElementById('confirm-slip-btn').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            if (!appState.editingPackingSlipId) return;
+            if (!confirm('Are you sure you want to confirm this order? This will finalize the sale and deduct stock. This action cannot be undone.')) return;
+            
+            btn.disabled = true; btn.textContent = 'Confirming...';
+            try {
+                const total = appState.currentOrder.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
+                const confirmedOrder = {
+                    customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone },
+                    items: appState.currentOrder,
+                    total,
+                    salesman: appState.salesman,
+                    date: new Date().toISOString(),
+                    location: appState.currentOrderLocation,
+                    confirmedDate: new Date().toISOString()
+                };
+                
+                const batch = writeBatch(db);
+                batch.set(doc(collection(db, "confirmed_orders")), confirmedOrder);
+                batch.delete(doc(db, "orders", appState.editingPackingSlipId));
+
+                for (const orderItem of appState.currentOrder) {
+                    const itemRef = doc(db, "items", String(orderItem.item.Code));
+                    const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
+                    if (currentItem) {
+                        const newStock = Number(currentItem.Clstock) - Number(orderItem.quantity);
+                        batch.update(itemRef, { Clstock: newStock });
+                    }
+                }
+                await batch.commit();
+                showProfessionalModal('Success', 'Order has been confirmed and stock updated.', () => {
+                    appState.currentOrder = [];
+                    appState.editingPackingSlipId = null;
+                    appState.currentOrderLocation = null;
+                    showPage('page-order-history');
+                });
+            } catch (error) {
+                console.error("Error confirming order:", error);
+                showProfessionalModal('Error', 'Failed to confirm order.');
+            } finally {
+                btn.disabled = false; btn.textContent = 'Confirm & Finalize Order';
+            }
         });
 
         document.querySelector('.payment-method-options').addEventListener('click', e => { if (e.target.matches('.payment-method-option')) { document.querySelectorAll('.payment-method-option').forEach(el => el.classList.remove('selected')); e.target.classList.add('selected'); } });
         
-        // MODIFICATION START: Auto-deduct outstanding balance on payment
         document.getElementById('confirm-payment-btn').addEventListener('click', async (e) => {
             const btn = e.currentTarget;
             btn.disabled = true;
@@ -1848,7 +1926,6 @@
             const customerForPayment = appState.currentPayment.customer;
             
             try {
-                // 1. Record the new payment
                 const newPayment = {
                     customer: { Customer: customerForPayment.Customer },
                     amount,
@@ -1857,9 +1934,8 @@
                     date: new Date().toISOString()
                 };
                 await setDoc(doc(collection(db, "payments")), newPayment);
-                appState.currentPayment = newPayment; // Update current payment for receipt generation
+                appState.currentPayment = newPayment;
 
-                // 2. Deduct amount from customer's outstanding balance
                 if (customerForPayment.id) {
                     const customerRef = doc(db, "customers", customerForPayment.id);
                     const currentOutstanding = Number(customerForPayment.Outstanding) || 0;
@@ -1867,7 +1943,6 @@
                     await updateDoc(customerRef, { Outstanding: newOutstanding });
                 }
 
-                // 3. Update UI
                 document.getElementById('confirm-payment-btn').style.display = 'none';
                 document.getElementById('payment-actions-container').style.display = 'flex';
                 showProfessionalModal('Success', 'Payment recorded and outstanding balance updated successfully.');
@@ -1880,7 +1955,6 @@
                 btn.textContent = 'Confirm Payment';
             }
         });
-        // MODIFICATION END
 
         const generateAndShareReceipt = async (receiptType, customer, amount) => {
              const receiptElement = document.querySelector('#payment-receipt-wrapper .receipt-container');
@@ -1949,8 +2023,10 @@
 
         window.onafterprint = () => { document.body.classList.remove('printing', 'printing-receipt', 'printing-packing-slip', 'printing-summary'); };
         
-        const printPackingSlip = (orderId) => {
-            const orderToPrint = Object.values(appState.orders).flat().find(o => o.id === orderId);
+        const printSlip = (orderId, orderType) => {
+            const source = orderType === 'orders' ? appState.orders : appState.confirmedOrders;
+            const orderToPrint = Object.values(source).flat().find(o => o.id === orderId);
+            
             if (!orderToPrint) { alert('Could not find order to print.'); return; }
             const ITEMS_PER_PAGE = 27; const pages = []; for (let i = 0; i < orderToPrint.items.length; i += ITEMS_PER_PAGE) pages.push(orderToPrint.items.slice(i, i + ITEMS_PER_PAGE));
             let slipHtml = '';
@@ -1979,49 +2055,7 @@
                 if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
                     card.classList.add('removing');
                     try {
-                        if (type === 'orders') {
-                            const orderToDelete = Object.values(appState.orders).flat().find(o => o.id === id);
-                            await deleteDoc(doc(db, "orders", id));
-                            if (orderToDelete) {
-                                const salesman = orderToDelete.salesman;
-                                if (appState.orders[salesman]) {
-                                    const index = appState.orders[salesman].findIndex(o => o.id === id);
-                                    if (index > -1) appState.orders[salesman].splice(index, 1);
-                                }
-                            }
-                        } else if (type === 'confirmed_orders') {
-                            const orderToDelete = Object.values(appState.confirmedOrders).flat().find(o => o.id === id);
-                            if (orderToDelete) {
-                                const batch = writeBatch(db);
-                                batch.delete(doc(db, "confirmed_orders", id));
-                                for (const orderItem of orderToDelete.items) {
-                                    const itemRef = doc(db, "items", String(orderItem.item.Code));
-                                    const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
-                                    if (currentItem) {
-                                        const restoredStock = Number(currentItem.Clstock) + Number(orderItem.quantity);
-                                        batch.update(itemRef, { Clstock: restoredStock });
-                                    }
-                                }
-                                await batch.commit();
-                                const salesman = orderToDelete.salesman;
-                                if (appState.confirmedOrders[salesman]) {
-                                    const indexToDelete = appState.confirmedOrders[salesman].findIndex(o => o.id === id);
-                                    if (indexToDelete > -1) {
-                                        appState.confirmedOrders[salesman].splice(indexToDelete, 1);
-                                    }
-                                }
-                            }
-                        } else if (type === 'payments') {
-                            const paymentToDelete = Object.values(appState.payments).flat().find(p => p.id === id);
-                            await deleteDoc(doc(db, "payments", id));
-                            if (paymentToDelete) {
-                                const salesman = paymentToDelete.salesman;
-                                if (appState.payments[salesman]) {
-                                    const index = appState.payments[salesman].findIndex(p => p.id === id);
-                                    if (index > -1) appState.payments[salesman].splice(index, 1);
-                                }
-                            }
-                        }
+                        await deleteDoc(doc(db, type, id));
                         setTimeout(() => card.remove(), 400);
                     } catch (error) {
                         console.error(`Error deleting from ${type}:`, error);
@@ -2030,7 +2064,7 @@
                     }
                 }
             } else if (e.target.closest('.print-history-btn')) {
-                printPackingSlip(id);
+                printSlip(id, type);
             } else if (e.target.closest('.toggle-details')) {
                 e.preventDefault();
                 const target = document.getElementById(e.target.dataset.target);
@@ -2038,10 +2072,15 @@
             } else if (e.target.closest('.edit-packing-slip-btn')) {
                 const orderData = (appState.orders[appState.salesman] || []).find(o => o.id === id);
                 if (orderData) {
-                    appState.editingPackingSlip.id = id;
-                    appState.editingPackingSlip.data = JSON.parse(JSON.stringify(orderData));
-                    renderEditPackingSlipPage();
-                    showPage('page-edit-packing-slip');
+                    appState.customer = appState.customers.find(c => c.Customer === orderData.customer.Customer) || orderData.customer;
+                    appState.currentOrder = orderData.items.map(i => ({...i})); // Deep copy
+                    appState.editingPackingSlipId = id;
+                    appState.currentOrderLocation = orderData.location;
+                    
+                    document.getElementById('order-customer-name').textContent = `Edit Order: ${appState.customer.Customer}`;
+                    updateCartBadge();
+                    renderPreviousItemsAsTiles();
+                    showPage('page-order');
                 }
             }
         };
@@ -2232,138 +2271,8 @@
         document.getElementById('info-salesman-item-search-results').addEventListener('click', (e) => handleInfoItemSelection(e.target.closest('.search-result-item')));
         document.getElementById('info-item-search-results').addEventListener('click', (e) => handleInfoItemSelection(e.target.closest('.search-result-item')));
 
-        // --- EDIT PACKING SLIP PAGE LOGIC ---
         document.getElementById('back-to-history-from-edit-btn').addEventListener('click', () => showPage('page-order-history'));
 
-        const renderEditPackingSlipPage = () => {
-            const { data } = appState.editingPackingSlip;
-            document.getElementById('edit-packing-slip-header').textContent = `Edit Slip: ${data.customer.Customer}`;
-            renderEditSlipItemList();
-        };
-
-        const updateEditSlipTotal = () => {
-            const { items } = appState.editingPackingSlip.data;
-            const total = items.reduce((sum, item) => sum + (item.quantity * item.sellingPrice), 0);
-            appState.editingPackingSlip.data.total = total;
-            document.getElementById('edit-slip-grand-total').innerHTML = `<span>Grand Total:</span><span>${formatPreciseCurrency(total)}</span>`;
-        };
-
-        const renderEditSlipItemList = () => {
-            const listContainer = document.getElementById('edit-slip-item-list');
-            const { items } = appState.editingPackingSlip.data;
-            if (items.length === 0) {
-                listContainer.innerHTML = '<p class="card" style="text-align:center;">No items in this slip. Add one using the search bar.</p>';
-            } else {
-                listContainer.innerHTML = items.map((orderItem, index) => `
-                    <div class="order-item-card" data-index="${index}">
-                        <div class="item-primary-row">
-                            <div class="item-name">${orderItem.item.ItemName}</div>
-                            <button class="item-action-btn delete-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                        </div>
-                        <div class="item-controls-grid">
-                            <div class="form-group"><label>Quantity</label><input type="number" class="edit-slip-qty" value="${orderItem.quantity}"></div>
-                            <div class="form-group"><label>Price</label><input type="number" class="edit-slip-price" value="${orderItem.sellingPrice}"></div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            updateEditSlipTotal();
-        };
-        
-        document.getElementById('edit-slip-item-search-input').addEventListener('input', (e) => renderItemSearchResults(e.target.value, 'edit-slip-item-search-results'));
-        document.getElementById('edit-slip-item-search-results').addEventListener('click', (e) => {
-            const resultItem = e.target.closest('.search-result-item');
-            if (resultItem) {
-                const code = resultItem.dataset.itemCode;
-                const fullItem = appState.items.find(i => i.Code == code);
-                if (fullItem) {
-                    const existing = appState.editingPackingSlip.data.items.find(i => i.item.Code === fullItem.Code);
-                    if (existing) {
-                        alert('Item is already in the slip. You can edit the quantity below.');
-                    } else {
-                        appState.editingPackingSlip.data.items.push({ item: fullItem, quantity: 1, sellingPrice: fullItem.Price2 });
-                        renderEditSlipItemList();
-                    }
-                }
-                document.getElementById('edit-slip-item-search-input').value = '';
-                document.getElementById('edit-slip-item-search-results').innerHTML = '';
-            }
-        });
-        
-        document.getElementById('edit-slip-item-list').addEventListener('click', (e) => {
-            if (e.target.closest('.delete-btn')) {
-                const index = e.target.closest('.order-item-card').dataset.index;
-                appState.editingPackingSlip.data.items.splice(index, 1);
-                renderEditSlipItemList();
-            }
-        });
-        
-        document.getElementById('edit-slip-item-list').addEventListener('input', (e) => {
-            const card = e.target.closest('.order-item-card');
-            if (!card) return;
-            const index = card.dataset.index;
-            const item = appState.editingPackingSlip.data.items[index];
-            if (e.target.classList.contains('edit-slip-qty')) {
-                item.quantity = parseFloat(e.target.value) || 0;
-            } else if (e.target.classList.contains('edit-slip-price')) {
-                item.sellingPrice = parseFloat(e.target.value) || 0;
-            }
-            updateEditSlipTotal();
-        });
-
-        document.getElementById('save-packing-slip-btn').addEventListener('click', async (e) => {
-            const btn = e.currentTarget;
-            btn.disabled = true; btn.textContent = 'Saving...';
-            try {
-                const { id, data } = appState.editingPackingSlip;
-                await updateDoc(doc(db, "orders", id), data);
-                showProfessionalModal('Success', 'Packing slip changes have been saved.', () => showPage('page-order-history'));
-            } catch (error) {
-                console.error("Error saving slip:", error);
-                showProfessionalModal('Error', 'Failed to save changes.');
-            } finally {
-                btn.disabled = false; btn.textContent = 'Save Changes';
-            }
-        });
-
-        document.getElementById('confirm-packing-slip-btn').addEventListener('click', async (e) => {
-            const btn = e.currentTarget;
-            if (!confirm('Are you sure you want to confirm this order? This will finalize the sale and deduct stock. This action cannot be undone.')) return;
-            
-            btn.disabled = true; btn.textContent = 'Confirming...';
-            try {
-                const { id, data } = appState.editingPackingSlip;
-                const confirmedOrder = { ...data, confirmedDate: new Date().toISOString() };
-                
-                const batch = writeBatch(db);
-                batch.set(doc(collection(db, "confirmed_orders")), confirmedOrder);
-                batch.delete(doc(db, "orders", id));
-
-                for (const orderItem of data.items) {
-                    const itemRef = doc(db, "items", String(orderItem.item.Code));
-                    const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
-                    if (currentItem) {
-                        const newStock = Number(currentItem.Clstock) - Number(orderItem.quantity);
-                        batch.update(itemRef, { Clstock: newStock });
-                    }
-                }
-                await batch.commit();
-                showProfessionalModal('Success', 'Order has been confirmed and stock updated.', () => {
-                    const historyCard = document.querySelector(`#page-order-history .history-card[data-id="${id}"]`);
-                    if (historyCard) {
-                        historyCard.classList.add('removing');
-                        setTimeout(() => historyCard.remove(), 400);
-                    }
-                    showPage('page-order-history');
-                });
-            } catch (error) {
-                console.error("Error confirming order:", error);
-                showProfessionalModal('Error', 'Failed to confirm order.');
-            } finally {
-                btn.disabled = false; btn.textContent = 'Confirm Order';
-            }
-        });
-        
         // --- OUTSTANDING BALANCES PAGE LOGIC ---
         const renderOutstandingBalancesPage = () => {
             const container = document.getElementById('outstanding-list-container');
@@ -2379,7 +2288,6 @@
             const totalOutstanding = filteredCustomers.reduce((sum, c) => sum + (c.Outstanding || 0), 0);
             totalValueEl.textContent = formatCurrency(totalOutstanding);
             
-            // Apply sorting
             if (appState.outstandingSort === 'desc') {
                 filteredCustomers.sort((a, b) => (b.Outstanding || 0) - (a.Outstanding || 0));
             } else if (appState.outstandingSort === 'asc') {
