@@ -248,7 +248,7 @@
         .item-tile-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .item-tile .item-name { font-weight: 600; font-size: 1rem; word-break: break-word; }
         .item-tile .item-info-tags { font-size: 0.8rem; font-weight: 500; color: #6c757d; white-space: nowrap; }
-        .item-tile .item-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; align-items: flex-start; }
+        .item-tile .item-controls { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; align-items: flex-start; }
         .item-tile .control-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .item-tile .price-box { width: 100%; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--border-color); border-radius: 6px; background-color: #f8f9fa; cursor: pointer; transition: all 0.2s ease; }
         .item-tile .price-box.active { background-color: var(--secondary-color); color: white; border-color: var(--secondary-color); }
@@ -274,7 +274,7 @@
         #order-summary-list .detail-item .value { font-weight: 500; font-size: 0.95rem; }
         #order-summary-list .detail-item.total .value { font-weight: 700; color: var(--primary-color); }
         
-        #order-summary-grand-total { margin-top: 20px; padding: 15px; background-color: var(--primary-color); color: white; font-size: 1.1rem; font-weight: bold; border-radius: var(--border-radius); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        #order-summary-grand-total { margin-top: 20px; padding: 15px; background-color: var(--primary-color); color: white; font-size: 1.2rem; font-weight: bold; border-radius: var(--border-radius); display: flex; justify-content: space-between; align-items: center; }
         .total-margin-badge { font-size: 1rem; font-weight: 700; color: #fff; padding: 4px 10px; border-radius: 50px; }
         
         #order-summary-actions { padding: 15px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; }
@@ -527,7 +527,7 @@
             body.printing-receipt #payment-receipt-wrapper,
             body.printing-summary #payment-summary-print-wrapper { display: block !important; position: static !important; }
             #payment-summary-print-content { display: block !important; }
-            .slip-page-break { page-break-before: always; margin-top: 20mm; }
+            .slip-page-break { page-break-before: always; }
             .slip-table thead { display: table-header-group; }
             .slip-table tr { page-break-inside: avoid; }
         }
@@ -1260,8 +1260,9 @@
                     </div>
                     <div class="item-controls">
                         <div class="control-cell"><button class="price-box active" data-price-type="p2">${formatShortCurrency(item.Price2)}</button><span class="control-label">P2</span></div>
+                        <div class="control-cell"><button class="price-box" data-price-type="p3">${formatShortCurrency(item.Price3)}</button><span class="control-label">P3</span></div>
                         <div class="control-cell"><input type="number" class="control-input custom-price-input" placeholder="Price" min="0"><span class="control-label">Custom</span></div>
-                        <div class="control-cell"><input type="number" class="control-input quantity-input" min="1"><span class="control-label">QTY</span></div>
+                        <div class="control-cell"><input type="number" class="control-input quantity-input" min="0.01" step="any"><span class="control-label">QTY</span></div>
                         <div class="control-cell"><button class="add-to-cart-btn">Add</button><span class="control-label">&nbsp;</span></div>
                     </div>
                 </div>`).join('');
@@ -1294,12 +1295,9 @@
             const cart = getActiveCart();
             let grandTotalRevenue = 0, grandTotalCost = 0;
             if (cart.length === 0) { listCont.innerHTML = '<p class="card" style="text-align:center;">Your cart is empty.</p>'; totalCont.style.display = 'none'; return; } 
-            
-            const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
-
             listCont.innerHTML = cart.map((o, idx) => { 
                 const lineItemRevenue = o.quantity * o.sellingPrice; 
-                const lineItemCost = o.quantity * (costMap.get(String(o.item.Code)) || 0); 
+                const lineItemCost = o.quantity * (parseFloat(o.item.CostRate) || 0); 
                 grandTotalRevenue += lineItemRevenue; 
                 grandTotalCost += lineItemCost; 
                 return `<div class="order-item-card">
@@ -1314,17 +1312,9 @@
                             </div>
                         </div>`; 
             }).join(''); 
-            
-            const profit = grandTotalRevenue - grandTotalCost;
-            const marginPercent = grandTotalRevenue > 0 ? (profit / grandTotalRevenue) * 100 : 0;
-            const marginBgColor = marginPercent >= 5 ? 'var(--success-color)' : marginPercent >= 4 ? 'var(--warning-color)' : 'var(--danger-color)';
-            
-            totalCont.innerHTML = `
-                <div style="flex-basis: 100%; text-align: left;">
-                    <span>Total: ${formatPreciseCurrency(grandTotalRevenue)}</span> | 
-                    <span class="${profit >= 0 ? 'profit' : 'loss'}">Profit: ${formatPreciseCurrency(profit)}</span>
-                </div>
-                <span class="total-margin-badge" style="background-color: ${marginBgColor}; margin-top: 5px;">${marginPercent.toFixed(1)}%</span>`;
+            let marginPercent = grandTotalCost > 0 ? ((grandTotalRevenue - grandTotalCost) / grandTotalCost) * 100 : 0;
+            let marginBgColor = marginPercent >= 5 ? 'var(--success-color)' : marginPercent >= 4 ? 'var(--warning-color)' : 'var(--danger-color)';
+            totalCont.innerHTML = `<span>Grand Total: ${formatPreciseCurrency(grandTotalRevenue)}</span><span class="total-margin-badge" style="background-color: ${marginBgColor};">${marginPercent.toFixed(2)}%</span>`;
             totalCont.style.display = 'flex'; 
 
             const saveUpdateBtn = document.getElementById('save-update-slip-btn');
@@ -1367,29 +1357,11 @@
             }
 
             historyData.sort((a, b) => new Date(isPackingSlips ? b.date : (b.confirmedDate || b.date)) - new Date(isPackingSlips ? a.date : (a.confirmedDate || a.date)));
-            
-            const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             container.innerHTML = historyData.map((item) => {
                 const isOrderType = !isPaymentHistory;
-                let totalText, profitHtml = '';
-
-                if(isOrderType) {
-                    const itemCount = item.items ? item.items.length : 0;
-                    totalText = `<strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)`;
-                    const totalCost = (item.items || []).reduce((sum, cartItem) => {
-                        const cost = costMap.get(String(cartItem.item.Code)) || 0;
-                        return sum + (cartItem.quantity * cost);
-                    }, 0);
-                    const profit = item.total - totalCost;
-                    const margin = item.total > 0 ? (profit / item.total) * 100 : 0;
-                    profitHtml = `<p class="${profit >= 0 ? 'profit' : 'loss'}" style="font-weight: 500;">
-                                    <strong>Profit:</strong> ${formatPreciseCurrency(profit)} (${margin.toFixed(1)}%)
-                                  </p>`;
-                } else {
-                    totalText = `<strong>Amount:</strong> ${formatPreciseCurrency(item.amount)}`;
-                }
-
+                const itemCount = isOrderType && item.items ? item.items.length : 0;
+                const totalText = isOrderType ? `<strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)` : `<strong>Amount:</strong> ${formatPreciseCurrency(item.amount)}`;
                 const itemDetailsHtml = isOrderType ? (item.items || []).map(i => `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit || ""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(i.quantity * i.sellingPrice)}</strong></td></tr>`).join('') : '';
 
                 let actionsHtml = '';
@@ -1413,7 +1385,6 @@
                                 <div class="info">
                                     <p><strong>Customer:</strong> ${item.customer.Customer}</p>
                                     <p>${totalText}</p>
-                                    ${profitHtml}
                                     <p class="date-display">${dateToDisplay.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
                                 </div>
                                 <div class="actions">${actionsHtml}</div>
@@ -1693,45 +1664,14 @@
             const c = appState.customer; 
             document.getElementById('customer-history-name').textContent = `History for ${c.Customer}`; 
             const container = document.getElementById('customer-history-list'); 
-            const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === c.Customer).sort((a,b) => new Date(b.date) - new Date(a.date));
-            const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
+            const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === c.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)); 
             if (customerOrders.length === 0) { 
                 container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`; 
             } else { 
                 container.innerHTML = customerOrders.map(item => { 
                     const itemCount = item.items ? item.items.length : 0;
-                    const totalCost = (item.items || []).reduce((sum, cartItem) => {
-                        const cost = costMap.get(String(cartItem.item.Code)) || 0;
-                        return sum + (cartItem.quantity * cost);
-                    }, 0);
-                    const profit = item.total - totalCost;
-                    const margin = item.total > 0 ? (profit / item.total) * 100 : 0;
-                    const profitHtml = `<p class="${profit >= 0 ? 'profit' : 'loss'}" style="font-weight: 500;">
-                                        <strong>Profit:</strong> ${formatPreciseCurrency(profit)} (${margin.toFixed(1)}%)
-                                      </p>`;
                     const itemDetailsHtml = (item.items || []).map(i => `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(i.quantity * i.sellingPrice)}</strong></td></tr>`).join(''); 
-                    return `<div class="history-card" data-id="${item.id}" data-type="orders">
-                                <div class="history-card-header">
-                                    <div class="info">
-                                        <p><strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)</p>
-                                        ${profitHtml}
-                                        <p class="date-display">${new Date(item.date).toLocaleString()}</p>
-                                    </div>
-                                    <div class="actions">
-                                        <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
-                                        <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                                    </div>
-                                </div>
-                                <div class="history-card-body" id="details-${item.id}">
-                                    <div class="table-responsive-wrapper">
-                                        <table class="history-item-table">
-                                            <thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead>
-                                            <tbody>${itemDetailsHtml}</tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <a class="toggle-details" data-target="details-${item.id}">View Details</a>
-                            </div>`; 
+                    return `<div class="history-card" data-id="${item.id}" data-type="orders"><div class="history-card-header"><div class="info"><p><strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)</p><p class="date-display">${new Date(item.date).toLocaleString()}</p></div><div class="actions"><button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button><button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a></div>`; 
                 }).join(''); 
             } 
             showPage('page-customer-history'); 
@@ -1878,7 +1818,7 @@
             const addBtn = e.target.closest('.add-to-cart-btn');
             if (priceBox) { const tile = priceBox.closest('.item-tile'); tile.querySelectorAll('.price-box').forEach(box => box.classList.remove('active')); priceBox.classList.add('active'); const item = appState.items.find(i => i.Code == tile.dataset.itemCode); const priceType = priceBox.dataset.priceType; tile.querySelector('.custom-price-input').value = item[priceType === 'p2' ? 'Price2' : 'Price3']; }
             if (addBtn) {
-                const tile = addBtn.closest('.item-tile'); const qtyInput = tile.querySelector('.quantity-input'); const qty = parseInt(qtyInput.value); const customPrice = parseFloat(tile.querySelector('.custom-price-input').value);
+                const tile = addBtn.closest('.item-tile'); const qtyInput = tile.querySelector('.quantity-input'); const qty = parseFloat(qtyInput.value); const customPrice = parseFloat(tile.querySelector('.custom-price-input').value);
                 if (isNaN(qty) || qty <= 0) { alert('Please enter a valid quantity.'); qtyInput.focus(); return; }
                 const item = appState.items.find(i => i.Code == tile.dataset.itemCode); const activePriceBox = tile.querySelector('.price-box.active');
                 let price;
@@ -1909,7 +1849,7 @@
                 const total = cart.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
                 const orderData = {
                     customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone },
-                    items: cart.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3, CostRate: i.item.CostRate }, quantity: i.quantity, sellingPrice: i.sellingPrice })),
+                    items: cart.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3 }, quantity: i.quantity, sellingPrice: i.sellingPrice })),
                     total,
                     salesman: appState.salesman,
                     date: new Date().toISOString(),
