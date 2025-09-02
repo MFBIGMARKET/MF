@@ -1958,17 +1958,16 @@
                 };
                 await setDoc(doc(collection(db, "payments")), newPayment);
                 appState.currentPayment = newPayment;
-
-                if (customerForPayment.id) {
-                    const customerRef = doc(db, "customers", customerForPayment.id);
-                    const currentOutstanding = Number(customerForPayment.Outstanding) || 0;
-                    const newOutstanding = currentOutstanding - amount;
-                    await updateDoc(customerRef, { Outstanding: newOutstanding });
-                }
+                
+                // --- MODIFICATION 1 START ---
+                // The block of code that updated the customer's outstanding balance has been removed.
+                // The balance is now only updated by your external ERP sync script.
+                // --- MODIFICATION 1 END ---
 
                 document.getElementById('confirm-payment-btn').style.display = 'none';
                 document.getElementById('payment-actions-container').style.display = 'flex';
-                showProfessionalModal('Success', 'Payment recorded and outstanding balance updated successfully.');
+                // The success message has been updated to reflect the new process.
+                showProfessionalModal('Success', 'Payment recorded. The outstanding balance will update after the next ERP sync.');
 
             } catch (error) {
                 console.error("Error processing payment: ", error);
@@ -2092,31 +2091,22 @@
                     alert('Error: Could not find the payment to delete.');
                     return;
                 }
-                if (confirm(`Are you sure you want to delete this payment of ${formatCurrency(paymentToDelete.amount)}? The customer's balance will be updated.`)) {
-                    const customerToUpdate = appState.customers.find(c => c.Customer === paymentToDelete.customer.Customer);
-                    if (!customerToUpdate || !customerToUpdate.id) {
-                        alert('Error: Could not find the associated customer to update their balance.');
-                        return;
-                    }
+                // --- MODIFICATION 2 START ---
+                // Updated confirmation message to reflect the new process.
+                if (confirm(`Are you sure you want to delete this payment of ${formatCurrency(paymentToDelete.amount)}? The customer's balance will be updated on the next ERP sync.`)) {
                     card.classList.add('removing');
                     try {
-                        const batch = writeBatch(db);
-                        const paymentRef = doc(db, "payments", id);
-                        const customerRef = doc(db, "customers", customerToUpdate.id);
-                        const newOutstanding = (customerToUpdate.Outstanding || 0) + paymentToDelete.amount;
-                        
-                        batch.delete(paymentRef);
-                        batch.update(customerRef, { Outstanding: newOutstanding });
-                        
-                        await batch.commit();
-                        showToast('Payment deleted and balance updated.');
+                        // The logic to update the customer balance has been removed. We only delete the payment.
+                        await deleteDoc(doc(db, "payments", id));
+                        showToast('Payment deleted. Balance will update after next sync.');
                         setTimeout(() => card.remove(), 400);
                     } catch (error) {
-                        console.error('Error deleting payment and updating balance:', error);
+                        console.error('Error deleting payment:', error);
                         showProfessionalModal('Error', 'Failed to delete payment. Please try again.');
                         card.classList.remove('removing');
                     }
                 }
+                // --- MODIFICATION 2 END ---
             } else if (e.target.closest('.delete-history-btn[data-action="delete-confirmed"]')) {
                 if (confirm('Are you sure you want to PERMANENTLY DELETE this confirmed order? This will not restore stock levels.')) {
                     card.classList.add('removing');
@@ -2403,7 +2393,11 @@
             container.innerHTML = filteredCustomers.map(c => `
                 <div class="list-item" data-customer-id="${c.id}" data-customer-name="${c.Customer}">
                     <div class="info">${c.Customer}</div>
-                    <input type="number" class="outstanding-balance" value="${c.Outstanding || 0}" />
+                    
+                    <!-- MODIFICATION 3 START: Added 'readonly' to the input to prevent editing -->
+                    <input type="number" class="outstanding-balance" value="${c.Outstanding || 0}" readonly />
+                    <!-- MODIFICATION 3 END -->
+
                     <button class="reminder-btn" data-customer='${JSON.stringify(c)}'>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                     </button>
@@ -2430,7 +2424,11 @@
         });
         
         const outstandingListContainer = document.getElementById('outstanding-list-container');
-
+        
+        // --- MODIFICATION 4 START ---
+        // The event listeners that allowed for manual editing of the balance
+        // have been completely removed to enforce the read-only behavior.
+        /*
         outstandingListContainer.addEventListener('focusin', e => {
             if (e.target.classList.contains('outstanding-balance')) {
                 e.target.dataset.originalValue = e.target.value;
@@ -2473,6 +2471,8 @@
                 }
             }
         });
+        */
+        // --- MODIFICATION 4 END ---
 
         outstandingListContainer.addEventListener('click', async (e) => {
             const reminderBtn = e.target.closest('.reminder-btn');
