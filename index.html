@@ -21,7 +21,7 @@
     <!-- FIREBASE SDKs -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-      import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
       
       const firebaseConfig = {
         apiKey: "AIzaSyDdECOGyNKFsKtWDiArUPp0DVd_bN0BjAY",
@@ -39,7 +39,7 @@
       });
 
       window.firebaseDB = db;
-      window.firebaseTools = { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc };
+      window.firebaseTools = { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField };
 
     </script>
     
@@ -173,7 +173,7 @@
             pointer-events: none;
         }
 
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #fff; border-radius: var(--border-radius); margin-bottom: 12px; box-shadow: var(--card-shadow); transition: transform 0.2s ease, box-shadow 0.2s; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #fff; border-radius: var(--border-radius); margin-bottom: 12px; box-shadow: var(--card-shadow); transition: transform 0.2s ease, box-shadow 0.2s, opacity 0.5s, max-height 0.5s, padding 0.5s, margin-bottom 0.5s; }
         .list-item:active { transform: scale(0.99); box-shadow: 0 2px 8px rgba(0, 95, 115, 0.1); }
         .list-item .info { flex: 1; font-size: 1rem; font-weight: 500; line-height: 1.4; margin-right: 15px; }
         .list-item-action { flex-shrink: 0; padding: 12px 15px; min-width: 110px; text-align: center; font-size: 1rem; color: var(--light-text-color); background-color: var(--secondary-color); border: none; border-radius: 8px; cursor: pointer; }
@@ -285,7 +285,7 @@
         .search-view { display: none; }
         .search-view.active { display: block; }
 
-        #offer-item-search-results, #offer-item-search-results-bulk, #info-salesman-item-search-results, #info-item-search-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 var(--border-radius) var(--border-radius); max-height: 250px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        #offer-item-search-results, #offer-item-search-results-bulk, #info-salesman-item-search-results, #info-item-search-results, #packing-item-search-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 var(--border-radius) var(--border-radius); max-height: 250px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
         
         .search-result-item { padding: 12px 15px; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; border-bottom: 1px solid #f0f0f0; }
         .search-result-item:last-child { border-bottom: none; }
@@ -540,6 +540,7 @@
             <h1>Select Role</h1>
             <button class="button" data-salesman="UNNI">UNNI</button>
             <button class="button" data-salesman="RIYAS">RIYAS</button>
+            <button class="button" data-salesman="SUNNY" style="margin-top: 20px;">SUNNY</button>
             <button class="button button-accent" data-salesman="ADMIN" style="margin-top: 40px;">ADMIN</button>
         </div>
     </div>
@@ -556,6 +557,9 @@
                 </button>
                  <button class="icon-button" id="pending-balance-btn" style="display: none;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </button>
+                <button class="icon-button" id="packed-orders-btn" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                 </button>
                 <button class="icon-button" id="history-icon-btn">
                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
@@ -658,7 +662,6 @@
         </div>
         <div id="order-summary-actions">
             <button id="save-update-slip-btn" class="button">Save Packing Slip</button>
-            <button id="confirm-slip-btn" class="button button-accent" style="display: none;">Confirm & Finalize Order</button>
         </div>
     </div>
 
@@ -691,14 +694,10 @@
              <button class="icon-button" id="back-to-main-btn-order-history">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
-            <h1>Order History</h1>
+            <h1>Packing Slip History</h1>
             <div class="icon-button" style="width: 24px;"></div>
         </div>
         <div class="content">
-            <div class="search-toggle-buttons" style="margin-bottom: 15px; margin-top: 0;">
-                <button class="toggle-btn active" data-history-type="packing-slips">Packing Slips</button>
-                <button class="toggle-btn" data-history-type="confirmed-orders">Confirmed Orders</button>
-            </div>
             <div id="order-history-date-filter" class="between-date-filter">
                 <input type="date" class="date-input start-date-input">
                 <button class="date-btn start-date-btn">
@@ -942,8 +941,7 @@
             <div id="edit-slip-grand-total" style="margin-top: 20px; padding: 15px; background-color: var(--primary-color); color: white; font-size: 1.2rem; font-weight: bold; border-radius: var(--border-radius); display: flex; justify-content: space-between; align-items: center;"></div>
         </div>
         <div style="padding: 20px; flex-shrink: 0; display: flex; gap: 10px;">
-            <button id="save-packing-slip-btn" class="button button-outline" style="flex: 1; margin:0;">Save Changes</button>
-            <button id="confirm-packing-slip-btn" class="button button-accent" style="flex: 1; margin:0;">Confirm Order</button>
+            <button id="save-packing-slip-btn" class="button" style="flex: 1; margin:0;">Save Changes</button>
         </div>
     </div>
 
@@ -1012,6 +1010,82 @@
              <button class="button button-accent" id="share-bulk-flyer-btn" style="display:none; margin-top:10px;">Share Flyer with Customers</button>
         </div>
     </div>
+    
+    <div id="page-packer-home" class="page">
+        <div class="header">
+            <button class="icon-button" id="packer-logout-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            </button>
+            <h1>Pending Orders</h1>
+            <div class="header-actions">
+                <button class="icon-button" id="packer-history-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div class="content">
+            <div id="packer-date-filter" class="between-date-filter">
+                <input type="date" class="date-input start-date-input">
+                <button class="date-btn start-date-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">Start Date</span>
+                </button>
+                <input type="date" class="date-input end-date-input">
+                <button class="date-btn end-date-btn">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">End Date</span>
+                </button>
+                <button class="filter-action-btn clear-btn">Clear</button>
+            </div>
+            <div id="packer-order-list"></div>
+        </div>
+    </div>
+
+    <div id="page-packing-interface" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-packer-home-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1 id="packing-order-customer">Packing Order</h1>
+        </div>
+        <div class="content">
+            <div class="card">
+                <h3>Add Product</h3>
+                <div class="search-bar">
+                    <input type="text" id="packing-item-search" placeholder="Search for an item...">
+                    <div id="packing-item-search-results"></div>
+                </div>
+            </div>
+            <div id="packing-item-list"></div>
+        </div>
+        <div style="padding: 15px;">
+            <button id="confirm-packing-btn" class="button">Confirm Packing</button>
+        </div>
+    </div>
+
+    <div id="page-packer-history" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-packer-home-from-history-btn">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Packing History</h1>
+        </div>
+        <div class="content">
+            <div id="packer-history-list"></div>
+        </div>
+    </div>
+    
+    <div id="page-packed-orders" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-main-from-packed-orders-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Packed Orders</h1>
+        </div>
+        <div class="content">
+            <div id="packed-orders-list"></div>
+        </div>
+    </div>
 
 
     <!-- Hidden elements for generation -->
@@ -1044,9 +1118,9 @@
         let appState = {
             salesman: null, customer: null, items: [], customers: [],
             salesmanItems: [], 
-            orders: {}, payments: {}, confirmedOrders: {}, customerCarts: {},
+            orders: {}, payments: {}, customerCarts: {},
             editingPackingSlipId: null,
-            currentPayment: {}, currentView: 'customers', currentHistoryView: 'packing-slips',
+            currentPayment: {}, currentView: 'customers',
             editing: { type: null, id: null },
             reporting: { 
                 salesman: null, 
@@ -1060,9 +1134,10 @@
             currentOrderLocation: null,
             outstandingUpdateTimeout: null,
             outstandingSort: 'default', // 'default', 'desc', 'asc'
+            packingOrder: null,
         };
 
-        const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc } = window.firebaseTools;
+        const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField } = window.firebaseTools;
         const db = window.firebaseDB;
 
         const getActiveCart = () => {
@@ -1083,12 +1158,25 @@
         };
         const formatCurrency = (v) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
         const formatPreciseCurrency = (v) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(v);
+        
         const formatDateForDisplay = (dateString) => {
             if (!dateString) return null;
             const date = new Date(dateString);
             const userTimezoneOffset = date.getTimezoneOffset() * 60000;
             const correctedDate = new Date(date.getTime() + userTimezoneOffset);
-            return correctedDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            return correctedDate.toLocaleDateString('en-GB'); // DD/MM/YYYY format
+        };
+        
+        const formatDDMMYYYY = (dateString) => {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-GB'); // e.g., 09/09/2025
+        };
+
+        const formatDDMMYYYYTime = (dateString) => {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleString('en-GB', { timeZone: 'Asia/Kolkata' }).replace(',', ''); // e.g., 09/09/2025 11:23:45
         };
         
         const createSearchResultItemHTML = (i) => {
@@ -1150,7 +1238,7 @@
         const setupRealtimeListeners = () => {
             onSnapshot(collection(db, "customers"), (snapshot) => { 
                 appState.customers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-                if(appState.salesman !== 'ADMIN') renderCurrentView();
+                if(appState.salesman !== 'ADMIN' && appState.salesman !== 'SUNNY') renderCurrentView();
                 if(document.getElementById('page-outstanding-balances').classList.contains('active')) renderOutstandingBalancesPage();
             });
             onSnapshot(collection(db, "items"), (snapshot) => { 
@@ -1162,14 +1250,16 @@
             });
             onSnapshot(query(collection(db, "orders")), (snapshot) => { 
                 appState.orders = {}; 
-                snapshot.docs.forEach(doc => { const order = { id: doc.id, ...doc.data() }; if (!appState.orders[order.salesman]) appState.orders[order.salesman] = []; appState.orders[order.salesman].push(order); }); 
-                if (document.getElementById('page-order-history').classList.contains('active') && appState.currentHistoryView === 'packing-slips') renderHistoryTabs();
-            });
-            onSnapshot(query(collection(db, "confirmed_orders")), (snapshot) => {
-                appState.confirmedOrders = {};
-                snapshot.docs.forEach(doc => { const order = { id: doc.id, ...doc.data() }; if (!appState.confirmedOrders[order.salesman]) appState.confirmedOrders[order.salesman] = []; appState.confirmedOrders[order.salesman].push(order); });
-                if (document.getElementById('page-order-history').classList.contains('active') && appState.currentHistoryView === 'confirmed-orders') renderHistoryTabs();
+                snapshot.docs.forEach(doc => { 
+                    const order = { id: doc.id, ...doc.data() }; 
+                    if (!appState.orders[order.salesman]) appState.orders[order.salesman] = []; 
+                    appState.orders[order.salesman].push(order); 
+                }); 
+                if (document.getElementById('page-order-history').classList.contains('active')) renderHistoryTabs();
+                 if (document.getElementById('page-packed-orders').classList.contains('active')) renderPackedOrders();
                 if (appState.salesman === 'ADMIN' && document.getElementById('page-admin-dashboard').classList.contains('active')) renderAdminDashboard();
+                if (appState.salesman === 'SUNNY' && document.getElementById('page-packer-home').classList.contains('active')) renderPackerHome();
+                if (appState.salesman === 'SUNNY' && document.getElementById('page-packer-history').classList.contains('active')) renderPackerHistory();
             });
             onSnapshot(query(collection(db, "payments")), (snapshot) => { 
                 appState.payments = {}; 
@@ -1209,7 +1299,7 @@
                 </div>`).join('');
         };
         const renderPaymentCustomerList = () => {
-            const container = document.getElementById('payment-customer-list-container');
+const container = document.getElementById('payment-customer-list-container');
             populateRoutes('payment-route-filter');
             const searchFilter = document.getElementById('payment-customer-search-input').value.toLowerCase();
             const selectedRoute = document.getElementById('payment-route-filter').value;
@@ -1318,21 +1408,17 @@
             totalCont.style.display = 'flex'; 
 
             const saveUpdateBtn = document.getElementById('save-update-slip-btn');
-            const confirmBtn = document.getElementById('confirm-slip-btn');
-
+            
             if(appState.editingPackingSlipId) {
                 document.getElementById('order-summary-header').textContent = 'Edit Slip Summary';
                 saveUpdateBtn.textContent = 'Update Packing Slip';
-                confirmBtn.style.display = 'block';
             } else {
                 document.getElementById('order-summary-header').textContent = 'Order Summary';
                 saveUpdateBtn.textContent = 'Save Packing Slip';
-                confirmBtn.style.display = 'none';
             }
         };
 
         const renderHistoryTabs = () => {
-            const isPackingSlips = appState.currentHistoryView === 'packing-slips';
             const isPaymentHistory = document.getElementById('page-payment-history').classList.contains('active');
             const container = isPaymentHistory ? document.getElementById('payment-history-list') : document.getElementById('order-history-list');
             
@@ -1340,13 +1426,13 @@
             if (isPaymentHistory) {
                 historyData = appState.payments[appState.salesman] || [];
             } else {
-                historyData = isPackingSlips ? (appState.orders[appState.salesman] || []) : (appState.confirmedOrders[appState.salesman] || []);
+                historyData = appState.orders[appState.salesman] || [];
             }
             
             const { start, end } = getReportDateRange();
             if (start && end) {
                 historyData = historyData.filter(item => {
-                    const itemDate = new Date(isPackingSlips ? item.date : (item.confirmedDate || item.date));
+                    const itemDate = new Date(item.date);
                     return itemDate >= start && itemDate <= end;
                 });
             }
@@ -1356,7 +1442,8 @@
                 return;
             }
 
-            historyData.sort((a, b) => new Date(isPackingSlips ? b.date : (b.confirmedDate || b.date)) - new Date(isPackingSlips ? a.date : (a.confirmedDate || a.date)));
+            historyData.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             container.innerHTML = historyData.map((item) => {
                 const isOrderType = !isPaymentHistory;
@@ -1364,28 +1451,44 @@
                 const totalText = isOrderType ? `<strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)` : `<strong>Amount:</strong> ${formatPreciseCurrency(item.amount)}`;
                 const itemDetailsHtml = isOrderType ? (item.items || []).map(i => `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit || ""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(i.quantity * i.sellingPrice)}</strong></td></tr>`).join('') : '';
 
+                let profitHtml = '';
+                if (isOrderType && item.items) {
+                    const totalCost = item.items.reduce((sum, lineItem) => {
+                        const itemCost = costMap.get(String(lineItem.item.Code)) || 0;
+                        return sum + (lineItem.quantity * itemCost);
+                    }, 0);
+                    const totalProfit = item.total - totalCost;
+                    const margin = item.total > 0 ? (totalProfit / item.total) * 100 : 0;
+                    const profitClass = totalProfit >= 0 ? 'profit' : 'loss';
+                    profitHtml = `<p><strong>Profit:</strong> <span class="${profitClass}">${formatPreciseCurrency(totalProfit)} (${margin.toFixed(1)}%)</span></p>`;
+                }
+
                 let actionsHtml = '';
                 if (isPaymentHistory) {
                      actionsHtml = `<button class="history-action-btn delete-history-btn" data-type="payments" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
-                } else if (isPackingSlips) {
-                    actionsHtml = `
-                        <button class="history-action-btn edit-packing-slip-btn" title="Edit Slip"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                        <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
-                        <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
-                } else { // Confirmed Orders
-                    actionsHtml = `<button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
-                        <button class="history-action-btn" data-action="undo-confirmed" title="Undo Confirmation (Move to Packing Slips)"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${'var(--warning-color)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a8.5 8.5 0 0 1 0 17H11"/></svg></button>
-                        <button class="history-action-btn delete-history-btn" data-action="delete-confirmed" title="Delete Permanently"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
+                } else { // Packing Slips
+                    const isPacked = item.status === 'packed';
+                    if (isPacked) {
+                        actionsHtml = `
+                            <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+                            <span style="display:flex; align-items:center; gap: 5px; color: var(--success-color);" title="This order has been packed.">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            </span>`;
+                    } else {
+                        actionsHtml = `
+                            <button class="history-action-btn edit-packing-slip-btn" title="Edit Slip"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                            <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+                            <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
+                    }
                 }
                 
-                const dateToDisplay = new Date(isPackingSlips ? item.date : (item.confirmedDate || item.date));
-
-                return `<div class="history-card" data-id="${item.id}" data-type="${isPaymentHistory ? 'payments' : (isPackingSlips ? 'orders' : 'confirmed_orders')}">
+                return `<div class="history-card" data-id="${item.id}" data-type="${isPaymentHistory ? 'payments' : 'orders'}">
                             <div class="history-card-header">
                                 <div class="info">
                                     <p><strong>Customer:</strong> ${item.customer.Customer}</p>
                                     <p>${totalText}</p>
-                                    <p class="date-display">${dateToDisplay.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+                                    ${profitHtml}
+                                    <p class="date-display">${formatDDMMYYYYTime(item.date)}</p>
                                 </div>
                                 <div class="actions">${actionsHtml}</div>
                             </div>
@@ -1420,11 +1523,11 @@
             const { start, end } = getReportDateRange();
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
             
-            let orders = Object.values(appState.confirmedOrders).flat();
+            let orders = Object.values(appState.orders).flat().filter(o => o.status === 'packed');
             let payments = Object.values(appState.payments).flat();
 
             if (start && end) {
-                orders = orders.filter(o => { const orderDate = new Date(o.confirmedDate); return orderDate >= start && orderDate <= end; });
+                orders = orders.filter(o => { const orderDate = new Date(o.date); return orderDate >= start && orderDate <= end; });
                 payments = payments.filter(p => { const paymentDate = new Date(p.date); return paymentDate >= start && paymentDate <= end; });
             }
             
@@ -1432,19 +1535,28 @@
             const salesBySalesman = {};
             const itemsSold = {};
             const customerSet = new Set();
+
             orders.forEach(order => {
                 customerSet.add(order.customer.Customer);
                 const salesman = order.salesman || 'N/A';
                 if (!salesBySalesman[salesman]) salesBySalesman[salesman] = { revenue: 0, cost: 0, orderCount: 0 };
                 salesBySalesman[salesman].orderCount++;
-                (order.items || []).forEach(item => {
-                    const revenue = item.quantity * item.sellingPrice;
-                    const cost = item.quantity * (costMap.get(String(item.item.Code)) || 0);
-                    totalRevenue += revenue; totalCost += cost;
-                    salesBySalesman[salesman].revenue += revenue; salesBySalesman[salesman].cost += cost;
+
+                const itemsToProcess = order.packedItems || order.items;
+
+                (itemsToProcess || []).forEach(item => {
+                    if (item.wasUnchecked) return; 
+                    const revenue = (item.quantity || 0) * (item.sellingPrice || 0);
+                    const cost = (item.quantity || 0) * (costMap.get(String(item.item.Code)) || 0);
+                    
+                    totalRevenue += revenue; 
+                    totalCost += cost;
+                    salesBySalesman[salesman].revenue += revenue; 
+                    salesBySalesman[salesman].cost += cost;
+
                     const itemName = item.item.ItemName;
                     if (!itemsSold[itemName]) itemsSold[itemName] = { quantity: 0, revenue: 0 };
-                    itemsSold[itemName].quantity += item.quantity;
+                    itemsSold[itemName].quantity += (item.quantity || 0);
                     itemsSold[itemName].revenue += revenue;
                 });
             });
@@ -1458,36 +1570,26 @@
                 else if (p.method === 'UPI') { collectionsBySalesman[salesman].upi += p.amount; grandTotalUPI += p.amount; }
             });
 
-            const salesmanCashflow = {};
-            const allSalesmen = [...new Set([...Object.keys(salesBySalesman), ...Object.keys(collectionsBySalesman)])];
-            allSalesmen.forEach(salesman => {
-                const revenue = salesBySalesman[salesman]?.revenue || 0;
-                const collections = (collectionsBySalesman[salesman]?.cash || 0) + (collectionsBySalesman[salesman]?.upi || 0);
-                salesmanCashflow[salesman] = collections - revenue;
-            });
-
-            return { totalRevenue, totalProfit: totalRevenue - totalCost, totalOrders, uniqueCustomers: customerSet.size, salesBySalesman, itemsSold: Object.entries(itemsSold).sort((a, b) => b[1].revenue - a[1].revenue), collectionsBySalesman, grandTotalCash, grandTotalUPI, salesmanCashflow };
+            return { totalRevenue, totalProfit: totalRevenue - totalCost, totalOrders, uniqueCustomers: customerSet.size, salesBySalesman, itemsSold: Object.entries(itemsSold).sort((a, b) => b[1].revenue - a[1].revenue), collectionsBySalesman, grandTotalCash, grandTotalUPI };
         };
 
         const renderAdminDashboard = () => {
             const dashboardContent = document.getElementById("admin-dashboard-content");
             const data = processAdminData();
-
-            const margin = data.totalRevenue > 0 ? (data.totalProfit / data.totalRevenue) * 100 : 0;
-            const riyasSales = data.salesBySalesman['RIYAS']?.revenue || 0;
-            const unniSales = data.salesBySalesman['UNNI']?.revenue || 0;
+            
             const riyasCollection = (data.collectionsBySalesman['RIYAS']?.cash || 0) + (data.collectionsBySalesman['RIYAS']?.upi || 0);
             const unniCollection = (data.collectionsBySalesman['UNNI']?.cash || 0) + (data.collectionsBySalesman['UNNI']?.upi || 0);
+            const overallMargin = data.totalRevenue > 0 ? (data.totalProfit / data.totalRevenue) * 100 : 0;
 
             const kpiItems = [
                 { title: 'Total Sales', value: formatPreciseCurrency(data.totalRevenue) },
-                { title: 'RIYAS Sales', value: formatPreciseCurrency(riyasSales) },
+                { title: 'RIYAS Sales', value: formatPreciseCurrency(data.salesBySalesman['RIYAS']?.revenue || 0) },
                 { title: 'RIYAS Collection', value: formatPreciseCurrency(riyasCollection) },
-                { title: 'UNNI Sales', value: formatPreciseCurrency(unniSales) },
+                { title: 'UNNI Sales', value: formatPreciseCurrency(data.salesBySalesman['UNNI']?.revenue || 0) },
                 { title: 'UNNI Collection', value: formatPreciseCurrency(unniCollection) },
-                { title: 'Overall Profit', value: formatPreciseCurrency(data.totalProfit), class: data.totalProfit >= 0 ? 'profit' : 'loss' },
-                { title: 'Overall Margin', value: `${margin.toFixed(1)}%`, class: margin >= 0 ? 'profit' : 'loss' },
-                { title: 'Overall Unique Customers', value: data.uniqueCustomers }
+                { title: 'Overall Profit', value: formatPreciseCurrency(data.totalProfit), class: data.totalProfit >= 0 ? 'profit' : 'loss'},
+                { title: 'Overall Margin', value: `${overallMargin.toFixed(1)}%`, class: overallMargin >= 0 ? 'profit' : 'loss' },
+                { title: 'Unique Customers', value: data.uniqueCustomers }
             ];
 
             const kpiListHtml = kpiItems.map(item => `
@@ -1500,7 +1602,7 @@
             const kpiCardHtml = `<div class="data-list-card"><h3>Key Performance Indicators</h3><ul class="data-list-container" style="max-height: none;">${kpiListHtml}</ul></div>`;
 
             const salesListHtml = Object.entries(data.salesBySalesman).sort((a, b) => b[1].revenue - a[1].revenue).map(([salesman, d]) => { const profit = d.revenue - d.cost; const margin = d.revenue > 0 ? profit / d.revenue * 100 : 0; return `<li class="data-list-item" data-salesman="${salesman}"><div class="item-main">${salesman}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary"><span class="${profit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(profit)} (${margin.toFixed(1)}%)</span></span></div></li>` }).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>';
-            const itemsSoldHtml = data.itemsSold.map(([name, d]) => `<li class="data-list-item" style="cursor:default;"><div class="item-main">${name}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary">Qty: ${d.quantity}</span></div></li>`).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>';
+            const itemsSoldHtml = data.itemsSold.map(([name, d]) => `<li class="data-list-item" style="cursor:default;"><div class="item-main">${name}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary">Qty: ${d.quantity.toFixed(2)}</span></div></li>`).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>';
             const totalCollections = data.grandTotalCash + data.grandTotalUPI;
             const collectionsBreakdownHtml = Object.entries(data.collectionsBySalesman).map(([salesman, d]) => `<div class="salesman-header">${salesman}</div><ul class="salesman-breakdown"><li><span>Cash</span> <span>${formatPreciseCurrency(d.cash)}</span></li><li><span>UPI</span> <span>${formatPreciseCurrency(d.upi)}</span></li><li><span>Sub-Total</span> <span>${formatPreciseCurrency(d.cash + d.upi)}</span></li></ul>`).join("");
             const collectionsHtml = Object.keys(data.collectionsBySalesman).length > 0 ? collectionsBreakdownHtml : '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No collections in this period.</li>';
@@ -1510,7 +1612,7 @@
             
             dashboardContent.insertAdjacentHTML('beforeend', `<div class="dashboard-grid">
                 ${kpiCardHtml}
-                <div class="data-list-card"><h3>Sales by Salesman</h3><ul class="data-list-container">${salesListHtml}</ul></div>
+                <div class="data-list-card"><h3>Sales By Salesman</h3><ul class="data-list-container">${salesListHtml}</ul></div>
                 <div class="data-list-card"><h3>Items Sold</h3><ul class="data-list-container">${itemsSoldHtml}</ul></div>
                 <div class="data-list-card"><h3>Collections</h3><ul class="payment-summary-list"><li><span>Total Cash</span><strong>${formatPreciseCurrency(data.grandTotalCash)}</strong></li><li><span>Total UPI</span><strong>${formatPreciseCurrency(data.grandTotalUPI)}</strong></li><li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatPreciseCurrency(totalCollections)}</strong></li>${collectionsHtml}</ul></div>
                 <div class="data-list-card"><h3>Operations</h3><button class="button button-outline" id="location-report-btn" style="margin-bottom: 10px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Location Report</button><button class="button button-outline" id="crm-module-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Send Bulk Offer</button></div>
@@ -1532,7 +1634,7 @@
             allSalesmen.forEach(salesman => {
                 const lastOrder = filteredOrders.filter(o => o.salesman === salesman && o.location).sort((a, b) => new Date(b.date) - new Date(a.date))[0];
                 if (lastOrder) {
-                    summaryHtml += `<div class="list-item"><div class="info"><strong style="color: var(--primary-color); font-size: 1.1rem;">${salesman}</strong><p><strong>Last Order:</strong> ${lastOrder.customer.Customer} (${formatPreciseCurrency(lastOrder.total)})</p><p><strong>Time:</strong> ${new Date(lastOrder.date).toLocaleString()}</p></div><a href="https://www.google.com/maps?q=${lastOrder.location.lat},${lastOrder.location.lng}" target="_blank" class="button button-outline" style="width: auto; padding: 8px 15px; font-size: 0.9rem;">View Last Location</a></div>`;
+                    summaryHtml += `<div class="list-item"><div class="info"><strong style="color: var(--primary-color); font-size: 1.1rem;">${salesman}</strong><p><strong>Last Order:</strong> ${lastOrder.customer.Customer} (${formatPreciseCurrency(lastOrder.total)})</p><p><strong>Time:</strong> ${formatDDMMYYYYTime(lastOrder.date)}</p></div><a href="https://www.google.com/maps?q=${lastOrder.location.lat},${lastOrder.location.lng}" target="_blank" class="button button-outline" style="width: auto; padding: 8px 15px; font-size: 0.9rem;">View Last Location</a></div>`;
                 } else {
                     summaryHtml += `<div class="list-item"><strong style="color: var(--primary-color); font-size: 1.1rem;">${salesman}</strong><span>No location data found for this period.</span></div>`;
                 }
@@ -1542,7 +1644,7 @@
             const allOrdersWithLocation = filteredOrders.filter(o => o.location).sort((a, b) => new Date(b.date) - new Date(a.date));
             let detailsHtml = '<div class="card" style="margin-top: 20px;"><h3>Detailed Location Log</h3><div id="location-details-list">';
             if (allOrdersWithLocation.length > 0) {
-                detailsHtml += allOrdersWithLocation.map(order => `<div class="list-item"><div class="info"><strong>${order.customer.Customer}</strong><br><small>${order.salesman} - ${new Date(order.date).toLocaleString()}</small></div><a href="https://www.google.com/maps?q=${order.location.lat},${order.location.lng}" target="_blank" class="list-item-action">View Map</a></div>`).join('');
+                detailsHtml += allOrdersWithLocation.map(order => `<div class="list-item"><div class="info"><strong>${order.customer.Customer}</strong><br><small>${order.salesman} - ${formatDDMMYYYYTime(order.date)}</small></div><a href="https://www.google.com/maps?q=${order.location.lat},${order.location.lng}" target="_blank" class="list-item-action">View Map</a></div>`).join('');
             } else {
                 detailsHtml += '<p style="text-align: center; padding: 20px;">No orders with location data found for this period.</p>';
             }
@@ -1559,22 +1661,29 @@
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             const { start, end } = getReportDateRange();
-            let salesmanOrders = appState.confirmedOrders[salesman] || [];
+            let salesmanOrders = (appState.orders[salesman] || []).filter(o => o.status === 'packed');
+
             if (start && end) {
-                salesmanOrders = salesmanOrders.filter(o => { const orderDate = new Date(o.confirmedDate); return orderDate >= start && orderDate <= end; });
+                salesmanOrders = salesmanOrders.filter(o => { const orderDate = new Date(o.date); return orderDate >= start && orderDate <= end; });
             }
             const totalOrders = salesmanOrders.length;
 
             const customerSales = {};
             let totalRevenue = 0, totalProfit = 0;
+
             salesmanOrders.forEach(order => {
                 const customerName = order.customer.Customer || "Unknown";
                 if (!customerSales[customerName]) customerSales[customerName] = { revenue: 0, profit: 0, orderCount: 0 };
                 customerSales[customerName].orderCount++;
-                (order.items || []).forEach(item => {
-                    const revenue = item.quantity * item.sellingPrice;
-                    const cost = item.quantity * (costMap.get(String(item.item.Code)) || 0);
+                
+                const itemsToProcess = order.packedItems || order.items;
+
+                (itemsToProcess || []).forEach(item => {
+                     if (item.wasUnchecked) return;
+                    const revenue = (item.quantity || 0) * (item.sellingPrice || 0);
+                    const cost = (item.quantity || 0) * (costMap.get(String(item.item.Code)) || 0);
                     const profit = revenue - cost;
+
                     customerSales[customerName].revenue += revenue;
                     customerSales[customerName].profit += profit;
                     totalRevenue += revenue;
@@ -1606,20 +1715,22 @@
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             const { start, end } = getReportDateRange();
-            let customerOrders = (appState.confirmedOrders[salesman] || []).filter(o => o.customer.Customer === customerName);
+            let customerOrders = (appState.orders[salesman] || []).filter(o => o.customer.Customer === customerName && o.status === 'packed');
             if (start && end) {
-                customerOrders = customerOrders.filter(o => { const orderDate = new Date(o.confirmedDate); return orderDate >= start && orderDate <= end; });
+                customerOrders = customerOrders.filter(o => { const orderDate = new Date(o.date); return orderDate >= start && orderDate <= end; });
             }
 
             const itemsSold = {};
             customerOrders.forEach(order => {
-                (order.items || []).forEach(item => {
+                const itemsToProcess = order.packedItems || order.items;
+                (itemsToProcess || []).forEach(item => {
+                    if(item.wasUnchecked) return;
                     const itemName = item.item.ItemName;
                     const itemCode = String(item.item.Code);
                     if (!itemsSold[itemName]) itemsSold[itemName] = { quantity: 0, revenue: 0, cost: 0, unit: item.item.Unit };
-                    itemsSold[itemName].quantity += item.quantity;
-                    itemsSold[itemName].revenue += item.quantity * item.sellingPrice;
-                    itemsSold[itemName].cost += item.quantity * (costMap.get(itemCode) || 0);
+                    itemsSold[itemName].quantity += (item.quantity || 0);
+                    itemsSold[itemName].revenue += (item.quantity || 0) * (item.sellingPrice || 0);
+                    itemsSold[itemName].cost += (item.quantity || 0) * (costMap.get(itemCode) || 0);
                 });
             });
 
@@ -1665,13 +1776,43 @@
             document.getElementById('customer-history-name').textContent = `History for ${c.Customer}`; 
             const container = document.getElementById('customer-history-list'); 
             const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === c.Customer).sort((a,b) => new Date(b.date) - new Date(a.date)); 
+            const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
+
             if (customerOrders.length === 0) { 
                 container.innerHTML = `<p class="card" style="text-align:center;">No order history found for this customer.</p>`; 
             } else { 
                 container.innerHTML = customerOrders.map(item => { 
                     const itemCount = item.items ? item.items.length : 0;
                     const itemDetailsHtml = (item.items || []).map(i => `<tr><td class="col-item-name">${i.item.ItemName}</td><td class="numeric">${i.quantity} ${i.item.Unit||""}</td><td class="numeric">${formatPreciseCurrency(i.sellingPrice)}</td><td class="numeric"><strong>${formatPreciseCurrency(i.quantity * i.sellingPrice)}</strong></td></tr>`).join(''); 
-                    return `<div class="history-card" data-id="${item.id}" data-type="orders"><div class="history-card-header"><div class="info"><p><strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)</p><p class="date-display">${new Date(item.date).toLocaleString()}</p></div><div class="actions"><button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button><button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a></div>`; 
+                    
+                    const totalCost = (item.items || []).reduce((sum, lineItem) => {
+                        const itemCost = costMap.get(String(lineItem.item.Code)) || 0;
+                        return sum + (lineItem.quantity * itemCost);
+                    }, 0);
+                    const totalProfit = item.total - totalCost;
+                    const margin = item.total > 0 ? (totalProfit / item.total) * 100 : 0;
+                    const profitClass = totalProfit >= 0 ? 'profit' : 'loss';
+                    const profitHtml = `<p><strong>Profit:</strong> <span class="${profitClass}">${formatPreciseCurrency(totalProfit)} (${margin.toFixed(1)}%)</span></p>`;
+
+                    return `<div class="history-card" data-id="${item.id}" data-type="orders">
+                                <div class="history-card-header">
+                                    <div class="info">
+                                        <p><strong>Total:</strong> ${formatPreciseCurrency(item.total)} (${itemCount} items)</p>
+                                        ${profitHtml}
+                                        <p class="date-display">${formatDDMMYYYYTime(item.date)}</p>
+                                    </div>
+                                    <div class="actions">
+                                        <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+                                        <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                                    </div>
+                                </div>
+                                <div class="history-card-body" id="details-${item.id}">
+                                    <div class="table-responsive-wrapper">
+                                        <table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table>
+                                    </div>
+                                </div>
+                                <a class="toggle-details" data-target="details-${item.id}">View Details</a>
+                            </div>`; 
                 }).join(''); 
             } 
             showPage('page-customer-history'); 
@@ -1687,8 +1828,12 @@
                 if (salesman === 'ADMIN') { 
                     document.getElementById('footer').style.display = 'none'; document.getElementById('settings-icon-btn').style.display = 'flex';
                     showPage('page-admin-dashboard'); renderAdminDashboard();
+                } else if (salesman === 'SUNNY') {
+                    document.getElementById('footer').style.display = 'none';
+                    showPage('page-packer-home'); renderPackerHome();
                 } else {
                     document.getElementById('footer').style.display = 'flex'; document.getElementById('settings-icon-btn').style.display = 'none';
+                    document.getElementById('packed-orders-btn').style.display = 'flex';
                     appState.currentView = 'customers';
                     document.getElementById('orders-tab-btn').classList.add('active'); document.getElementById('payments-tab-btn').classList.remove('active');
                     showPage('page-main-view'); renderCurrentView();
@@ -1707,16 +1852,18 @@
         const pendingBalanceBtn = document.getElementById('pending-balance-btn');
 
         const renderCurrentView = () => {
-             if (appState.salesman === 'ADMIN') return; 
+             if (appState.salesman === 'ADMIN' || appState.salesman === 'SUNNY') return; 
              if (appState.currentView === 'customers') { 
                  mainHeader.textContent = 'Customers';
                  productInfoBtn.style.display = 'flex';
                  pendingBalanceBtn.style.display = 'none';
+                 document.getElementById('packed-orders-btn').style.display = 'flex';
                  renderCustomerList(); 
             } else { 
                 mainHeader.textContent = 'Payments'; 
                 productInfoBtn.style.display = 'none';
                 pendingBalanceBtn.style.display = 'flex';
+                 document.getElementById('packed-orders-btn').style.display = 'none';
                 renderPaymentCustomerList();
              } 
         };
@@ -1849,11 +1996,12 @@
                 const total = cart.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
                 const orderData = {
                     customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone },
-                    items: cart.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3 }, quantity: i.quantity, sellingPrice: i.sellingPrice })),
+                    items: cart.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3, CostRate: i.item.CostRate }, quantity: i.quantity, sellingPrice: i.sellingPrice })),
                     total,
                     salesman: appState.salesman,
                     date: new Date().toISOString(),
-                    location: appState.currentOrderLocation
+                    location: appState.currentOrderLocation,
+                    status: 'pending' 
                 };
                 
                 if (appState.editingPackingSlipId) {
@@ -1863,9 +2011,7 @@
                         appState.editingPackingSlipId = null;
                         updateCartBadge();
                         showPage('page-order-history');
-                        if (appState.currentHistoryView === 'packing-slips') {
-                            renderHistoryTabs(); 
-                        }
+                        renderHistoryTabs(); 
                     });
                 } else {
                     await setDoc(doc(collection(db, "orders")), orderData);
@@ -1881,53 +2027,6 @@
             } finally {
                 btn.disabled = false;
                 appState.currentOrderLocation = null;
-            }
-        });
-
-        document.getElementById('confirm-slip-btn').addEventListener('click', async (e) => {
-            const btn = e.currentTarget;
-            if (!appState.editingPackingSlipId) return;
-            if (!confirm('Are you sure you want to confirm this order? This will finalize the sale and deduct stock. This action cannot be undone.')) return;
-            
-            btn.disabled = true; btn.textContent = 'Confirming...';
-            const cart = getActiveCart();
-
-            try {
-                const total = cart.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
-                const confirmedOrder = {
-                    customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone },
-                    items: cart,
-                    total,
-                    salesman: appState.salesman,
-                    date: new Date().toISOString(),
-                    location: appState.currentOrderLocation,
-                    confirmedDate: new Date().toISOString()
-                };
-                
-                const batch = writeBatch(db);
-                batch.set(doc(collection(db, "confirmed_orders")), confirmedOrder);
-                batch.delete(doc(db, "orders", appState.editingPackingSlipId));
-
-                for (const orderItem of cart) {
-                    const itemRef = doc(db, "items", String(orderItem.item.Code));
-                    const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
-                    if (currentItem) {
-                        const newStock = Number(currentItem.Clstock) - Number(orderItem.quantity);
-                        batch.update(itemRef, { Clstock: newStock });
-                    }
-                }
-                await batch.commit();
-                showProfessionalModal('Success', 'Order has been confirmed and stock updated.', () => {
-                    appState.customerCarts[appState.customer.id] = [];
-                    appState.editingPackingSlipId = null;
-                    appState.currentOrderLocation = null;
-                    showPage('page-order-history');
-                });
-            } catch (error) {
-                console.error("Error confirming order:", error);
-                showProfessionalModal('Error', 'Failed to confirm order.');
-            } finally {
-                btn.disabled = false; btn.textContent = 'Confirm & Finalize Order';
             }
         });
 
@@ -1959,14 +2058,8 @@
                 await setDoc(doc(collection(db, "payments")), newPayment);
                 appState.currentPayment = newPayment;
                 
-                // --- MODIFICATION 1 START ---
-                // The block of code that updated the customer's outstanding balance has been removed.
-                // The balance is now only updated by your external ERP sync script.
-                // --- MODIFICATION 1 END ---
-
                 document.getElementById('confirm-payment-btn').style.display = 'none';
                 document.getElementById('payment-actions-container').style.display = 'flex';
-                // The success message has been updated to reflect the new process.
                 showProfessionalModal('Success', 'Payment recorded. The outstanding balance will update after the next ERP sync.');
 
             } catch (error) {
@@ -1982,7 +2075,7 @@
              const receiptElement = document.querySelector('#payment-receipt-wrapper .receipt-container');
              if (!receiptElement) { alert('Error: Receipt element not found.'); return; }
              
-             document.getElementById('receipt-date').textContent = new Date().toLocaleString();
+             document.getElementById('receipt-date').textContent = formatDDMMYYYYTime(new Date());
              document.getElementById('receipt-salesman').textContent = appState.salesman;
              document.getElementById('receipt-customer').textContent = customer.Customer;
              document.getElementById('receipt-amount').textContent = formatCurrency(amount);
@@ -2027,7 +2120,7 @@
             document.getElementById('receipt-amount-label').textContent = 'Amount Received';
             document.getElementById('receipt-method-container').style.display = 'flex';
             document.getElementById('receipt-method').textContent = p.method;
-            document.getElementById('receipt-date').textContent = new Date(p.date).toLocaleString(); 
+            document.getElementById('receipt-date').textContent = formatDDMMYYYYTime(p.date); 
             document.getElementById('receipt-salesman').textContent = appState.salesman; 
             document.getElementById('receipt-customer').textContent = p.customer.Customer; 
             document.getElementById('receipt-amount').textContent = formatPreciseCurrency(p.amount); 
@@ -2045,9 +2138,8 @@
 
         window.onafterprint = () => { document.body.classList.remove('printing', 'printing-receipt', 'printing-packing-slip', 'printing-summary'); };
         
-        const printSlip = (orderId, orderType) => {
-            const source = orderType === 'orders' ? appState.orders : appState.confirmedOrders;
-            const orderToPrint = Object.values(source).flat().find(o => o.id === orderId);
+        const printSlip = (orderId) => {
+            const orderToPrint = Object.values(appState.orders).flat().find(o => o.id === orderId);
             
             if (!orderToPrint) { alert('Could not find order to print.'); return; }
             const ITEMS_PER_PAGE = 27; const pages = []; for (let i = 0; i < orderToPrint.items.length; i += ITEMS_PER_PAGE) pages.push(orderToPrint.items.slice(i, i + ITEMS_PER_PAGE));
@@ -2062,7 +2154,7 @@
                     return `<tr><td>${serialNumber}</td><td class="col-mrp">${formatPreciseCurrency(item.item.Mrp)}</td><td class="col-item-name">${item.item.ItemName}</td><td class="col-qty">${item.quantity} ${item.item.Unit || ''}</td><td class="col-price">${formatPreciseCurrency(item.sellingPrice)}${priceType}</td></tr>`; 
                 }).join('');
                 const footerHtml = pageIndex === pages.length - 1 ? `<div class="slip-footer"><div class="sorted-by">Sorted By:<div class="signature-line"></div></div></div>` : '';
-                slipHtml += `<div class="${pageClass}"><div class="slip-header"><h2>MF BIGMARKET</h2><p>Packing Slip</p></div><div class="slip-details"><div><strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}</div><div style="text-align: right;"><strong>Date:</strong> ${new Date(orderToPrint.date).toLocaleDateString()}<br><strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString()}</div></div><div class="slip-page-number">Page ${pageIndex + 1} of ${pages.length}</div><table class="slip-table"><thead><tr><th>S.No.</th><th class="col-mrp">MRP</th><th class="col-item-name">ITEM</th><th class="col-qty">QTY / UNIT</th><th class="col-price">PRICE</th></tr></thead><tbody>${tableBodyHtml}</tbody></table>${footerHtml}</div>`;
+                slipHtml += `<div class="${pageClass}"><div class="slip-header"><h2>MF BIGMARKET</h2><p>Packing Slip</p></div><div class="slip-details"><div><strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}</div><div style="text-align: right;"><strong>Date:</strong> ${formatDDMMYYYY(orderToPrint.date)}<br><strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString('en-GB')}</div></div><div class="slip-page-number">Page ${pageIndex + 1} of ${pages.length}</div><table class="slip-table"><thead><tr><th>S.No.</th><th class="col-mrp">MRP</th><th class="col-item-name">ITEM</th><th class="col-qty">QTY / UNIT</th><th class="col-price">PRICE</th></tr></thead><tbody>${tableBodyHtml}</tbody></table>${footerHtml}</div>`;
             });
             document.getElementById('packing-slip-content').innerHTML = slipHtml; document.body.classList.add('printing', 'printing-packing-slip'); setTimeout(() => window.print(), 100);
         };
@@ -2091,64 +2183,15 @@
                     alert('Error: Could not find the payment to delete.');
                     return;
                 }
-                // --- MODIFICATION 2 START ---
-                // Updated confirmation message to reflect the new process.
                 if (confirm(`Are you sure you want to delete this payment of ${formatCurrency(paymentToDelete.amount)}? The customer's balance will be updated on the next ERP sync.`)) {
                     card.classList.add('removing');
                     try {
-                        // The logic to update the customer balance has been removed. We only delete the payment.
                         await deleteDoc(doc(db, "payments", id));
                         showToast('Payment deleted. Balance will update after next sync.');
                         setTimeout(() => card.remove(), 400);
                     } catch (error) {
                         console.error('Error deleting payment:', error);
                         showProfessionalModal('Error', 'Failed to delete payment. Please try again.');
-                        card.classList.remove('removing');
-                    }
-                }
-                // --- MODIFICATION 2 END ---
-            } else if (e.target.closest('.delete-history-btn[data-action="delete-confirmed"]')) {
-                if (confirm('Are you sure you want to PERMANENTLY DELETE this confirmed order? This will not restore stock levels.')) {
-                    card.classList.add('removing');
-                    try {
-                        await deleteDoc(doc(db, 'confirmed_orders', id));
-                        setTimeout(() => card.remove(), 400);
-                    } catch (error) {
-                        console.error(`Error deleting from confirmed_orders:`, error);
-                        showProfessionalModal('Error', 'Failed to delete the confirmed order.');
-                        card.classList.remove('removing');
-                    }
-                }
-            } else if (e.target.closest('[data-action="undo-confirmed"]')) {
-                if (confirm('Are you sure you want to undo this order? It will be moved back to Packing Slips and stock will be restored.')) {
-                    const confirmedOrder = Object.values(appState.confirmedOrders).flat().find(o => o.id === id);
-                    if (!confirmedOrder) {
-                        alert('Error: Could not find the order to undo.');
-                        return;
-                    }
-                    card.classList.add('removing');
-                    try {
-                        const batch = writeBatch(db);
-                        for (const orderItem of confirmedOrder.items) {
-                            const itemRef = doc(db, "items", String(orderItem.item.Code));
-                            const currentItem = appState.items.find(i => i.Code == orderItem.item.Code);
-                            if (currentItem) {
-                                const newStock = Number(currentItem.Clstock) + Number(orderItem.quantity);
-                                batch.update(itemRef, { Clstock: newStock });
-                            }
-                        }
-                        const newPackingSlipData = { ...confirmedOrder };
-                        delete newPackingSlipData.id;
-                        delete newPackingSlipData.confirmedDate;
-                        batch.set(doc(collection(db, "orders")), newPackingSlipData);
-                        batch.delete(doc(db, "confirmed_orders", id));
-                        await batch.commit();
-
-                        showProfessionalModal('Success', 'Order has been moved back to packing slips and stock restored.');
-                        setTimeout(() => card.remove(), 400);
-                    } catch (error) {
-                        console.error("Error undoing order:", error);
-                        showProfessionalModal('Error', 'Failed to undo the order.');
                         card.classList.remove('removing');
                     }
                 }
@@ -2230,16 +2273,6 @@
         setupBetweenDateFilter('payment-history-date-filter', renderHistoryTabs);
         setupBetweenDateFilter('location-report-date-filter', renderLocationReportPage);
 
-        document.querySelector('#page-order-history .search-toggle-buttons').addEventListener('click', e => {
-            if (e.target.matches('.toggle-btn')) {
-                const historyType = e.target.dataset.historyType;
-                appState.currentHistoryView = historyType;
-                document.querySelectorAll('#page-order-history .toggle-btn').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                renderHistoryTabs();
-            }
-        });
-
         const printPaymentSummary = () => {
             const { start, end } = getReportDateRange();
             let salesmanPayments = appState.payments[appState.salesman] || [];
@@ -2252,13 +2285,13 @@
             salesmanPayments.sort((a, b) => new Date(a.date) - new Date(b.date));
 
             document.getElementById('print-summary-salesman').textContent = `Salesman: ${appState.salesman}`;
-            const dateRangeText = start ? `Date Range: ${start.toLocaleDateString()} - ${end.toLocaleDateString()}` : 'Date Range: All Time';
+            const dateRangeText = start && end ? `Date Range: ${formatDDMMYYYY(start)} - ${formatDDMMYYYY(end)}` : 'Date Range: All Time';
             document.getElementById('print-summary-daterange').textContent = dateRangeText;
             document.getElementById('print-summary-cash').textContent = formatPreciseCurrency(totalCash);
             document.getElementById('print-summary-upi').textContent = formatPreciseCurrency(totalUPI);
             document.getElementById('print-summary-grandtotal').textContent = formatPreciseCurrency(grandTotal);
 
-            document.getElementById('print-summary-table-body').innerHTML = salesmanPayments.map(p => `<tr><td>${new Date(p.date).toLocaleString()}</td><td>${p.customer.Customer}</td><td>${p.method}</td><td class="numeric">${formatPreciseCurrency(p.amount)}</td></tr>`).join('');
+            document.getElementById('print-summary-table-body').innerHTML = salesmanPayments.map(p => `<tr><td>${formatDDMMYYYYTime(p.date)}</td><td>${p.customer.Customer}</td><td>${p.method}</td><td class="numeric">${formatPreciseCurrency(p.amount)}</td></tr>`).join('');
             document.body.classList.add('printing', 'printing-summary'); setTimeout(() => window.print(), 100);
         };
 
@@ -2393,11 +2426,7 @@
             container.innerHTML = filteredCustomers.map(c => `
                 <div class="list-item" data-customer-id="${c.id}" data-customer-name="${c.Customer}">
                     <div class="info">${c.Customer}</div>
-                    
-                    <!-- MODIFICATION 3 START: Added 'readonly' to the input to prevent editing -->
                     <input type="number" class="outstanding-balance" value="${c.Outstanding || 0}" readonly />
-                    <!-- MODIFICATION 3 END -->
-
                     <button class="reminder-btn" data-customer='${JSON.stringify(c)}'>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                     </button>
@@ -2425,55 +2454,6 @@
         
         const outstandingListContainer = document.getElementById('outstanding-list-container');
         
-        // --- MODIFICATION 4 START ---
-        // The event listeners that allowed for manual editing of the balance
-        // have been completely removed to enforce the read-only behavior.
-        /*
-        outstandingListContainer.addEventListener('focusin', e => {
-            if (e.target.classList.contains('outstanding-balance')) {
-                e.target.dataset.originalValue = e.target.value;
-            }
-        });
-
-        outstandingListContainer.addEventListener('change', async e => {
-            if (e.target.classList.contains('outstanding-balance')) {
-                const input = e.target;
-                const listItem = input.closest('.list-item');
-                const customerId = listItem.dataset.customerId;
-                const customerName = listItem.dataset.customerName;
-                const originalBalance = parseFloat(input.dataset.originalValue);
-                const newBalance = parseFloat(input.value);
-
-                if (isNaN(newBalance) || !customerId) {
-                    input.value = originalBalance;
-                    return;
-                }
-
-                if (newBalance === originalBalance) {
-                    return; 
-                }
-
-                const confirmed = confirm(`Are you sure you want to change the balance for ${customerName} to ${formatCurrency(newBalance)}?`);
-
-                if (confirmed) {
-                    try {
-                        const customerRef = doc(db, "customers", customerId);
-                        await updateDoc(customerRef, { Outstanding: newBalance });
-                        showToast('Balance updated!');
-                        input.dataset.originalValue = newBalance;
-                    } catch (error) {
-                        console.error("Error updating balance:", error);
-                        showToast('Update failed!');
-                        input.value = originalBalance;
-                    }
-                } else {
-                    input.value = originalBalance;
-                }
-            }
-        });
-        */
-        // --- MODIFICATION 4 END ---
-
         outstandingListContainer.addEventListener('click', async (e) => {
             const reminderBtn = e.target.closest('.reminder-btn');
             if (reminderBtn) {
@@ -2483,6 +2463,242 @@
                 reminderBtn.disabled = false;
             }
         });
+        
+        
+        // --- PACKER (SUNNY) ---
+        const renderPackerHome = () => {
+            const container = document.getElementById('packer-order-list');
+            const { start, end } = getReportDateRange();
+            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'pending');
+            
+            if (start && end) {
+                allOrders = allOrders.filter(o => {
+                    const orderDate = new Date(o.date);
+                    return orderDate >= start && orderDate <= end;
+                });
+            }
+             allOrders.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            container.innerHTML = allOrders.map(o => `
+                <div class="list-item" data-order-id="${o.id}">
+                    <div class="info">${o.customer.Customer} (${o.salesman})</div>
+                    <button class="list-item-action pack-order-btn" data-order-id="${o.id}">Pack</button>
+                </div>
+            `).join('');
+        };
+        
+        document.getElementById('packer-order-list').addEventListener('click', e => {
+            const packBtn = e.target.closest('.pack-order-btn');
+            if(packBtn) {
+                const orderId = packBtn.dataset.orderId;
+                const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
+                appState.packingOrder = JSON.parse(JSON.stringify(order)); // Deep copy
+                showPage('page-packing-interface');
+                renderPackingInterface();
+            }
+        });
+        
+        const renderPackingInterface = () => {
+            const order = appState.packingOrder;
+            document.getElementById('packing-order-customer').textContent = `Packing for ${order.customer.Customer}`;
+            const itemList = document.getElementById('packing-item-list');
+            itemList.innerHTML = order.items.map((item, index) => `
+                <div class="list-item">
+                    <input type="checkbox" data-index="${index}" ${item.wasUnchecked ? '' : 'checked'}>
+                    <div class="info">${item.item.ItemName} - ${item.quantity} ${item.item.Unit || ''}</div>
+                </div>
+            `).join('');
+        };
+        
+        document.getElementById('packing-item-search').addEventListener('input', e => {
+            renderItemSearchResults(e.target.value, 'packing-item-search-results');
+        });
+
+        document.getElementById('packing-item-search-results').addEventListener('click', e => {
+            const resultItem = e.target.closest('.search-result-item');
+            if (resultItem) {
+                const item = appState.items.find(i => i.Code == resultItem.dataset.itemCode);
+                const qty = prompt(`Enter quantity for ${item.ItemName}:`);
+                const qtyNum = parseFloat(qty);
+                if(qty && !isNaN(qtyNum) && qtyNum > 0) {
+                    appState.packingOrder.items.push({ item, quantity: qtyNum, sellingPrice: item.Price2, isNew: true });
+                    renderPackingInterface();
+                }
+                document.getElementById('packing-item-search').value = '';
+                document.getElementById('packing-item-search-results').innerHTML = '';
+            }
+        });
+       
+        document.getElementById('confirm-packing-btn').addEventListener('click', async () => {
+            const packingOrder = appState.packingOrder;
+            const packedOrderId = packingOrder.id;
+
+            const checkboxes = document.querySelectorAll('#packing-item-list input[type="checkbox"]');
+            
+            packingOrder.items.forEach((item, index) => {
+                const checkbox = document.querySelector(`#packing-item-list input[data-index="${index}"]`);
+                if (checkbox && !checkbox.checked) {
+                    item.wasUnchecked = true;
+                } else {
+                    delete item.wasUnchecked;
+                }
+            });
+            
+            const updateData = {
+                status: 'packed',
+                packedItems: packingOrder.items
+            };
+
+            try {
+                await updateDoc(doc(db, "orders", packedOrderId), updateData);
+                showPage('page-packer-home');
+
+                const itemToRemove = document.querySelector(`#packer-order-list .list-item[data-order-id="${packedOrderId}"]`);
+                if(itemToRemove) {
+                    itemToRemove.classList.add('removing');
+                    setTimeout(() => itemToRemove.remove(), 500);
+                }
+                
+                showProfessionalModal('Success', 'Order has been marked as packed.');
+
+            } catch (error) {
+                console.error("Error confirming packing:", error);
+                alert("Failed to confirm packing.");
+            } finally {
+                 appState.packingOrder = null;
+            }
+        });
+        
+        const renderPackerHistory = () => {
+             const container = document.getElementById('packer-history-list');
+            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'packed');
+             allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+             
+            if (allOrders.length === 0) {
+                container.innerHTML = `<p class="card" style="text-align:center;">No packed orders found.</p>`;
+                return;
+            }
+
+            container.innerHTML = allOrders.map(o => `
+                <div class="history-card" data-id="${o.id}">
+                    <div class="history-card-header">
+                        <div class="info">
+                           <p><strong>Customer:</strong> ${o.customer.Customer}</p>
+                           <p><strong>Salesman:</strong> ${o.salesman}</p>
+                           <p class="date-display">${formatDDMMYYYYTime(o.date)}</p>
+                        </div>
+                        <div class="actions">
+                            <button class="button button-outline undo-pack-btn" style="padding: 5px 10px; font-size: 0.8rem;">Undo</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        document.getElementById('packer-history-list').addEventListener('click', async e => {
+            const undoBtn = e.target.closest('.undo-pack-btn');
+            if (undoBtn) {
+                const card = undoBtn.closest('.history-card');
+                const orderId = card.dataset.id;
+                if (confirm('Are you sure you want to undo this packing? This will move the order back to the pending list.')) {
+                    try {
+                        await updateDoc(doc(db, "orders", orderId), { 
+                            status: 'pending',
+                            packedItems: deleteField() 
+                        });
+                        showToast('Packing undone. Order is now pending.');
+                        card.classList.add('removing');
+                        setTimeout(() => card.remove(), 400);
+                    } catch (error) {
+                        console.error("Error undoing pack status:", error);
+                        alert('Failed to undo packing.');
+                    }
+                }
+            }
+        });
+        
+        const renderPackedOrders = () => {
+            const container = document.getElementById('packed-orders-list');
+            const salesmanOrders = (appState.orders[appState.salesman] || []).filter(o => o.status === 'packed').sort((a, b) => new Date(b.date) - new Date(a.date));
+            const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
+
+            if (salesmanOrders.length === 0) {
+                container.innerHTML = `<p class="card" style="text-align:center;">No packed orders to display.</p>`;
+                return;
+            }
+
+            container.innerHTML = salesmanOrders.map(order => {
+                let finalTotal = 0;
+                let finalCost = 0;
+                const itemsToProcess = order.packedItems || order.items;
+                
+                const itemDetailsHtml = (itemsToProcess).map(i => {
+                    let style = '';
+                    if (i.wasUnchecked) {
+                        style = 'background-color: #ffebee; color: #c62828;'; // Light red tone
+                    } else if (i.isNew) {
+                         style = 'background-color: #e8f5e9; color: #2e7d32;'; // Light green tone
+                    }
+
+                    if (!i.wasUnchecked) {
+                        const lineTotal = (i.quantity || 0) * (i.sellingPrice || 0);
+                        const lineCost = (i.quantity || 0) * (costMap.get(String(i.item.Code)) || 0);
+                        finalTotal += lineTotal;
+                        finalCost += lineCost;
+                    }
+                    
+                    return `<tr style="${style}">
+                                <td class="col-item-name">${i.item.ItemName}</td>
+                                <td class="numeric">${i.wasUnchecked ? 'REMOVED' : `${i.quantity} ${i.item.Unit || ""}`}</td>
+                                <td class="numeric">${i.wasUnchecked ? '-' : formatPreciseCurrency(i.sellingPrice)}</td>
+                                <td class="numeric"><strong>${i.wasUnchecked ? '-' : formatPreciseCurrency((i.quantity || 0) * (i.sellingPrice || 0))}</strong></td>
+                            </tr>`;
+                }).join('');
+
+                const totalProfit = finalTotal - finalCost;
+                const margin = finalTotal > 0 ? (totalProfit / finalTotal) * 100 : 0;
+                const profitClass = totalProfit >= 0 ? 'profit' : 'loss';
+                const profitHtml = `<p><strong>Profit:</strong> <span class="${profitClass}">${formatPreciseCurrency(totalProfit)} (${margin.toFixed(1)}%)</span></p>`;
+
+                return `
+                    <div class="history-card">
+                        <div class="history-card-header">
+                            <div class="info">
+                               <p><strong>Customer:</strong> ${order.customer.Customer}</p>
+                               <p><strong>Final Total:</strong> ${formatPreciseCurrency(finalTotal)}</p>
+                               ${profitHtml}
+                               <p class="date-display">${formatDDMMYYYYTime(order.date)}</p>
+                            </div>
+                        </div>
+                        <div class="history-card-body" id="packed-details-${order.id}">
+                            <div class="table-responsive-wrapper">
+                                <table class="history-item-table">
+                                    <thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead>
+                                    <tbody>${itemDetailsHtml}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <a class="toggle-details" data-target="packed-details-${order.id}">View Details</a>
+                    </div>`;
+            }).join('');
+            
+            container.querySelectorAll('.toggle-details').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.preventDefault();
+                    const target = document.getElementById(e.currentTarget.dataset.target);
+                    if (target) target.classList.toggle('visible');
+                });
+            });
+        };
+        
+        
+        document.getElementById('packer-logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('packer-history-btn').addEventListener('click', () => { showPage('page-packer-history'); renderPackerHistory(); });
+        document.getElementById('back-to-packer-home-btn').addEventListener('click', () => showPage('page-packer-home'));
+        document.getElementById('back-to-packer-home-from-history-btn').addEventListener('click', () => showPage('page-packer-home'));
+        document.getElementById('packed-orders-btn').addEventListener('click', () => { showPage('page-packed-orders'); renderPackedOrders(); });
+        document.getElementById('back-to-main-from-packed-orders-btn').addEventListener('click', () => showPage('page-main-view'));
+        setupBetweenDateFilter('packer-date-filter', renderPackerHome);
 
 
         const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v3'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
