@@ -239,9 +239,6 @@
         .modal-footer { display: flex; gap: 10px; margin-top: 20px; }
         .modal-footer .button { margin-top: 0; }
         
-        #page-salesman-selection .content { display: flex; flex-direction: column; justify-content: center; gap: 20px; }
-        #page-salesman-selection h1 { text-align: center; color: var(--primary-color); margin-bottom: 20px; font-size: 2rem; }
-        
         #item-tiles-container { display: grid; grid-template-columns: 1fr; gap: 15px; padding-top: 15px; }
         @media (min-width: 680px) { #item-tiles-container { grid-template-columns: 1fr 1fr; } }
         .item-tile { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
@@ -507,6 +504,302 @@
             bottom: 30px;
         }
 
+        /* NEW LOGIN SCREEN STYLES */
+        :root {
+            --light-bg: #f0f8ff; 
+            --text-color-light: #576c7f;
+            --border-radius-lg: 24px;
+            --border-radius-md: 16px;
+            
+            /* Accent Colors for Roles */
+            --sales-accent: #ffb703;
+            --sales-accent-light: #fffbeb;
+            --admin-accent: #8e44ad;
+            --admin-accent-light: #f3e5f5;
+            --packing-accent: #27ae60;
+            --packing-accent-light: #e8f5e9;
+            --loading-accent: #2980b9;
+            --loading-accent-light: #eaf2f8;
+            --delivery-accent: #e67e22;
+            --delivery-accent-light: #fdf3e6;
+            --billing-accent: #7f8c8d;
+            --billing-accent-light: #f2f4f4;
+            --accounts-accent: #2c3e50;
+            --accounts-accent-light: #e5e7e9;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-20px) translateX(10px); }
+            100% { transform: translateY(0px) translateX(0px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #page-login {
+            background: linear-gradient(135deg, #e0f7fa 0%, #f0f8ff 100%);
+        }
+
+        .login-page-container {
+            position: relative;
+            display: grid;
+            grid-template-rows: 1fr auto 1fr; 
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+        
+        .login-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            animation: fadeIn 0.8s ease-out;
+            grid-row: 2; 
+        }
+        
+        .login-header {
+            text-align: center;
+            grid-row: 1; 
+            align-self: end; 
+            animation: fadeIn 0.8s ease-out;
+            margin-bottom: 50px; 
+        }
+        .login-header h1 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            font-weight: 700;
+            color: var(--primary-color);
+            letter-spacing: -0.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            margin: 0;
+        }
+        .login-header p {
+            margin-top: 12px;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            color: var(--text-color-light);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+       
+        .select-role-button {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(145deg, #ffffff, #e6f7fa);
+            border: 1px solid rgba(0, 95, 115, 0.1);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--card-shadow);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            gap: 12px;
+        }
+
+        .select-role-button:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0, 95, 115, 0.2);
+        }
+
+        .select-role-button:active {
+            transform: translateY(-2px) scale(0.97);
+        }
+
+        .select-role-button svg {
+            width: 48px;
+            height: 48px;
+            stroke: var(--primary-color);
+            stroke-width: 1.5;
+        }
+
+        .select-role-button span {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .role-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 31, 38, 0.6);
+            display: none; /* Changed from opacity */
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .role-modal.active {
+            display: flex; /* Changed from opacity */
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .role-modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 380px;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .role-modal.active .role-modal-content {
+            transform: scale(1);
+        }
+
+        .role-modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .role-tile {
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            text-decoration: none;
+            color: var(--text-color);
+            gap: 5px;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        
+        .role-tile.dummy {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .role-tile:not(.dummy):active {
+            transform: scale(0.95);
+        }
+        
+        .role-tile svg {
+            width: 32px;
+            height: 32px;
+            stroke-width: 1.5;
+            color: var(--primary-color);
+            transition: all 0.2s ease;
+        }
+        
+        .role-tile:hover:not(.dummy) svg {
+            transform: scale(1.1);
+        }
+        
+        .role-tile span {
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .role-tile[data-role="UNNI"]:hover,
+        .role-tile[data-role="RIYAS"]:hover {
+            border-color: var(--sales-accent);
+            background-color: var(--sales-accent-light);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 10px rgba(255, 183, 3, 0.2);
+        }
+        .role-tile[data-role="UNNI"]:hover svg,
+        .role-tile[data-role="RIYAS"]:hover svg {
+            color: #c28802;
+        }
+        
+        .role-tile[data-role="SUNNY"]:hover {
+            border-color: var(--packing-accent);
+            background-color: var(--packing-accent-light);
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2);
+             transform: translateY(-4px);
+        }
+        .role-tile[data-role="SUNNY"]:hover svg {
+            color: #1e8449;
+        }
+
+        .role-tile[data-role="ADMIN"]:hover {
+            border-color: var(--admin-accent);
+            background-color: var(--admin-accent-light);
+            box-shadow: 0 4px 10px rgba(142, 68, 173, 0.2);
+             transform: translateY(-4px);
+        }
+        .role-tile[data-role="ADMIN"]:hover svg {
+            color: #6c3483;
+        }
+
+        .role-tile[data-role="SHAJU"]:hover {
+            border-color: var(--loading-accent);
+            background-color: var(--loading-accent-light);
+        }
+        .role-tile[data-role="SHAJU"]:hover svg { color: #21618c; }
+
+        .role-tile[data-role="BENNY"]:hover {
+            border-color: var(--delivery-accent);
+            background-color: var(--delivery-accent-light);
+        }
+        .role-tile[data-role="BENNY"]:hover svg { color: #b9671b; }
+
+        .role-tile[data-role="ANISHAD"]:hover {
+            border-color: var(--billing-accent);
+            background-color: var(--billing-accent-light);
+        }
+        .role-tile[data-role="ANISHAD"]:hover svg { color: #626567; }
+
+        .role-tile[data-role="NANDU"]:hover {
+            border-color: var(--accounts-accent);
+            background-color: var(--accounts-accent-light);
+        }
+        .role-tile[data-role="NANDU"]:hover svg { color: #1c2833; }
+        
+        .workflow-container {
+            grid-row: 3;
+            align-self: center;
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.8s ease-out 0.2s;
+            animation-fill-mode: backwards;
+        }
+        
+        .workflow-container svg {
+            width: 32px;
+            height: 32px;
+            stroke-width: 1.5;
+            opacity: 0.7;
+        }
+        #icon-sales { color: var(--sales-accent); }
+        #icon-billing { color: var(--billing-accent); }
+        #icon-packing { color: var(--packing-accent); }
+        #icon-delivery { color: var(--delivery-accent); }
+        #icon-accounts { color: var(--accounts-accent); }
 
         @media (max-width: 767px) {
             #page-admin-dashboard .content { padding: 10px; }
@@ -535,13 +828,67 @@
 </head>
 <body>
 
-    <div id="page-salesman-selection" class="page active">
-        <div class="content">
-            <h1>Select Role</h1>
-            <button class="button" data-salesman="UNNI">UNNI</button>
-            <button class="button" data-salesman="RIYAS">RIYAS</button>
-            <button class="button" data-salesman="SUNNY" style="margin-top: 20px;">SUNNY</button>
-            <button class="button button-accent" data-salesman="ADMIN" style="margin-top: 40px;">ADMIN</button>
+    <div id="page-login" class="page active">
+        <div class="login-page-container">
+            <header class="login-header">
+                <h1>MF SALES & OPERATION</h1>
+                <p>Wholesale. Simplified.</p>
+            </header>
+            <div class="login-box">
+                <button class="select-role-button" id="open-role-modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+                    <span>Select Role</span>
+                </button>
+            </div>
+            <div class="workflow-container">
+                <svg id="icon-sales" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                <svg id="icon-billing" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                <svg id="icon-packing" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                <svg id="icon-delivery" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                <svg id="icon-accounts" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+        </div>
+    
+        <div class="role-modal" id="role-modal">
+            <div class="role-modal-content">
+                <h2>Select Your Role</h2>
+                <div class="role-grid">
+                    <!-- Row 1: Active Roles -->
+                    <button class="role-tile" data-role="UNNI">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                        <span>UNNI</span>
+                    </button>
+                    <button class="role-tile" data-role="RIYAS">
+                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                        <span>RIYAS</span>
+                    </button>
+                    <button class="role-tile" data-role="SUNNY">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        <span>SUNNY</span>
+                    </button>
+                    <button class="role-tile" data-role="ADMIN">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        <span>ADMIN</span>
+                    </button>
+                    <!-- Row 2 (Dummy Roles) -->
+                    <div class="role-tile dummy" data-role="SHAJU">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                        <span>SHAJU</span>
+                    </div>
+                    <div class="role-tile dummy" data-role="BENNY">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                        <span>BENNY</span>
+                    </div>
+                     <div class="role-tile dummy" data-role="ANISHAD">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                        <span>ANISHAD</span>
+                    </div>
+                     <div class="role-tile dummy" data-role="NANDU">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        <span>NANDU</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1151,9 +1498,11 @@
         const showPage = (pageId) => { 
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
             const page = document.getElementById(pageId);
-            page.classList.add('active'); 
-            if (page.querySelector('.between-date-filter')) {
-                updateFilterUI(page.querySelector('.between-date-filter').id);
+            if(page) {
+                page.classList.add('active'); 
+                if (page.querySelector('.between-date-filter')) {
+                    updateFilterUI(page.querySelector('.between-date-filter').id);
+                }
             }
         };
         const formatCurrency = (v) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
@@ -1818,32 +2167,60 @@ const container = document.getElementById('payment-customer-list-container');
             showPage('page-customer-history'); 
         };
         
-        document.getElementById('page-salesman-selection').addEventListener('click', e => {
-            if (e.target.matches('.button')) {
-                const salesman = e.target.dataset.salesman;
+        // --- NEW LOGIN SCREEN LOGIC ---
+        const openModalBtn = document.getElementById('open-role-modal');
+        const roleModal = document.getElementById('role-modal');
+
+        openModalBtn.addEventListener('click', () => {
+            roleModal.classList.add('active');
+        });
+
+        roleModal.addEventListener('click', (e) => {
+            if (e.target === roleModal) {
+                roleModal.classList.remove('active');
+            }
+        });
+
+        roleModal.querySelector('.role-grid').addEventListener('click', (e) => {
+            const roleTile = e.target.closest('.role-tile');
+            if (roleTile && !roleTile.classList.contains('dummy')) {
+                const salesman = roleTile.dataset.role;
+                roleModal.classList.remove('active');
+                
                 appState.salesman = salesman;
                 localStorage.setItem('lastSalesman', salesman);
                 const { startDate, endDate } = getDefaultDateRange();
                 appState.reporting.startDate = startDate; appState.reporting.endDate = endDate;
+                
                 if (salesman === 'ADMIN') { 
-                    document.getElementById('footer').style.display = 'none'; document.getElementById('settings-icon-btn').style.display = 'flex';
-                    showPage('page-admin-dashboard'); renderAdminDashboard();
+                    document.getElementById('footer').style.display = 'none'; 
+                    document.getElementById('settings-icon-btn').style.display = 'flex';
+                    showPage('page-admin-dashboard'); 
+                    renderAdminDashboard();
                 } else if (salesman === 'SUNNY') {
                     document.getElementById('footer').style.display = 'none';
-                    showPage('page-packer-home'); renderPackerHome();
+                    showPage('page-packer-home'); 
+                    renderPackerHome();
                 } else {
-                    document.getElementById('footer').style.display = 'flex'; document.getElementById('settings-icon-btn').style.display = 'none';
+                    document.getElementById('footer').style.display = 'flex'; 
+                    document.getElementById('settings-icon-btn').style.display = 'none';
                     document.getElementById('packed-orders-btn').style.display = 'flex';
                     appState.currentView = 'customers';
-                    document.getElementById('orders-tab-btn').classList.add('active'); document.getElementById('payments-tab-btn').classList.remove('active');
-                    showPage('page-main-view'); renderCurrentView();
+                    document.getElementById('orders-tab-btn').classList.add('active'); 
+                    document.getElementById('payments-tab-btn').classList.remove('active');
+                    showPage('page-main-view'); 
+                    renderCurrentView();
                 }
             }
         });
 
         const handleLogout = () => { 
-            appState.salesman = null; localStorage.removeItem('lastSalesman'); appState.customerCarts = {}; showPage('page-salesman-selection'); 
+            appState.salesman = null; 
+            localStorage.removeItem('lastSalesman'); 
+            appState.customerCarts = {}; 
+            showPage('page-login'); 
         };
+
         document.getElementById('logout-btn').addEventListener('click', handleLogout);
         document.getElementById('admin-logout-btn').addEventListener('click', handleLogout);
         
@@ -2326,7 +2703,8 @@ const container = document.getElementById('payment-customer-list-container');
         document.getElementById('share-flyer-btn').addEventListener('click', async () => { const flyerBlob = appState.shareableFlyerBlob; if (!flyerBlob) { alert('Flyer image is not available.'); return; } try { const file = new File([flyerBlob], 'MF-BigMarket-Offer.jpg', { type: 'image/jpeg' }); if (navigator.share && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Special Offer for ' + appState.customer.Customer }); } else { alert("Sharing not supported. You can save the image by long-pressing it and share manually."); } } catch (error) { console.error('Share failed:', error); alert("Could not share automatically. Please save the image and send it manually."); } });
         document.getElementById('close-offer-modal-btn').addEventListener('click', () => { offerModal.classList.remove('active'); });
         const parseCSV=(t)=>{try{const e=t.trim().split(/\r\n|\n/);if(e.length<2)return[];const n=e[0].split(",").map(t=>t.trim());return e.slice(1).map(t=>{const e={};return n.forEach((n,o)=>{let r=(t.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)[o]||"").trim();r.startsWith('"')&&r.endsWith('"')&&(r=r.slice(1,-1)),e[n]=r}),e})}catch(t){return console.error("Error parsing CSV:",t),alert("There was an error parsing the CSV file. Please check the file for formatting issues."),null}}; const sanitizeAndStructureItems=t=>{const e=t=>parseFloat(String(t).replace(/,/g,""))||0,n=t=>String(t||"").trim();return t.map(t=>({Department:n(t.Department),Category:n(t.Category),Code:n(t.Code),ItemName:n(t.ItemName),CostRate:e(t.CostRate),Mrp:e(t.Mrp),Price1:e(t.Price1),Price2:e(t.Price2),Price3:e(t.Price3),Clstock:e(t.Clstock),Margin1:e(t.Margin1),Margin2:e(t.Margin2),Margin3:e(t.Margin3),Unit:n(t.Unit)}))}; const uploadCSV=async(t,e)=>{if(!t)return;const n=new FileReader;n.onload=async n=>{let o=parseCSV(n.target.result);if(o){if("items"===e&&(o=sanitizeAndStructureItems(o)),"customers"===e&&(!o[0]||!o[0].CustomerCode))return void alert("CSV Error: 'CustomerCode' column is missing or empty. Please add it as the first column.");if("items"===e&&(!o[0]||!o[0].Code))return void alert("CSV Error: 'Code' column is missing or empty.");try{const n=writeBatch(db);o.forEach(t=>{const o="items"===e?String(t.Code):String(t.CustomerCode);if(o){const r=doc(db,e,o);n.set(r,t)}}),await n.commit(),alert(`${o.length} ${e} records processed successfully.`)}catch(t){alert("Error uploading to database."),console.error(t)}}},n.readAsText(t)}; const uploadSalesmanItemsCSV=t=>{if(!t)return;const e=new FileReader;e.onload=async e=>{const n=parseCSV(e.target.result);if(n&&n.length>0&&n[0].ItemName){const t=n.map(t=>t.ItemName.trim()).filter(Boolean);try{const e=doc(db,"salesman_items","sharedList");await setDoc(e,{itemNames:t}),alert(`${t.length} salesman items uploaded successfully.`)}catch(t){alert("Error uploading salesman items to database."),console.error(t)}}else alert("CSV Error: 'ItemName' column not found or file is empty.")},e.readAsText(t)};
-        document.getElementById('customer-file-upload').addEventListener('change', (e) => { uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
+        document.getElementById('customer-file-upload').addEventListener('change', (e) => { 
+uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
         document.getElementById('item-file-upload').addEventListener('change', (e) => { uploadCSV(e.target.files[0], 'items'); e.target.value = ''; });
         document.getElementById('salesman-item-file-upload').addEventListener('change', (e) => { uploadSalesmanItemsCSV(e.target.files[0]); e.target.value = ''; });
         
