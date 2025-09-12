@@ -2487,7 +2487,7 @@ const container = document.getElementById('payment-customer-list-container');
                 document.getElementById('confirm-payment-btn').style.display = 'block'; 
                 document.getElementById('payment-actions-container').style.display = 'none'; 
                 showPage('page-payment'); 
-            } 
+            }
         });
         
         document.querySelectorAll('[data-action="back-to-main"]').forEach(btn => btn.addEventListener('click', () => showPage('page-main-view')));
@@ -2637,6 +2637,7 @@ const container = document.getElementById('payment-customer-list-container');
         const generateAndShareReceipt = async (receiptType, customer, amount) => {
              const receiptElement = document.querySelector('#payment-receipt-wrapper .receipt-container');
              if (!receiptElement) { alert('Error: Receipt element not found.'); return; }
+             
              document.getElementById('receipt-date').textContent = formatDDMMYYYYTime(new Date());
              document.getElementById('receipt-salesman').textContent = appState.salesman;
              document.getElementById('receipt-customer').textContent = customer.Customer;
@@ -2702,56 +2703,23 @@ const container = document.getElementById('payment-customer-list-container');
         
         const printSlip = (orderId) => {
             const orderToPrint = Object.values(appState.orders).flat().find(o => o.id === orderId);
+            
             if (!orderToPrint) { alert('Could not find order to print.'); return; }
-            
-            const ITEMS_PER_PAGE = 27;
-            const pages = [];
-            for (let i = 0; i < orderToPrint.items.length; i += ITEMS_PER_PAGE) {
-                pages.push(orderToPrint.items.slice(i, i + ITEMS_PER_PAGE));
-            }
-            
+            const ITEMS_PER_PAGE = 27; const pages = []; for (let i = 0; i < orderToPrint.items.length; i += ITEMS_PER_PAGE) pages.push(orderToPrint.items.slice(i, i + ITEMS_PER_PAGE));
             let slipHtml = '';
             pages.forEach((pageItems, pageIndex) => {
                 const pageClass = pageIndex > 0 ? 'slip-page-break' : '';
-                const tableBodyHtml = pageItems.map((item, itemIndex) => {
-                    const serialNumber = (pageIndex * ITEMS_PER_PAGE) + itemIndex + 1;
-                    let priceType = '<span class="price-type">C</span>';
-                    if (item.item.Price2 && item.sellingPrice === item.item.Price2) priceType = '<span class="price-type">P2</span>';
-                    else if (item.item.Price3 && item.sellingPrice === item.item.Price3) priceType = '<span class="price-type">P3</span>';
-        
-                    const highlightCategories = ['CATTLE FEED', 'RICE', 'SUGAR', 'VELLAM', 'SALT,SUGAR&JAGGERY'];
-                    const fullItemData = appState.items.find(i => i.Code === item.item.Code);
-                    const itemCategory = (fullItemData?.Category || '').toUpperCase();
-                    const highlightStyle = highlightCategories.includes(itemCategory) ? 'font-weight: bold; color: #000;' : '';
-        
-                    return `<tr style="${highlightStyle}">
-                                <td>${serialNumber}</td>
-                                <td class="col-mrp">${formatPreciseCurrency(item.item.Mrp)}</td>
-                                <td class="col-item-name">${item.item.ItemName}</td>
-                                <td class="col-qty">${item.quantity} ${item.item.Unit || ''}</td>
-                                <td class="col-price">${formatPreciseCurrency(item.sellingPrice)}${priceType}</td>
-                            </tr>`;
+                const tableBodyHtml = pageItems.map((item, itemIndex) => { 
+                    const serialNumber = (pageIndex * ITEMS_PER_PAGE) + itemIndex + 1; 
+                    let priceType = '<span class="price-type">C</span>'; 
+                    if (item.item.Price2 && item.sellingPrice === item.item.Price2) priceType = '<span class="price-type">P2</span>'; 
+                    else if (item.item.Price3 && item.sellingPrice === item.item.Price3) priceType = '<span class="price-type">P3</span>'; 
+                    return `<tr><td>${serialNumber}</td><td class="col-mrp">${formatPreciseCurrency(item.item.Mrp)}</td><td class="col-item-name">${item.item.ItemName}</td><td class="col-qty">${item.quantity} ${item.item.Unit || ''}</td><td class="col-price">${formatPreciseCurrency(item.sellingPrice)}${priceType}</td></tr>`; 
                 }).join('');
-                
                 const footerHtml = pageIndex === pages.length - 1 ? `<div class="slip-footer"><div class="sorted-by">Sorted By:<div class="signature-line"></div></div></div>` : '';
-                slipHtml += `<div class="${pageClass}">
-                                <div class="slip-header"><h2>MF BIGMARKET</h2><p>Packing Slip</p></div>
-                                <div class="slip-details">
-                                    <div><strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}</div>
-                                    <div style="text-align: right;"><strong>Date:</strong> ${formatDDMMYYYY(orderToPrint.date)}<br><strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString('en-GB')}</div>
-                                </div>
-                                <div class="slip-page-number">Page ${pageIndex + 1} of ${pages.length}</div>
-                                <table class="slip-table">
-                                    <thead><tr><th>S.No.</th><th class="col-mrp">MRP</th><th class="col-item-name">ITEM</th><th class="col-qty">QTY / UNIT</th><th class="col-price">PRICE</th></tr></thead>
-                                    <tbody>${tableBodyHtml}</tbody>
-                                </table>
-                                ${footerHtml}
-                             </div>`;
+                slipHtml += `<div class="${pageClass}"><div class="slip-header"><h2>MF BIGMARKET</h2><p>Packing Slip</p></div><div class="slip-details"><div><strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}</div><div style="text-align: right;"><strong>Date:</strong> ${formatDDMMYYYY(orderToPrint.date)}<br><strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString('en-GB')}</div></div><div class="slip-page-number">Page ${pageIndex + 1} of ${pages.length}</div><table class="slip-table"><thead><tr><th>S.No.</th><th class="col-mrp">MRP</th><th class="col-item-name">ITEM</th><th class="col-qty">QTY / UNIT</th><th class="col-price">PRICE</th></tr></thead><tbody>${tableBodyHtml}</tbody></table>${footerHtml}</div>`;
             });
-            
-            document.getElementById('packing-slip-content').innerHTML = slipHtml;
-            document.body.classList.add('printing', 'printing-packing-slip');
-            setTimeout(() => window.print(), 100);
+            document.getElementById('packing-slip-content').innerHTML = slipHtml; document.body.classList.add('printing', 'printing-packing-slip'); setTimeout(() => window.print(), 100);
         };
 
         const handleHistoryClick = async (e) => {
@@ -3309,4 +3277,3 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
 </script>
 </body>
 </html>
-
