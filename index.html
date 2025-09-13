@@ -394,7 +394,9 @@
 
         /* FIX: Added rule to unify admin dashboard card widths */
         #page-admin-dashboard .between-date-filter,
-        #page-admin-dashboard .dashboard-grid {
+        #page-admin-dashboard .dashboard-grid,
+        #page-admin-operations .between-date-filter,
+        #page-admin-operations .operations-content {
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
@@ -884,9 +886,29 @@
         .loading-slip-table th { font-weight: 600; }
         .loading-slip-table .col-qty { text-align: right; }
 
+        /* NEW: ADMIN OPERATIONS & TIMELINE STYLES */
+        .operations-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .user-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .user-status-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); padding: 15px; }
+        .user-status-card h4 { margin: 0 0 12px 0; color: var(--primary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; cursor: pointer; transition: color 0.2s; }
+        .user-status-card h4:hover { color: var(--secondary-color); }
+        .user-status-card p { font-size: 0.9rem; margin: 0 0 8px; color: #555; }
+        .user-status-card p strong { font-weight: 600; color: #333; }
+        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 50px; font-size: 0.8rem; font-weight: 600; color: #fff; }
+        .status-badge.idle { background-color: #7f8c8d; }
+        .status-badge.active { background-color: var(--success-color); }
+        
+        .timeline-item { position: relative; padding: 10px 0 10px 25px; border-left: 2px solid var(--border-color); }
+        .timeline-item::before { content: ''; position: absolute; left: -7px; top: 15px; width: 12px; height: 12px; border-radius: 50%; background-color: #fff; border: 2px solid var(--secondary-color); }
+        .timeline-item p { margin: 0; }
+        .timeline-item .time { font-size: 0.8rem; color: #888; margin-bottom: 4px; }
+        .timeline-item .event { font-weight: 500; }
+        .timeline-item:last-child { border-left: 2px solid transparent; }
+        #user-timeline-content .report-header-card { margin-top: 15px; }
+
 
         @media (max-width: 767px) {
-            #page-admin-dashboard .content { padding: 10px; }
+            #page-admin-dashboard .content, #page-admin-operations .content { padding: 10px; }
             .dashboard-grid { grid-template-columns: 1fr; }
             .summary-totals-card { grid-template-columns: 1fr; }
             #page-outstanding-balances .filter-bar { flex-direction: column; align-items: stretch; }
@@ -1326,7 +1348,7 @@
             <button class="icon-button" id="admin-logout-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
             </button>
-            <h1>Admin Dashboard</h1>
+            <h1 id="admin-header">Admin Dashboard</h1>
             <div class="header-actions">
                  <button class="icon-button" id="admin-settings-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -1334,20 +1356,32 @@
             </div>
         </div>
         <div class="content">
-            <div id="admin-date-filter" class="between-date-filter">
-                <input type="date" class="date-input start-date-input">
-                <button class="date-btn start-date-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    <span class="date-label">Start Date</span>
-                </button>
-                <input type="date" class="date-input end-date-input">
-                <button class="date-btn end-date-btn">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    <span class="date-label">End Date</span>
-                </button>
-                <button class="filter-action-btn clear-btn">Clear</button>
+            <div id="admin-main-view">
+                <div id="admin-date-filter" class="between-date-filter">
+                    <input type="date" class="date-input start-date-input">
+                    <button class="date-btn start-date-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <span class="date-label">Start Date</span>
+                    </button>
+                    <input type="date" class="date-input end-date-input">
+                    <button class="date-btn end-date-btn">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <span class="date-label">End Date</span>
+                    </button>
+                    <button class="filter-action-btn clear-btn">Clear</button>
+                </div>
+                <div id="admin-dashboard-content"></div>
             </div>
-            <div id="admin-dashboard-content"></div>
+        </div>
+        <div id="admin-footer" class="footer">
+            <button class="footer-button active" id="admin-dashboard-tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Dashboard</span>
+            </button>
+            <button class="footer-button" id="admin-operations-tab">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                <span>Operations</span>
+            </button>
         </div>
     </div>
 
@@ -1631,6 +1665,46 @@
         <div class="content" id="accountant-customer-ledger-content"></div>
     </div>
 
+    <!-- NEW: ADMIN OPERATIONS PAGE -->
+    <div id="page-admin-operations" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-admin-from-operations-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Operations Report</h1>
+            <div class="header-actions" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+            <div id="operations-date-filter" class="between-date-filter">
+                 <input type="date" class="date-input start-date-input">
+                <button class="date-btn start-date-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">Start Date</span>
+                </button>
+                <input type="date" class="date-input end-date-input">
+                <button class="date-btn end-date-btn">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">End Date</span>
+                </button>
+                <button class="filter-action-btn clear-btn">Clear</button>
+            </div>
+            <div id="admin-operations-content" class="operations-content"></div>
+        </div>
+    </div>
+
+    <!-- NEW: USER TIMELINE PAGE -->
+    <div id="page-user-timeline" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-operations-from-timeline-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1 id="user-timeline-header">User Timeline</h1>
+            <div class="header-actions" style="width: 24px;"></div>
+        </div>
+        <div class="content" id="user-timeline-content"></div>
+    </div>
+
+
     <!-- Hidden elements for generation -->
     <div id="packing-slip-wrapper"><div id="packing-slip-content"></div></div>
     <div id="sale-bill-wrapper"><div id="sale-bill-content"></div></div>
@@ -1678,6 +1752,7 @@
             bulkFlyerBlob: null,
             flyerBuilder: { items: [], editingIndex: null },
             currentOrderLocation: null,
+            currentOrderStartTime: null,
             outstandingUpdateTimeout: null,
             outstandingSort: 'default', // 'default', 'desc', 'asc'
             billingOrder: null,
@@ -1792,7 +1867,7 @@
             });
             onSnapshot(collection(db, "items"), (snapshot) => { 
                 appState.items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-                if (appState.salesman === 'ADMIN' && document.getElementById('page-admin-dashboard').classList.contains('active')) renderAdminDashboard();
+                if (appState.salesman === 'ADMIN' && document.getElementById('admin-main-view').style.display !== 'none') renderAdminDashboard();
             });
             onSnapshot(doc(db, "salesman_items", "sharedList"), (docSnap) => {
                 appState.salesmanItems = docSnap.exists() ? docSnap.data().itemNames || [] : [];
@@ -1806,7 +1881,8 @@
                 });
                 if (document.getElementById('page-order-history').classList.contains('active')) renderHistoryTabs();
                  if (document.getElementById('page-billed-orders').classList.contains('active')) renderBilledOrders();
-                if (appState.salesman === 'ADMIN' && document.getElementById('page-admin-dashboard').classList.contains('active')) renderAdminDashboard();
+                if (appState.salesman === 'ADMIN' && document.getElementById('admin-main-view').style.display !== 'none') renderAdminDashboard();
+                if (appState.salesman === 'ADMIN' && document.getElementById('page-admin-operations').classList.contains('active')) renderAdminOperationsPage();
                 if (appState.salesman === 'SUNNY' && document.getElementById('page-packer-home').classList.contains('active')) renderPackerHome();
                 if (appState.salesman === 'SUNNY' && document.getElementById('page-packer-history').classList.contains('active')) renderPackerHistory();
                 if (appState.salesman === 'ANISHAD' && document.getElementById('page-biller-home').classList.contains('active')) renderBillerHome();
@@ -1820,7 +1896,7 @@
                     if (!appState.payments[payment.salesman]) appState.payments[payment.salesman] = []; 
                     appState.payments[payment.salesman].push(payment); 
                 });
-                if (appState.salesman === 'ADMIN' && document.getElementById('page-admin-dashboard').classList.contains('active')) renderAdminDashboard();
+                if (appState.salesman === 'ADMIN' && document.getElementById('admin-main-view').style.display !== 'none') renderAdminDashboard();
                 if (document.getElementById('page-payment-history').classList.contains('active')) renderHistoryTabs();
                 if (appState.salesman === 'NANDU' && document.getElementById('accountant-collection-view').style.display !== 'none') renderAccountantCollectionView();
             });
@@ -2173,13 +2249,13 @@ const container = document.getElementById('payment-customer-list-container');
             const grid = dashboardContent.querySelector('.dashboard-grid');
             if (grid) grid.remove();
             
-            dashboardContent.insertAdjacentHTML('beforeend', `<div class="dashboard-grid">
+            dashboardContent.innerHTML = `<div class="dashboard-grid">
                 ${kpiCardHtml}
                 <div class="data-list-card"><h3>Sales By Salesman</h3><ul class="data-list-container">${salesListHtml}</ul></div>
                 <div class="data-list-card"><h3>Items Sold</h3><ul class="data-list-container">${itemsSoldHtml}</ul></div>
                 <div class="data-list-card"><h3>Collections</h3><ul class="payment-summary-list"><li><span>Total Cash</span><strong>${formatPreciseCurrency(data.grandTotalCash)}</strong></li><li><span>Total UPI</span><strong>${formatPreciseCurrency(data.grandTotalUPI)}</strong></li><li style="font-size: 1.1rem;"><span>Grand Total</span><strong>${formatPreciseCurrency(totalCollections)}</strong></li>${collectionsHtml}</ul></div>
-                <div class="data-list-card"><h3>Operations</h3><button class="button button-outline" id="location-report-btn" style="margin-bottom: 10px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Location Report</button><button class="button button-outline" id="crm-module-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Send Bulk Offer</button></div>
-            </div>`);
+                <div class="data-list-card"><h3>Advanced Reports</h3><button class="button button-outline" id="location-report-btn" style="margin-bottom: 10px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Location Report</button><button class="button button-outline" id="crm-module-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Send Bulk Offer</button></div>
+            </div>`;
         };
         
         const renderLocationReportPage = () => { 
@@ -2316,9 +2392,10 @@ const container = document.getElementById('payment-customer-list-container');
         });
 
         document.getElementById('salesman-report-content').addEventListener('click', e => { const t = e.target.closest('.data-list-item[data-customer]'); t && renderCustomerReport(appState.reporting.salesman, t.dataset.customer) });
-        document.getElementById('back-to-admin-dashboard-btn').addEventListener('click', () => showPage('page-admin-dashboard'));
+        document.getElementById('back-to-admin-dashboard-btn').addEventListener('click', () => { showPage('page-admin-dashboard'); document.getElementById('admin-main-view').style.display = 'block'; });
         document.getElementById('back-to-salesman-report-btn').addEventListener('click', () => showPage('page-salesman-report'));
-        document.getElementById('back-to-admin-from-location-btn').addEventListener('click', () => showPage('page-admin-dashboard'));        const renderCustomerProfile = () => { 
+        document.getElementById('back-to-admin-from-location-btn').addEventListener('click', () => { showPage('page-admin-dashboard'); document.getElementById('admin-main-view').style.display = 'block'; });
+        const renderCustomerProfile = () => { 
             const c = appState.customer; 
             document.getElementById('customer-profile-name').textContent = c.Customer; 
             const content = document.getElementById('customer-profile-content'); 
@@ -2498,7 +2575,7 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
             setTimeout(() => window.print(), 100);
         };
         
-        // --- NEW LOGIN SCREEN LOGIC ---
+        // --- LOGIN SCREEN LOGIC ---
         const openModalBtn = document.getElementById('open-role-modal');
         const roleModal = document.getElementById('role-modal');
 
@@ -2524,7 +2601,7 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                 appState.reporting.startDate = startDate; appState.reporting.endDate = endDate;
                 
                 if (salesman === 'ADMIN') { 
-                    document.getElementById('footer').style.display = 'none'; 
+                    document.getElementById('admin-footer').style.display = 'flex'; 
                     document.getElementById('settings-icon-btn').style.display = 'flex';
                     showPage('page-admin-dashboard'); 
                     renderAdminDashboard();
@@ -2543,6 +2620,7 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                 }
                 else {
                     document.getElementById('footer').style.display = 'flex'; 
+                    document.getElementById('admin-footer').style.display = 'none';
                     document.getElementById('settings-icon-btn').style.display = 'none';
                     document.getElementById('billed-orders-btn').style.display = 'flex';
                     appState.currentView = 'customers';
@@ -2624,6 +2702,7 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                     try {
                         const location = await getCurrentLocation();
                         appState.currentOrderLocation = location;
+                        appState.currentOrderStartTime = new Date().toISOString(); // <-- Set start time
                         document.getElementById('order-customer-name').textContent = `New Order: ${appState.customer.Customer}`; 
                         updateCartBadge(); renderPreviousItemsAsTiles(); showPage('page-order');
                     } catch (error) { alert(`Could not start order. Location is required.\n\nError: ${error.message}`);
@@ -2650,7 +2729,6 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                 printSaleBill(orderId);
             }
         });
-        
         document.getElementById('payment-customer-list-container').addEventListener('click', (e) => { 
             const collectBtn = e.target.closest('.list-item-action');
             if (collectBtn) { 
@@ -2677,7 +2755,7 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
             showPage(destinationPage);
         });
 
-        document.getElementById('back-from-settings-btn').addEventListener('click', () => { if(appState.salesman === 'ADMIN') showPage('page-admin-dashboard'); else showPage('page-main-view'); });
+        document.getElementById('back-from-settings-btn').addEventListener('click', () => { if(appState.salesman === 'ADMIN') { showPage('page-admin-dashboard'); document.getElementById('admin-main-view').style.display = 'block'; } else showPage('page-main-view'); });
         document.getElementById('back-to-settings-btn').addEventListener('click', () => showPage('page-settings'));
         document.getElementById('back-to-payment-history-btn').addEventListener('click', () => showPage('page-payment-history'));
         
@@ -2723,25 +2801,40 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
             const btn = e.currentTarget;
             const cart = getActiveCart();
             if (cart.length === 0) { alert('Cannot save an empty packing slip.'); return; }
-            if (!appState.currentOrderLocation) { alert("Location data is missing. Please start the order again to capture location."); return; }
+            if (!appState.currentOrderLocation && !appState.editingPackingSlipId) { 
+                alert("Location data is missing. Please start the order again to capture location."); 
+                return; 
+            }
 
             btn.disabled = true;
             btn.textContent = 'Saving...';
             
             try {
+                const saveTime = new Date();
+                const startTime = new Date(appState.currentOrderStartTime);
+                const salesDuration = saveTime - startTime;
+
                 const total = cart.reduce((s, i) => s + (i.quantity * i.sellingPrice), 0);
                 const orderData = {
                     customer: { Customer: appState.customer.Customer, Phone: appState.customer.Phone },
                     items: cart.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3, CostRate: i.item.CostRate }, quantity: i.quantity, sellingPrice: i.sellingPrice })),
                     total,
                     salesman: appState.salesman,
-                    date: new Date().toISOString(),
+                    date: appState.currentOrderStartTime, // Use start time as the primary order date
+                    orderSavedAt: saveTime.toISOString(),
+                    salesDuration: salesDuration,
                     location: appState.currentOrderLocation,
                     status: 'pending' 
                 };
                 
                 if (appState.editingPackingSlipId) {
-                    await updateDoc(doc(db, "orders", appState.editingPackingSlipId), orderData);
+                    // When updating, we don't change the original date or location, just the items and total.
+                    const updateData = {
+                        items: orderData.items,
+                        total: orderData.total,
+                        // Retain original metadata, but could update a 'lastEdited' field if needed
+                    };
+                    await updateDoc(doc(db, "orders", appState.editingPackingSlipId), updateData);
                     showProfessionalModal('Success', 'The packing slip has been updated.', () => {
                         appState.customerCarts[appState.customer.id] = [];
                         appState.editingPackingSlipId = null;
@@ -2763,6 +2856,7 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
             } finally {
                 btn.disabled = false;
                 appState.currentOrderLocation = null;
+                appState.currentOrderStartTime = null;
             }
         });
 
@@ -2975,7 +3069,9 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                     appState.customer = appState.customers.find(c => c.Customer === orderData.customer.Customer) || orderData.customer;
                     appState.customerCarts[appState.customer.id] = orderData.items.map(i => ({...i}));
                     appState.editingPackingSlipId = id;
+                    // For editing, we don't need to recapture location or start time.
                     appState.currentOrderLocation = orderData.location;
+                    appState.currentOrderStartTime = orderData.date;
                     
                     document.getElementById('order-customer-name').textContent = `Edit Order: ${appState.customer.Customer}`;
                     updateCartBadge();
@@ -3148,7 +3244,7 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
         const closeEditModal = () => { editModal.classList.remove('active'); }; document.getElementById('close-edit-modal-btn').addEventListener('click', closeEditModal); document.getElementById('save-edit-btn').addEventListener('click', async () => { const isCustomers = appState.editing.type === 'customers'; const id = appState.editing.id; let updatedData = {}; if (isCustomers) { updatedData = { Customer: document.getElementById('edit-Customer').value, Salesman: document.getElementById('edit-Salesman').value, Phone: document.getElementById('edit-Phone').value, Outstanding: parseFloat(document.getElementById('edit-Outstanding').value) || 0 }; } else { const fields = ['ItemName', 'CostRate', 'Price1', 'Price2', 'Price3']; fields.forEach(field => { const input = document.getElementById(`edit-${field}`); updatedData[field] = input.type === 'number' ? parseFloat(input.value) : input.value; }); } await updateDoc(doc(db, isCustomers ? 'customers' : 'items', id), updatedData); closeEditModal(); if (document.getElementById('page-customer-profile').classList.contains('active')) { appState.customer = { ...appState.customer, ...updatedData }; renderCustomerProfile(); } showProfessionalModal('Success', 'Record updated successfully!'); });
         const pageCrm = document.getElementById('page-crm'); const renderCrmModule = () => { appState.flyerBuilder.items = []; const salesmanFilter = document.getElementById('crm-salesman-filter'); const routeFilter = document.getElementById('crm-route-filter'); const salesmen = [...new Set(appState.customers.map(c => c.Salesman).filter(Boolean))].sort(); salesmanFilter.innerHTML = '<option value="ALL">All Salesmen</option>' + salesmen.map(s => `<option value="${s}">${s}</option>`).join(''); const routes = [...new Set(appState.customers.map(c => c.Route).filter(Boolean))].sort(); routeFilter.innerHTML = '<option value="ALL">All Routes</option>' + routes.map(r => `<option value="${r}">${r}</option>`).join(''); updateCrmCustomerCount(); document.getElementById('crm-flyer-headline').value = ''; document.getElementById('crm-flyer-preview-container').innerHTML = `<p style="color:#888;">Flyer preview will appear here.</p>`; document.getElementById('share-bulk-flyer-btn').style.display = 'none'; document.getElementById('generate-bulk-flyer-btn').style.display = 'block'; document.getElementById('crm-flyer-builder-content').style.display = 'block'; renderCrmFlyerItems(); }; const renderCrmFlyerItems = () => { const listContainer = document.getElementById('crm-flyer-item-list'); if (appState.flyerBuilder.items.length === 0) { listContainer.innerHTML = `<p style="text-align:center; color:#888;">No items added to flyer yet.</p>`; return; } listContainer.innerHTML = appState.flyerBuilder.items.map((flyerItem, index) => `<div class="offer-builder-item"><div class="item-info"><div class="item-name">${flyerItem.item.ItemName}</div><div class="item-price">Offer Price: ${formatPreciseCurrency(flyerItem.price)}</div></div><button class="item-action-btn edit-btn" data-index="${index}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="item-action-btn delete-btn" data-index="${index}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>`).join(''); }; pageCrm.addEventListener('input', e => { if(e.target.id === 'offer-item-search-input-bulk') { renderItemSearchResults(e.target.value, 'offer-item-search-results-bulk'); } }); pageCrm.addEventListener('click', e => { const resultItem = e.target.closest('#offer-item-search-results-bulk .search-result-item'); if(resultItem) { const code = resultItem.dataset.itemCode; const fullItem = appState.items.find(i => i.Code == code); if (fullItem && !appState.flyerBuilder.items.some(fi => fi.item.Code === fullItem.Code)) { appState.flyerBuilder.items.push({ item: fullItem, price: fullItem.Price2 }); renderCrmFlyerItems(); } document.getElementById('offer-item-search-input-bulk').value = ''; document.getElementById('offer-item-search-results-bulk').innerHTML = ''; } const deleteBtn = e.target.closest('#crm-flyer-item-list .delete-btn'); if(deleteBtn) { appState.flyerBuilder.items.splice(parseInt(deleteBtn.dataset.index), 1); renderCrmFlyerItems(); } const editBtn = e.target.closest('#crm-flyer-item-list .edit-btn'); if (editBtn) { const index = parseInt(editBtn.dataset.index); const flyerItem = appState.flyerBuilder.items[index]; const newPrice = prompt(`Enter new offer price for ${flyerItem.item.ItemName}:`, flyerItem.price); if (newPrice !== null && !isNaN(parseFloat(newPrice))) { flyerItem.price = parseFloat(newPrice); renderCrmFlyerItems(); } } }); const updateCrmCustomerCount = () => { const selectedSalesman = document.getElementById('crm-salesman-filter').value; const selectedRoute = document.getElementById('crm-route-filter').value; const targetCustomers = appState.customers.filter(c => { const hasPhone = c.Phone && c.Phone.trim().length > 5; const matchesSalesman = selectedSalesman === 'ALL' || c.Salesman === selectedSalesman; const matchesRoute = selectedRoute === 'ALL' || c.Route === selectedRoute; return hasPhone && matchesSalesman && matchesRoute; }); document.getElementById('crm-customer-count').textContent = `Targeted Customers: ${targetCustomers.length}`; }; const generateBulkFlyer = async () => { const generateBtn = document.getElementById('generate-bulk-flyer-btn'); const previewContainer = document.getElementById('crm-flyer-preview-container'); if (appState.flyerBuilder.items.length === 0) { alert("Please add at least one item to the flyer."); return; } generateBtn.disabled = true; generateBtn.innerHTML = 'Generating...'; previewContainer.innerHTML = '...'; const headline = document.getElementById('crm-flyer-headline').value.trim() || 'A Special Offer For You!'; const itemsHtml = appState.flyerBuilder.items.map(item => `<li class="flyer-item"><span class="flyer-item-name">${item.item.ItemName}</span><span class="flyer-item-price">${formatPreciseCurrency(item.price)}</span></li>`).join(''); document.getElementById('flyer-template-wrapper').innerHTML = `<div id="flyer-content"><div id="flyer-header"><h2 id="flyer-logo">MF BIGMARKET</h2><p id="flyer-tagline">Quality Products, Delivered.</p></div><div id="flyer-offer-details"><h3 id="flyer-headline">${headline}</h3><ul id="flyer-item-list">${itemsHtml}</ul></div><div id="flyer-footer"><p>Contact your salesman to order today!</p></div></div>`; try { const canvas = await html2canvas(document.getElementById('flyer-template-wrapper'), { scale: 2, useCORS: true, backgroundColor: null }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9)); appState.bulkFlyerBlob = blob; const imgEl = document.createElement('img'); imgEl.src = URL.createObjectURL(blob); previewContainer.innerHTML = ''; previewContainer.appendChild(imgEl); document.getElementById('share-bulk-flyer-btn').style.display = 'block'; } catch (error) { console.error("Bulk flyer generation error:", error); previewContainer.innerHTML = '<p style="color:red;">Error generating flyer image.</p>'; } finally { generateBtn.disabled = false; generateBtn.innerHTML = 'Generate Flyer Preview'; } };
         document.getElementById('generate-bulk-flyer-btn').addEventListener('click', generateBulkFlyer); document.getElementById('share-bulk-flyer-btn').addEventListener('click', async () => { const flyerBlob = appState.bulkFlyerBlob; if (!flyerBlob) { alert('Please generate a flyer first.'); return; } const targetCount = document.getElementById('crm-customer-count').textContent; if(!confirm(`Your flyer is ready. You will now be prompted to share it with your selected ${targetCount}. Continue?`)){ return; } try { const file = new File([flyerBlob], 'MF-BigMarket-Offer.jpg', { type: 'image/jpeg' }); const shareText = document.getElementById('crm-flyer-headline').value.trim() || 'Check out our latest deals!'; if (navigator.share && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'MF BigMarket Offer', text: shareText }); } else { alert("Sharing not supported on this browser. You can save the image by long-pressing it and share manually."); } } catch (error) { console.error('Bulk Share failed:', error); alert("Could not share automatically. Please save the image and send it manually."); } });
-        document.getElementById('back-to-admin-from-crm-btn').addEventListener('click', () => showPage('page-admin-dashboard')); document.getElementById('crm-salesman-filter').addEventListener('change', updateCrmCustomerCount); document.getElementById('crm-route-filter').addEventListener('change', updateCrmCustomerCount);
+        document.getElementById('back-to-admin-from-crm-btn').addEventListener('click', () => { showPage('page-admin-dashboard'); document.getElementById('admin-main-view').style.display = 'block'; }); document.getElementById('crm-salesman-filter').addEventListener('change', updateCrmCustomerCount); document.getElementById('crm-route-filter').addEventListener('change', updateCrmCustomerCount);
         
         document.querySelector('#page-product-info .search-toggle-buttons').addEventListener('click', e => { if (e.target.matches('.toggle-btn')) { const searchType = e.target.dataset.searchType; document.querySelectorAll('#page-product-info .toggle-btn').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('#page-product-info .search-view').forEach(view => view.classList.remove('active')); document.getElementById(`${searchType}-search-view`).classList.add('active'); document.getElementById(`${searchType === 'info-salesman' ? 'info-salesman-item-search-input' : 'info-item-search-input'}`).focus(); } });
         document.getElementById('info-salesman-item-search-input').addEventListener('input', (e) => renderSalesmanItemSearchResults(e.target.value, 'info-salesman-item-search-results'));
@@ -3316,7 +3412,7 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
         });
         
         const formatDuration = (ms) => {
-            if (!ms || ms < 0) return 'N/A';
+            if (typeof ms !== 'number' || ms < 0) return 'N/A';
             const seconds = Math.floor((ms / 1000) % 60);
             const minutes = Math.floor((ms / (1000 * 60)) % 60);
             const hours = Math.floor(ms / (1000 * 60 * 60));
@@ -3341,8 +3437,7 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                         <div class="info">
                            <p><strong>Customer:</strong> ${o.customer.Customer}</p>
                            <p><strong>Salesman:</strong> ${o.salesman}</p>
-                           <p><strong>Time Taken:</strong> ${formatDuration(o.packingDuration)}</p>
-                           <p class="date-display">${formatDDMMYYYYTime(o.packingEndTime || o.date)}</p>
+                           <p class="date-display">Packed on: ${formatDDMMYYYYTime(o.packingEndTime || o.date)}</p>
                         </div>
                     </div>
                 </div>
@@ -3389,6 +3484,7 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                 const orderId = billBtn.dataset.orderId;
                 const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
                 appState.billingOrder = JSON.parse(JSON.stringify(order));
+                appState.billingOrder.billingStartTime = new Date().toISOString(); // <-- Set start time
                 showPage('page-billing-interface');
                 renderBillingInterface();
             }
@@ -3443,11 +3539,16 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                 }
             });
             
+            const endTime = new Date();
+            const startTime = new Date(billingOrder.billingStartTime);
+            const billingDuration = endTime - startTime;
+
             const updateData = {
                 status: 'billed',
                 billedItems: billingOrder.items,
                 billedBy: 'ANISHAD',
-                billedAt: new Date().toISOString()
+                billedAt: endTime.toISOString(),
+                billingDuration: billingDuration,
             };
 
             try {
@@ -3483,6 +3584,7 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                         <div class="info">
                            <p><strong>Customer:</strong> ${o.customer.Customer}</p>
                            <p><strong>Salesman:</strong> ${o.salesman}</p>
+                           <p><strong>Time Taken:</strong> ${formatDuration(o.billingDuration)}</p>
                            <p class="date-display">${formatDDMMYYYYTime(o.billedAt)}</p>
                         </div>
                         <div class="actions">
@@ -3579,7 +3681,8 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                             status: 'packed',
                             billedItems: deleteField(),
                             billedBy: deleteField(),
-                            billedAt: deleteField()
+                            billedAt: deleteField(),
+                            billingDuration: deleteField()
                         });
                         showToast('Billing undone. Order is now pending for billing.');
                         card.classList.add('removing');
@@ -3674,6 +3777,7 @@ jsonToExcel(itemsToExport, `${order.salesman}-${order.customer.Customer}-${forma
                                <p><strong>Customer:</strong> ${order.customer.Customer}</p>
                                <p><strong>Final Total:</strong> ${formatPreciseCurrency(finalTotal)}</p>
                                ${profitHtml}
+                               <p><strong>Time Taken to Order:</strong> ${formatDuration(order.salesDuration)}</p>
                                <p class="date-display">${formatDDMMYYYYTime(order.billedAt || order.date)}</p>
                             </div>
                         </div>
@@ -3856,6 +3960,210 @@ jsonToExcel(itemsToExport, `${order.salesman}-${order.customer.Customer}-${forma
         setupBetweenDateFilter('accountant-date-filter', renderAccountantCollectionView);
 
 
+        // --- NEW: ADMIN OPERATIONS ---
+        document.querySelector('#page-admin-dashboard .footer').addEventListener('click', e => {
+            const dashboardTab = e.target.closest('#admin-dashboard-tab');
+            const operationsTab = e.target.closest('#admin-operations-tab');
+            
+            if (dashboardTab) {
+                document.getElementById('admin-dashboard-tab').classList.add('active');
+                document.getElementById('admin-operations-tab').classList.remove('active');
+                document.getElementById('admin-header').textContent = 'Admin Dashboard';
+                document.getElementById('admin-main-view').style.display = 'block';
+                showPage('page-admin-dashboard');
+                renderAdminDashboard();
+            } else if (operationsTab) {
+                document.getElementById('admin-operations-tab').classList.add('active');
+                document.getElementById('admin-dashboard-tab').classList.remove('active');
+                document.getElementById('admin-header').textContent = 'Operations';
+                document.getElementById('admin-main-view').style.display = 'none';
+                showPage('page-admin-operations');
+                renderAdminOperationsPage();
+            }
+        });
+
+        const renderAdminOperationsPage = () => {
+            const contentEl = document.getElementById('admin-operations-content');
+            const { start, end } = getReportDateRange();
+            let allOrders = Object.values(appState.orders).flat();
+
+            if (start && end) {
+                allOrders = allOrders.filter(o => {
+                    const orderDate = new Date(o.date);
+                    return orderDate >= start && orderDate <= end;
+                });
+            }
+
+            const kpis = {
+                avgSalesDuration: [],
+                avgPackingDuration: [],
+                avgBillingDuration: [],
+                totalOrders: allOrders.length,
+            };
+
+            allOrders.forEach(o => {
+                if(o.salesDuration) kpis.avgSalesDuration.push(o.salesDuration);
+                if(o.packingDuration) kpis.avgPackingDuration.push(o.packingDuration);
+                if(o.billingDuration) kpis.avgBillingDuration.push(o.billingDuration);
+            });
+
+            const avg = (arr) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+            const kpiHtml = `
+                <div class="card">
+                    <h3>Operational KPIs</h3>
+                    <div class="operations-kpi-grid">
+                        <div class="kpi-card-small"><div class="value">${kpis.totalOrders}</div><div class="label">Total Orders</div></div>
+                        <div class="kpi-card-small"><div class="value">${formatDuration(avg(kpis.avgSalesDuration))}</div><div class="label">Avg. Order Time</div></div>
+                        <div class="kpi-card-small"><div class="value">${formatDuration(avg(kpis.avgPackingDuration))}</div><div class="label">Avg. Packing Time</div></div>
+                        <div class="kpi-card-small"><div class="value">${formatDuration(avg(kpis.avgBillingDuration))}</div><div class="label">Avg. Billing Time</div></div>
+                    </div>
+                </div>
+            `;
+
+            const userStatusHtml = getUserStatusHtml(allOrders);
+
+            const reportTableHtml = `
+                <div class="card">
+                    <h3>Order Lifecycle Report</h3>
+                    <div class="table-responsive-wrapper">
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th><th>Sales</th><th>Packing</th><th>Billing</th><th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${allOrders.sort((a,b) => new Date(b.date) - new Date(a.date)).map(o => `
+                                    <tr>
+                                        <td>${o.customer.Customer}<br><small>${o.salesman}</small></td>
+                                        <td class="numeric">${formatDuration(o.salesDuration)}</td>
+                                        <td class="numeric">${formatDuration(o.packingDuration)}</td>
+                                        <td class="numeric">${formatDuration(o.billingDuration)}</td>
+                                        <td class="numeric"><strong>${formatDuration((o.salesDuration||0) + (o.packingDuration||0) + (o.billingDuration||0))}</strong></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            contentEl.innerHTML = kpiHtml + userStatusHtml + reportTableHtml;
+        };
+        
+        const getUserStatusHtml = (allOrders) => {
+            const users = ['UNNI', 'RIYAS', 'SUNNY', 'ANISHAD'];
+            let html = '<div class="user-status-grid">';
+
+            users.forEach(user => {
+                const isSalesman = ['UNNI', 'RIYAS'].includes(user);
+                const isPacker = user === 'SUNNY';
+                const isBiller = user === 'ANISHAD';
+
+                let status = 'idle';
+                let currentTask = 'Idle';
+                let lastCompleted = 'N/A';
+                let lastCompletedTime = null;
+
+                const userOrders = allOrders.filter(o => {
+                    if (isSalesman) return o.salesman === user;
+                    if (isPacker && ['packing', 'packed', 'billed'].includes(o.status)) return true;
+                    if (isBiller && ['billed'].includes(o.status)) return true;
+                    return false;
+                }).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                if (isSalesman) {
+                    const lastOrder = userOrders[0];
+                    if (lastOrder) {
+                        lastCompleted = `Order for ${lastOrder.customer.Customer}`;
+                        lastCompletedTime = lastOrder.orderSavedAt || lastOrder.date;
+                    }
+                } else if (isPacker) {
+                    const packingOrder = allOrders.find(o => o.status === 'packing');
+                    if (packingOrder) {
+                        status = 'active';
+                        currentTask = `Packing for ${packingOrder.customer.Customer}`;
+                    }
+                    const lastPacked = userOrders.find(o => o.status === 'packed' || o.status === 'billed');
+                    if(lastPacked) {
+                        lastCompleted = `Packed for ${lastPacked.customer.Customer}`;
+                        lastCompletedTime = lastPacked.packingEndTime;
+                    }
+                } else if (isBiller) {
+                    // Biller status is harder to track live without a dedicated "billing" status
+                    const lastBilled = userOrders.find(o => o.status === 'billed');
+                    if(lastBilled) {
+                        lastCompleted = `Billed for ${lastBilled.customer.Customer}`;
+                        lastCompletedTime = lastBilled.billedAt;
+                    }
+                }
+                
+                html += `
+                    <div class="user-status-card">
+                        <h4 data-user="${user}">${user} <span class="status-badge ${status}">${status}</span></h4>
+                        <p><strong>Current:</strong> ${currentTask}</p>
+                        <p><strong>Last:</strong> ${lastCompleted} ${lastCompletedTime ? `(${formatDDMMYYYYTime(lastCompletedTime)})` : ''}</p>
+                    </div>`;
+            });
+
+            html += '</div>';
+            return html;
+        };
+        
+        document.getElementById('admin-operations-content').addEventListener('click', e => {
+            const userHeader = e.target.closest('h4[data-user]');
+            if (userHeader) {
+                renderUserTimeline(userHeader.dataset.user);
+            }
+        });
+        
+        const renderUserTimeline = (user) => {
+            showPage('page-user-timeline');
+            document.getElementById('user-timeline-header').textContent = `${user}'s Timeline`;
+            const contentEl = document.getElementById('user-timeline-content');
+            const { start, end } = getReportDateRange();
+            let allOrders = Object.values(appState.orders).flat();
+
+            if (start && end) {
+                allOrders = allOrders.filter(o => {
+                    const orderDate = new Date(o.date);
+                    return orderDate >= start && orderDate <= end;
+                });
+            }
+
+            const timelineEvents = [];
+            allOrders.forEach(o => {
+                if (o.salesman === user && o.orderSavedAt) {
+                    timelineEvents.push({ time: o.orderSavedAt, event: `Order Placed for ${o.customer.Customer}` });
+                }
+                if (user === 'SUNNY' && o.packingStartTime) {
+                    timelineEvents.push({ time: o.packingStartTime, event: `Started Packing for ${o.customer.Customer}` });
+                }
+                if (user === 'SUNNY' && o.packingEndTime) {
+                    timelineEvents.push({ time: o.packingEndTime, event: `Finished Packing for ${o.customer.Customer}` });
+                }
+                if (user === 'ANISHAD' && o.billedAt) {
+                    timelineEvents.push({ time: o.billedAt, event: `Billed Order for ${o.customer.Customer}` });
+                }
+            });
+
+            timelineEvents.sort((a,b) => new Date(b.time) - new Date(a.time));
+
+            const timelineHtml = timelineEvents.map(item => `
+                <div class="timeline-item">
+                    <p class="time">${formatDDMMYYYYTime(item.time)}</p>
+                    <p class="event">${item.event}</p>
+                </div>
+            `).join('');
+
+            contentEl.innerHTML = `<div class="card">${timelineHtml || '<p style="text-align:center;padding:20px;">No activity found for this user in the selected period.</p>'}</div>`;
+        };
+        
+        document.getElementById('back-to-admin-from-operations-btn').addEventListener('click', () => { showPage('page-admin-dashboard'); document.getElementById('admin-main-view').style.display = 'block'; });
+        document.getElementById('back-to-operations-from-timeline-btn').addEventListener('click', () => { showPage('page-admin-operations'); });
+        setupBetweenDateFilter('operations-date-filter', renderAdminOperationsPage);
+        
         const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v3'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
         
         setupPWA();
