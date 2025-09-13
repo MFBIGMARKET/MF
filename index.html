@@ -72,10 +72,10 @@
         .page.active { display: flex; }
 
         .header { background-color: var(--primary-color); color: var(--light-text-color); padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 100; }
-        .header h1 { font-size: 1.4rem; font-weight: 600; }
-        .header .icon-button { background: none; border: none; color: var(--light-text-color); cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s; position: relative; }
+        .header h1 { font-size: 1.4rem; font-weight: 600; text-align: center; flex-grow: 1; }
+        .header .icon-button { background: none; border: none; color: var(--light-text-color); cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s; position: relative; flex-shrink: 0; }
         .header .icon-button:active { background-color: rgba(255, 255, 255, 0.15); }
-        .header .header-actions { display: flex; align-items: center; gap: 15px; }
+        .header .header-actions { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
 
         #cart-item-count {
             position: absolute; top: -4px; right: -6px; background-color: var(--danger-color); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; font-weight: bold; line-height: 1; min-width: 20px; text-align: center; border: 2px solid var(--primary-color);
@@ -177,6 +177,19 @@
         .list-item:active { transform: scale(0.99); box-shadow: 0 2px 8px rgba(0, 95, 115, 0.1); }
         .list-item .info { flex: 1; font-size: 1rem; font-weight: 500; line-height: 1.4; margin-right: 15px; }
         .list-item-action { flex-shrink: 0; padding: 12px 15px; min-width: 110px; text-align: center; font-size: 1rem; color: var(--light-text-color); background-color: var(--secondary-color); border: none; border-radius: 8px; cursor: pointer; }
+        .list-item-action.packing { background-color: var(--warning-color); }
+        .list-item-action:disabled { background-color: #bdc3c7; }
+        .list-item.removing {
+            opacity: 0;
+            transform: translateX(-100%);
+            max-height: 0 !important;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-bottom: 0;
+            overflow: hidden;
+            border-top: none;
+            border-bottom: none;
+        }
 
         .customer-item-container { background-color: #fff; border-radius: var(--border-radius); margin-bottom: 12px; box-shadow: var(--card-shadow); overflow: hidden; transition: box-shadow 0.2s; }
         .customer-item-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 15px; cursor: pointer; }
@@ -192,7 +205,7 @@
         .history-card { background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--card-shadow); margin-bottom: 15px; overflow: hidden; transition: all 0.4s ease-out; }
         .history-card-header { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
         .history-card-header .info { flex-grow: 1; }
-        .history-card-header .actions { display: flex; gap: 15px; flex-shrink: 0; margin-left: 10px; }
+        .history-card-header .actions { display: flex; gap: 15px; flex-shrink: 0; margin-left: 10px; align-items: center; }
         .history-card-header p { margin: 0 0 5px; }
         .history-card-header p strong { font-weight: 600; color: var(--primary-color); }
         .history-card .date-display { font-size:0.9rem; color:#666; }
@@ -208,7 +221,8 @@
         .history-action-btn { background: none; border: none; cursor: pointer; padding: 0; }
         .history-action-btn svg { width: 20px; height: 20px; }
         .delete-history-btn svg { stroke: var(--danger-color); }
-        .print-history-btn svg { stroke: var(--secondary-color); }
+        .print-history-btn svg, .print-loading-slip-btn svg { stroke: var(--secondary-color); }
+        .download-bill-btn svg { stroke: var(--primary-color); }
         .edit-packing-slip-btn svg { stroke: var(--warning-color); }
         .history-card.removing {
             opacity: 0;
@@ -282,7 +296,7 @@
         .search-view { display: none; }
         .search-view.active { display: block; }
 
-        #offer-item-search-results, #offer-item-search-results-bulk, #info-salesman-item-search-results, #info-item-search-results, #packing-item-search-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 var(--border-radius) var(--border-radius); max-height: 250px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        #offer-item-search-results, #offer-item-search-results-bulk, #info-salesman-item-search-results, #info-item-search-results, #packing-item-search-results, #billing-item-search-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 var(--border-radius) var(--border-radius); max-height: 250px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
         
         .search-result-item { padding: 12px 15px; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; border-bottom: 1px solid #f0f0f0; }
         .search-result-item:last-child { border-bottom: none; }
@@ -295,7 +309,7 @@
         .search-result-item .item-margin.profit { color: var(--success-color); }
         .search-result-item .item-margin.loss { color: var(--danger-color); }
         
-        #packing-slip-wrapper, #payment-receipt-wrapper, #payment-summary-print-wrapper, #sale-bill-wrapper { display: none; }
+        #packing-slip-wrapper, #payment-receipt-wrapper, #payment-summary-print-wrapper, #sale-bill-wrapper, #loading-slip-wrapper { display: none; }
         #collection-report-wrapper { position: absolute; left: -9999px; top: -9999px; }
         #collection-report { background: #fff; padding: 40px; }
         
@@ -729,8 +743,8 @@
         .role-tile[data-role="ADMIN"] { border-color: var(--admin-accent); }
         .role-tile.dummy[data-role="SHAJU"] { border-color: var(--loading-accent); }
         .role-tile.dummy[data-role="BENNY"] { border-color: var(--delivery-accent); }
-        .role-tile.dummy[data-role="ANISHAD"] { border-color: var(--billing-accent); }
-        .role-tile.dummy[data-role="NANDU"] { border-color: var(--accounts-accent); }
+        .role-tile[data-role="ANISHAD"] { border-color: var(--billing-accent); }
+        .role-tile[data-role="NANDU"] { border-color: var(--accounts-accent); }
         
         .role-tile[data-role="UNNI"]:hover,
         .role-tile[data-role="RIYAS"]:hover {
@@ -773,11 +787,15 @@
 
         .role-tile[data-role="ANISHAD"]:hover {
             background-color: var(--billing-accent-light);
+            box-shadow: 0 4px 10px rgba(127, 140, 141, 0.2);
+            transform: translateY(-4px);
         }
         .role-tile[data-role="ANISHAD"]:hover svg { color: #626567; }
 
         .role-tile[data-role="NANDU"]:hover {
             background-color: var(--accounts-accent-light);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 10px rgba(44, 62, 80, 0.2);
         }
         .role-tile[data-role="NANDU"]:hover svg { color: #1c2833; }
         
@@ -804,16 +822,19 @@
         #icon-delivery { color: var(--delivery-accent); }
         #icon-accounts { color: var(--accounts-accent); }
 
-        /* SUNNY - Packer UI Enhancements */
+        /* Biller & Packer UI Enhancements */
+        #billing-item-list .list-item,
         #packing-item-list .list-item {
             gap: 15px;
             align-items: center;
         }
+        #billing-item-list .list-item input[type="checkbox"],
         #packing-item-list .list-item input[type="checkbox"] {
             width: 24px;
             height: 24px;
             flex-shrink: 0;
         }
+        #billing-item-list .list-item .info,
         #packing-item-list .list-item .info {
             display: flex;
             flex-direction: column;
@@ -821,11 +842,11 @@
             flex-grow: 1;
             margin: 0;
         }
-        .packing-item-name {
+        .packing-item-name, .billing-item-name {
             font-weight: 600;
             font-size: 1rem;
         }
-        .packing-item-details {
+        .packing-item-details, .billing-item-details {
             font-size: 0.85rem;
             color: #666;
             font-weight: 500;
@@ -850,6 +871,19 @@
         .ledger-item-qty { font-weight: 500; }
         .ledger-details-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .ledger-details-header h4 { margin: 0; font-size: 1rem; color: var(--primary-color); }
+        #accountant-salesman-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
+
+        /* LOADING SLIP PRINT STYLES */
+        #loading-slip-content { font-family: 'Segoe UI', sans-serif; color: #222; padding: 0; font-size: 14px; }
+        .loading-slip-header { text-align: center; margin-bottom: 20px; }
+        .loading-slip-header h2 { margin: 0; font-size: 1.6rem; }
+        .loading-slip-details { margin-bottom: 20px; font-size: 1rem; }
+        .loading-slip-details p { margin: 5px 0; }
+        .loading-slip-table { width: 100%; border-collapse: collapse; }
+        .loading-slip-table th, .loading-slip-table td { padding: 8px; text-align: left; border-bottom: 1px solid #333; font-size: 1rem; }
+        .loading-slip-table th { font-weight: 600; }
+        .loading-slip-table .col-qty { text-align: right; }
+
 
         @media (max-width: 767px) {
             #page-admin-dashboard .content { padding: 10px; }
@@ -869,6 +903,7 @@
             body.printing-packing-slip #packing-slip-wrapper,
             body.printing-receipt #payment-receipt-wrapper,
             body.printing-summary #payment-summary-print-wrapper,
+            body.printing-loading-slip #loading-slip-wrapper,
             body.printing-sale-bill #sale-bill-wrapper { display: block !important; position: static !important; }
             #payment-summary-print-content { display: block !important; }
             .slip-page-break, .bill-page-break { page-break-before: always; }
@@ -921,7 +956,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
                         <span>ADMIN</span>
                     </button>
-                    <!-- Row 2 (Dummy Roles) -->
+                    <!-- Row 2 -->
                     <div class="role-tile dummy" data-role="SHAJU">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                         <span>SHAJU</span>
@@ -930,14 +965,14 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                         <span>BENNY</span>
                     </div>
-                     <div class="role-tile dummy" data-role="ANISHAD">
+                     <button class="role-tile" data-role="ANISHAD">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
                         <span>ANISHAD</span>
-                    </div>
-                     <div class="role-tile dummy" data-role="NANDU">
+                    </button>
+                     <button class="role-tile" data-role="NANDU">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                         <span>NANDU</span>
-                    </div>
+                    </button>
                 </div>
             </div>
         </div>
@@ -956,7 +991,7 @@
                  <button class="icon-button" id="pending-balance-btn" style="display: none;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 </button>
-                <button class="icon-button" id="packed-orders-btn" style="display: none;">
+                <button class="icon-button" id="billed-orders-btn" style="display: none;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                 </button>
                 <button class="icon-button" id="history-icon-btn">
@@ -1051,7 +1086,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="order-summary-header">Order Summary</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content">
             <h3 style="margin-bottom: 10px;">Current Order</h3>
@@ -1069,7 +1104,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="payment-customer-name">Collect Payment</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content">
             <div class="card">
@@ -1093,7 +1128,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1>Packing Slip History</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content">
             <div id="order-history-date-filter" class="between-date-filter">
@@ -1119,7 +1154,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1>Payment History</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content">
             <button id="view-collection-summary-btn" class="button" style="margin-bottom: 20px;">View Collection Summary</button>
@@ -1146,7 +1181,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1>Pending Balances</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content">
             <div class="filter-bar">
@@ -1192,7 +1227,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="customer-profile-name">Customer Profile</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content" id="customer-profile-content"></div>
     </div>
@@ -1203,7 +1238,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="customer-ledger-name">Customer Ledger</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content" id="customer-ledger-content">
         </div>
@@ -1215,7 +1250,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1>Product Info</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content">
             <div class="card">
@@ -1254,7 +1289,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1>Manage Data</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content">
             <div class="card">
@@ -1278,7 +1313,7 @@
                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="edit-data-header">Edit</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content">
             <div class="search-bar"><input type="text" id="edit-data-search" placeholder="Search..."></div>
@@ -1322,7 +1357,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="edit-packing-slip-header">Edit Packing Slip</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content">
             <div class="card">
@@ -1348,7 +1383,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1>Location Report</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content" id="location-report-content"></div>
     </div>
@@ -1359,7 +1394,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="salesman-report-header">Salesman Report</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content" id="salesman-report-content"></div>
     </div>
@@ -1370,7 +1405,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1 id="customer-report-header">Customer Report</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content" id="customer-report-content"></div>
     </div>
@@ -1381,7 +1416,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1>Bulk Messaging (CRM)</h1>
-            <div class="icon-button" style="width: 24px;"></div>
+            <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content">
             <div class="card">
@@ -1438,56 +1473,168 @@
         </div>
     </div>
 
-    <div id="page-packing-interface" class="page">
-        <div class="header">
-            <button class="icon-button" id="back-to-packer-home-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            </button>
-            <h1 id="packing-order-customer">Packing Order</h1>
-        </div>
-        <div class="content">
-            <div class="card">
-                <h3>Add Product</h3>
-                <div class="search-bar">
-                    <input type="text" id="packing-item-search" placeholder="Search for an item...">
-                    <div id="packing-item-search-results"></div>
-                </div>
-            </div>
-            <div id="packing-item-list"></div>
-        </div>
-        <div style="padding: 15px;">
-            <button id="confirm-packing-btn" class="button">Confirm Packing</button>
-        </div>
-    </div>
-
     <div id="page-packer-history" class="page">
         <div class="header">
             <button class="icon-button" id="back-to-packer-home-from-history-btn">
                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
             <h1>Packing History</h1>
+             <div class="header-actions" style="width: 24px;"></div>
         </div>
         <div class="content">
             <div id="packer-history-list"></div>
         </div>
     </div>
     
-    <div id="page-packed-orders" class="page">
+    <div id="page-billed-orders" class="page">
         <div class="header">
-            <button class="icon-button" id="back-to-main-from-packed-orders-btn">
+            <button class="icon-button" id="back-to-main-from-billed-orders-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </button>
-            <h1>Packed Orders</h1>
+            <h1>Billed Orders</h1>
+            <div class="header-actions" style="width:24px;"></div>
         </div>
         <div class="content">
-            <div id="packed-orders-list"></div>
+            <div id="billed-orders-list"></div>
         </div>
     </div>
 
+    <!-- BILLER (ANISHAD) PAGES -->
+     <div id="page-biller-home" class="page">
+        <div class="header">
+            <button class="icon-button" id="biller-logout-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            </button>
+            <h1>Pending for Billing</h1>
+            <div class="header-actions">
+                <button class="icon-button" id="biller-history-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div class="content">
+            <div id="biller-date-filter" class="between-date-filter">
+                <input type="date" class="date-input start-date-input">
+                <button class="date-btn start-date-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">Start Date</span>
+                </button>
+                <input type="date" class="date-input end-date-input">
+                <button class="date-btn end-date-btn">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">End Date</span>
+                </button>
+                <button class="filter-action-btn clear-btn">Clear</button>
+            </div>
+            <div id="biller-order-list"></div>
+        </div>
+    </div>
+
+    <div id="page-billing-interface" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-biller-home-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1 id="billing-order-customer">Billing Order</h1>
+            <div class="header-actions" style="width:24px;"></div>
+        </div>
+        <div class="content">
+            <div class="card">
+                <h3>Add Product</h3>
+                <div class="search-bar">
+                    <input type="text" id="billing-item-search" placeholder="Search for an item...">
+                    <div id="billing-item-search-results"></div>
+                </div>
+            </div>
+            <div id="billing-item-list"></div>
+        </div>
+        <div style="padding: 15px;">
+            <button id="confirm-billing-btn" class="button">Confirm Billing</button>
+        </div>
+    </div>
+
+    <div id="page-biller-history" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-biller-home-from-history-btn">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Billing History</h1>
+            <div class="header-actions" style="width:24px;"></div>
+        </div>
+        <div class="content">
+            <div id="biller-history-list"></div>
+        </div>
+    </div>
+    
+    <!-- ACCOUNTANT (NANDU) PAGES -->
+    <div id="page-accountant-dashboard" class="page">
+        <div class="header">
+            <button class="icon-button" id="accountant-logout-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            </button>
+            <h1 id="accountant-header">Customer Ledger</h1>
+            <div class="header-actions">
+                <button class="icon-button" id="accountant-print-collection-btn" style="display: none;" title="Print Collection Summary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                </button>
+            </div>
+        </div>
+        <div class="content">
+            <div id="accountant-ledger-view">
+                <div class="search-bar" style="margin-bottom: 20px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="accountant-customer-search" placeholder="Search all customers...">
+                </div>
+                <div id="accountant-customer-list"></div>
+            </div>
+            <div id="accountant-collection-view" style="display: none;">
+                <div id="accountant-date-filter" class="between-date-filter">
+                    <input type="date" class="date-input start-date-input">
+                    <button class="date-btn start-date-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <span class="date-label">Start Date</span>
+                    </button>
+                    <input type="date" class="date-input end-date-input">
+                    <button class="date-btn end-date-btn">
+                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <span class="date-label">End Date</span>
+                    </button>
+                    <button class="filter-action-btn clear-btn">Clear</button>
+                </div>
+                <div id="accountant-salesman-toggle" class="search-toggle-buttons">
+                    <button class="toggle-btn active" data-salesman="UNNI">UNNI</button>
+                    <button class="toggle-btn" data-salesman="RIYAS">RIYAS</button>
+                </div>
+                <div id="accountant-collection-content"></div>
+            </div>
+        </div>
+        <div class="footer">
+            <button class="footer-button active" id="accountant-ledger-tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                <span>Ledger</span>
+            </button>
+            <button class="footer-button" id="accountant-collection-tab">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span>Collection</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="page-accountant-customer-ledger" class="page">
+         <div class="header">
+             <button class="icon-button" data-action="back-to-accountant-main">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1 id="accountant-customer-ledger-name">Customer Ledger</h1>
+            <div class="header-actions" style="width: 24px;"></div>
+        </div>
+        <div class="content" id="accountant-customer-ledger-content"></div>
+    </div>
 
     <!-- Hidden elements for generation -->
     <div id="packing-slip-wrapper"><div id="packing-slip-content"></div></div>
     <div id="sale-bill-wrapper"><div id="sale-bill-content"></div></div>
+    <div id="loading-slip-wrapper"><div id="loading-slip-content"></div></div>
     <div id="payment-receipt-wrapper"><div class="receipt-container"><div class="receipt-header"><h2 id="receipt-title">Payment Receipt</h2><p>MF BIGMARKET</p></div><div class="receipt-details"><p><strong>Date:</strong><span id="receipt-date"></span></p><p><strong>Salesman:</strong><span id="receipt-salesman"></span></p><p><strong>Customer:</strong><span id="receipt-customer"></span></p><p id="receipt-method-container"><strong>Pay Method:</strong><span id="receipt-method"></span></p></div><div class="receipt-amount"><div id="receipt-amount-label" class="amount-label">Amount Received</div><div class="amount-value" id="receipt-amount"></div></div><div class="receipt-footer">Thank you for your business!<br>For queries, contact: 9961195050</div></div></div>
     <div id="collection-report-wrapper"><div id="collection-report"><div class="report-header"><h2>MF BIGMARKET</h2><p>Daily Collection Report</p></div><div class="report-details"><div id="report-salesman"></div><div id="report-date"></div></div><table class="report-table"><thead><tr><th>CUSTOMER</th><th class="col-method">MODE</th><th class="col-amount">AMOUNT</th></tr></thead><tbody id="report-table-body"></tbody></table><div class="report-footer"><div id="report-totals"></div><div class="grand-total" id="report-grand-total"></div></div></div></div>
     <div id="flyer-template-wrapper"></div>
@@ -1524,7 +1671,8 @@
                 salesman: null, 
                 customer: null, 
                 startDate: startDate, 
-                endDate: endDate 
+                endDate: endDate,
+                accountantSalesman: 'UNNI',
             },
             shareableFlyerBlob: null,
             bulkFlyerBlob: null,
@@ -1532,7 +1680,7 @@
             currentOrderLocation: null,
             outstandingUpdateTimeout: null,
             outstandingSort: 'default', // 'default', 'desc', 'asc'
-            packingOrder: null,
+            billingOrder: null,
         };
 
         const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField } = window.firebaseTools;
@@ -1638,8 +1786,9 @@
         const setupRealtimeListeners = () => {
             onSnapshot(collection(db, "customers"), (snapshot) => { 
                 appState.customers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-                if(appState.salesman !== 'ADMIN' && appState.salesman !== 'SUNNY') renderCurrentView();
+                if(appState.salesman !== 'ADMIN' && appState.salesman !== 'SUNNY' && appState.salesman !== 'ANISHAD' && appState.salesman !== 'NANDU') renderCurrentView();
                 if(document.getElementById('page-outstanding-balances').classList.contains('active')) renderOutstandingBalancesPage();
+                if(appState.salesman === 'NANDU') renderAccountantView();
             });
             onSnapshot(collection(db, "items"), (snapshot) => { 
                 appState.items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
@@ -1650,22 +1799,30 @@
             });
             onSnapshot(query(collection(db, "orders")), (snapshot) => { 
                 appState.orders = {}; 
-                snapshot.docs.forEach(doc => { 
-                    const order = { id: doc.id, ...doc.data() }; 
-                    if (!appState.orders[order.salesman]) appState.orders[order.salesman] = []; 
-                    appState.orders[order.salesman].push(order); 
-                }); 
+                const allOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allOrders.forEach(order => {
+                    if (!appState.orders[order.salesman]) appState.orders[order.salesman] = [];
+                    appState.orders[order.salesman].push(order);
+                });
                 if (document.getElementById('page-order-history').classList.contains('active')) renderHistoryTabs();
-                 if (document.getElementById('page-packed-orders').classList.contains('active')) renderPackedOrders();
+                 if (document.getElementById('page-billed-orders').classList.contains('active')) renderBilledOrders();
                 if (appState.salesman === 'ADMIN' && document.getElementById('page-admin-dashboard').classList.contains('active')) renderAdminDashboard();
                 if (appState.salesman === 'SUNNY' && document.getElementById('page-packer-home').classList.contains('active')) renderPackerHome();
                 if (appState.salesman === 'SUNNY' && document.getElementById('page-packer-history').classList.contains('active')) renderPackerHistory();
+                if (appState.salesman === 'ANISHAD' && document.getElementById('page-biller-home').classList.contains('active')) renderBillerHome();
+                if (appState.salesman === 'ANISHAD' && document.getElementById('page-biller-history').classList.contains('active')) renderBillerHistory();
+                if (appState.salesman === 'NANDU') renderAccountantView();
             });
             onSnapshot(query(collection(db, "payments")), (snapshot) => { 
                 appState.payments = {}; 
-                snapshot.docs.forEach(doc => { const payment = { id: doc.id, ...doc.data() }; if (!appState.payments[payment.salesman]) appState.payments[payment.salesman] = []; appState.payments[payment.salesman].push(payment); });
+                const allPayments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allPayments.forEach(payment => { 
+                    if (!appState.payments[payment.salesman]) appState.payments[payment.salesman] = []; 
+                    appState.payments[payment.salesman].push(payment); 
+                });
                 if (appState.salesman === 'ADMIN' && document.getElementById('page-admin-dashboard').classList.contains('active')) renderAdminDashboard();
-                 if (document.getElementById('page-payment-history').classList.contains('active')) renderHistoryTabs();
+                if (document.getElementById('page-payment-history').classList.contains('active')) renderHistoryTabs();
+                if (appState.salesman === 'NANDU' && document.getElementById('accountant-collection-view').style.display !== 'none') renderAccountantCollectionView();
             });
         };
 
@@ -1853,12 +2010,18 @@ const container = document.getElementById('payment-customer-list-container');
 
                 let profitHtml = '';
                 if (isOrderType && item.items) {
-                    const totalCost = item.items.reduce((sum, lineItem) => {
+                    const itemsToCalc = item.billedItems || item.items;
+                    const { totalRevenue, totalProfit } = itemsToCalc.reduce((acc, lineItem) => {
+                        if (lineItem.wasUnchecked) return acc;
+                        const revenue = (lineItem.quantity || 0) * (lineItem.sellingPrice || 0);
                         const itemCost = costMap.get(String(lineItem.item.Code)) || 0;
-                        return sum + (lineItem.quantity * itemCost);
-                    }, 0);
-                    const totalProfit = item.total - totalCost;
-                    const margin = item.total > 0 ? (totalProfit / item.total) * 100 : 0;
+                        const cost = (lineItem.quantity || 0) * itemCost;
+                        acc.totalRevenue += revenue;
+                        acc.totalProfit += (revenue - cost);
+                        return acc;
+                    }, { totalRevenue: 0, totalProfit: 0 });
+
+                    const margin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
                     const profitClass = totalProfit >= 0 ? 'profit' : 'loss';
                     profitHtml = `<p><strong>Profit:</strong> <span class="${profitClass}">${formatPreciseCurrency(totalProfit)} (${margin.toFixed(1)}%)</span></p>`;
                 }
@@ -1867,15 +2030,15 @@ const container = document.getElementById('payment-customer-list-container');
                 if (isPaymentHistory) {
                      actionsHtml = `<button class="history-action-btn delete-history-btn" data-type="payments" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
                 } else { // Packing Slips
-                    const isPacked = item.status === 'packed';
-                    if (isPacked) {
-                        actionsHtml = `
+                    const isBilled = item.status === 'billed';
+                    if (isBilled) {
+                         actionsHtml = `
                             <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
-                            <span style="display:flex; align-items:center; gap: 5px; color: var(--success-color);" title="This order has been packed.">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            <span style="display:flex; align-items:center; gap: 5px; color: var(--success-color);" title="This order has been billed.">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Billed
                             </span>`;
                     } else {
-                        actionsHtml = `
+                         actionsHtml = `
                             <button class="history-action-btn edit-packing-slip-btn" title="Edit Slip"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
                             <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
                             <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
@@ -1923,7 +2086,7 @@ const container = document.getElementById('payment-customer-list-container');
             const { start, end } = getReportDateRange();
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
             
-            let orders = Object.values(appState.orders).flat().filter(o => o.status === 'packed');
+            let orders = Object.values(appState.orders).flat().filter(o => o.status === 'billed');
             let payments = Object.values(appState.payments).flat();
 
             if (start && end) {
@@ -1942,7 +2105,7 @@ const container = document.getElementById('payment-customer-list-container');
                 if (!salesBySalesman[salesman]) salesBySalesman[salesman] = { revenue: 0, cost: 0, orderCount: 0 };
                 salesBySalesman[salesman].orderCount++;
 
-                const itemsToProcess = order.packedItems || order.items;
+                const itemsToProcess = order.billedItems || order.items;
 
                 (itemsToProcess || []).forEach(item => {
                     if (item.wasUnchecked) return; 
@@ -2061,7 +2224,7 @@ const container = document.getElementById('payment-customer-list-container');
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             const { start, end } = getReportDateRange();
-            let salesmanOrders = (appState.orders[salesman] || []).filter(o => o.status === 'packed');
+            let salesmanOrders = (appState.orders[salesman] || []).filter(o => o.status === 'billed');
 
             if (start && end) {
                 salesmanOrders = salesmanOrders.filter(o => { const orderDate = new Date(o.date); return orderDate >= start && orderDate <= end; });
@@ -2076,7 +2239,7 @@ const container = document.getElementById('payment-customer-list-container');
                 if (!customerSales[customerName]) customerSales[customerName] = { revenue: 0, profit: 0, orderCount: 0 };
                 customerSales[customerName].orderCount++;
                 
-                const itemsToProcess = order.packedItems || order.items;
+                const itemsToProcess = order.billedItems || order.items;
 
                 (itemsToProcess || []).forEach(item => {
                      if (item.wasUnchecked) return;
@@ -2115,14 +2278,14 @@ const container = document.getElementById('payment-customer-list-container');
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             const { start, end } = getReportDateRange();
-            let customerOrders = (appState.orders[salesman] || []).filter(o => o.customer.Customer === customerName && o.status === 'packed');
+            let customerOrders = (appState.orders[salesman] || []).filter(o => o.customer.Customer === customerName && o.status === 'billed');
             if (start && end) {
                 customerOrders = customerOrders.filter(o => { const orderDate = new Date(o.date); return orderDate >= start && orderDate <= end; });
             }
 
             const itemsSold = {};
             customerOrders.forEach(order => {
-                const itemsToProcess = order.packedItems || order.items;
+                const itemsToProcess = order.billedItems || order.items;
                 (itemsToProcess || []).forEach(item => {
                     if(item.wasUnchecked) return;
                     const itemName = item.item.ItemName;
@@ -2176,13 +2339,13 @@ const container = document.getElementById('payment-customer-list-container');
             const container = document.getElementById('customer-ledger-content');
             
             const customerSales = (appState.orders[appState.salesman] || [])
-                .filter(o => o.customer.Customer === c.Customer && o.status === 'packed');
+                .filter(o => o.customer.Customer === c.Customer && o.status === 'billed');
 
             const customerCollections = (appState.payments[appState.salesman] || [])
                 .filter(p => p.customer.Customer === c.Customer);
 
             const salesTransactions = customerSales.map(s => {
-                const finalTotal = (s.packedItems || s.items || []).reduce((acc, item) => {
+                const finalTotal = (s.billedItems || s.items || []).reduce((acc, item) => {
                     return item.wasUnchecked ? acc : acc + (item.quantity * item.sellingPrice);
                 }, 0);
                 return {
@@ -2202,13 +2365,12 @@ const container = document.getElementById('payment-customer-list-container');
                 credit: p.amount,
                 id: p.id
             }));
-
-            const allTransactions = [...salesTransactions, ...collectionTransactions].sort((a, b) => b.date - a.date);
+const allTransactions = [...salesTransactions, ...collectionTransactions].sort((a, b) => b.date - a.date);
 
             let transactionRows = '';
             allTransactions.forEach(t => {
                 if (t.type === 'Sale') {
-                    const itemsHtml = (t.order.packedItems || t.order.items || [])
+                    const itemsHtml = (t.order.billedItems || t.order.items || [])
                         .filter(i => !i.wasUnchecked)
                         .map(i => `<li><span class="ledger-item-name">${i.item.ItemName}</span> <span class="ledger-item-qty">${i.quantity} x ${formatPreciseCurrency(i.sellingPrice)}</span></li>`)
                         .join('');
@@ -2277,7 +2439,7 @@ const container = document.getElementById('payment-customer-list-container');
             const orderToPrint = Object.values(appState.orders).flat().find(o => o.id === orderId);
             if (!orderToPrint) { alert('Could not find order to print.'); return; }
 
-            const itemsToPrint = (orderToPrint.packedItems || orderToPrint.items || []).filter(item => !item.wasUnchecked);
+            const itemsToPrint = (orderToPrint.billedItems || orderToPrint.items || []).filter(item => !item.wasUnchecked);
             const finalTotal = itemsToPrint.reduce((acc, item) => acc + (item.quantity * item.sellingPrice), 0);
             
             const ITEMS_PER_PAGE = 25; 
@@ -2370,10 +2532,19 @@ const container = document.getElementById('payment-customer-list-container');
                     document.getElementById('footer').style.display = 'none';
                     showPage('page-packer-home'); 
                     renderPackerHome();
-                } else {
+                } else if (salesman === 'ANISHAD') {
+                    document.getElementById('footer').style.display = 'none';
+                    showPage('page-biller-home'); 
+                    renderBillerHome();
+                } else if (salesman === 'NANDU') {
+                    document.getElementById('footer').style.display = 'flex';
+                    showPage('page-accountant-dashboard');
+                    renderAccountantView();
+                }
+                else {
                     document.getElementById('footer').style.display = 'flex'; 
                     document.getElementById('settings-icon-btn').style.display = 'none';
-                    document.getElementById('packed-orders-btn').style.display = 'flex';
+                    document.getElementById('billed-orders-btn').style.display = 'flex';
                     appState.currentView = 'customers';
                     document.getElementById('orders-tab-btn').classList.add('active'); 
                     document.getElementById('payments-tab-btn').classList.remove('active');
@@ -2392,24 +2563,26 @@ const container = document.getElementById('payment-customer-list-container');
 
         document.getElementById('logout-btn').addEventListener('click', handleLogout);
         document.getElementById('admin-logout-btn').addEventListener('click', handleLogout);
-        
+        document.getElementById('accountant-logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('biller-logout-btn').addEventListener('click', handleLogout);
+
         const customerView = document.getElementById('customer-view'), paymentView = document.getElementById('payment-view'), mainHeader = document.getElementById('main-view-header');
         const productInfoBtn = document.getElementById('product-info-icon-btn');
         const pendingBalanceBtn = document.getElementById('pending-balance-btn');
 
         const renderCurrentView = () => {
-             if (appState.salesman === 'ADMIN' || appState.salesman === 'SUNNY') return; 
+             if (appState.salesman === 'ADMIN' || appState.salesman === 'SUNNY' || appState.salesman === 'ANISHAD' || appState.salesman === 'NANDU') return; 
              if (appState.currentView === 'customers') { 
                  mainHeader.textContent = 'Customers';
                  productInfoBtn.style.display = 'flex';
                  pendingBalanceBtn.style.display = 'none';
-                 document.getElementById('packed-orders-btn').style.display = 'flex';
+                 document.getElementById('billed-orders-btn').style.display = 'flex';
                  renderCustomerList(); 
             } else { 
                 mainHeader.textContent = 'Payments'; 
                 productInfoBtn.style.display = 'none';
                 pendingBalanceBtn.style.display = 'flex';
-                 document.getElementById('packed-orders-btn').style.display = 'none';
+                 document.getElementById('billed-orders-btn').style.display = 'none';
                 renderPaymentCustomerList();
              } 
         };
@@ -2487,7 +2660,7 @@ const container = document.getElementById('payment-customer-list-container');
                 document.getElementById('confirm-payment-btn').style.display = 'block'; 
                 document.getElementById('payment-actions-container').style.display = 'none'; 
                 showPage('page-payment'); 
-            }
+            } 
         });
         
         document.querySelectorAll('[data-action="back-to-main"]').forEach(btn => btn.addEventListener('click', () => showPage('page-main-view')));
@@ -2653,7 +2826,6 @@ const container = document.getElementById('payment-customer-list-container');
                  document.getElementById('receipt-amount-label').textContent = 'Total Amount Due';
                  document.getElementById('receipt-method-container').style.display = 'none';
              }
-
              const wrapper = document.getElementById('payment-receipt-wrapper');
              const originalStyles = { position: wrapper.style.position, left: wrapper.style.left, top: wrapper.style.top, display: wrapper.style.display, };
              wrapper.style.position = 'absolute'; wrapper.style.left = '-9999px'; wrapper.style.top = '-9999px'; wrapper.style.display = 'block';
@@ -2699,27 +2871,60 @@ const container = document.getElementById('payment-customer-list-container');
         });
 
 
-        window.onafterprint = () => { document.body.classList.remove('printing', 'printing-receipt', 'printing-packing-slip', 'printing-summary', 'printing-sale-bill'); };
+        window.onafterprint = () => { document.body.classList.remove('printing', 'printing-receipt', 'printing-packing-slip', 'printing-summary', 'printing-sale-bill', 'printing-loading-slip'); };
         
         const printSlip = (orderId) => {
             const orderToPrint = Object.values(appState.orders).flat().find(o => o.id === orderId);
-            
             if (!orderToPrint) { alert('Could not find order to print.'); return; }
-            const ITEMS_PER_PAGE = 27; const pages = []; for (let i = 0; i < orderToPrint.items.length; i += ITEMS_PER_PAGE) pages.push(orderToPrint.items.slice(i, i + ITEMS_PER_PAGE));
+            
+            const ITEMS_PER_PAGE = 27;
+            const pages = [];
+            for (let i = 0; i < orderToPrint.items.length; i += ITEMS_PER_PAGE) {
+                pages.push(orderToPrint.items.slice(i, i + ITEMS_PER_PAGE));
+            }
+            
             let slipHtml = '';
             pages.forEach((pageItems, pageIndex) => {
                 const pageClass = pageIndex > 0 ? 'slip-page-break' : '';
-                const tableBodyHtml = pageItems.map((item, itemIndex) => { 
-                    const serialNumber = (pageIndex * ITEMS_PER_PAGE) + itemIndex + 1; 
-                    let priceType = '<span class="price-type">C</span>'; 
-                    if (item.item.Price2 && item.sellingPrice === item.item.Price2) priceType = '<span class="price-type">P2</span>'; 
-                    else if (item.item.Price3 && item.sellingPrice === item.item.Price3) priceType = '<span class="price-type">P3</span>'; 
-                    return `<tr><td>${serialNumber}</td><td class="col-mrp">${formatPreciseCurrency(item.item.Mrp)}</td><td class="col-item-name">${item.item.ItemName}</td><td class="col-qty">${item.quantity} ${item.item.Unit || ''}</td><td class="col-price">${formatPreciseCurrency(item.sellingPrice)}${priceType}</td></tr>`; 
+                const tableBodyHtml = pageItems.map((item, itemIndex) => {
+                    const serialNumber = (pageIndex * ITEMS_PER_PAGE) + itemIndex + 1;
+                    let priceType = '<span class="price-type">C</span>';
+                    if (item.item.Price2 && item.sellingPrice === item.item.Price2) priceType = '<span class="price-type">P2</span>';
+                    else if (item.item.Price3 && item.sellingPrice === item.item.Price3) priceType = '<span class="price-type">P3</span>';
+        
+                    const highlightCategories = ['CATTLE FEED', 'RICE', 'SUGAR', 'VELLAM', 'SALT,SUGAR&JAGGERY'];
+                    const fullItemData = appState.items.find(i => i.Code === item.item.Code);
+                    const itemCategory = (fullItemData?.Category || '').toUpperCase();
+                    const highlightStyle = highlightCategories.includes(itemCategory) ? 'font-weight: bold; color: #000;' : '';
+        
+                    return `<tr style="${highlightStyle}">
+                                <td>${serialNumber}</td>
+                                <td class="col-mrp">${formatPreciseCurrency(item.item.Mrp)}</td>
+                                <td class="col-item-name">${item.item.ItemName}</td>
+                                <td class="col-qty">${item.quantity} ${item.item.Unit || ''}</td>
+                                <td class="col-price">${formatPreciseCurrency(item.sellingPrice)}${priceType}</td>
+                            </tr>`;
                 }).join('');
+                
                 const footerHtml = pageIndex === pages.length - 1 ? `<div class="slip-footer"><div class="sorted-by">Sorted By:<div class="signature-line"></div></div></div>` : '';
-                slipHtml += `<div class="${pageClass}"><div class="slip-header"><h2>MF BIGMARKET</h2><p>Packing Slip</p></div><div class="slip-details"><div><strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}</div><div style="text-align: right;"><strong>Date:</strong> ${formatDDMMYYYY(orderToPrint.date)}<br><strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString('en-GB')}</div></div><div class="slip-page-number">Page ${pageIndex + 1} of ${pages.length}</div><table class="slip-table"><thead><tr><th>S.No.</th><th class="col-mrp">MRP</th><th class="col-item-name">ITEM</th><th class="col-qty">QTY / UNIT</th><th class="col-price">PRICE</th></tr></thead><tbody>${tableBodyHtml}</tbody></table>${footerHtml}</div>`;
+                slipHtml += `<div class="${pageClass}">
+                                <div class="slip-header"><h2>MF BIGMARKET</h2><p>Packing Slip</p></div>
+                                <div class="slip-details">
+                                    <div><strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}</div>
+                                    <div style="text-align: right;"><strong>Date:</strong> ${formatDDMMYYYY(orderToPrint.date)}<br><strong>Time:</strong> ${new Date(orderToPrint.date).toLocaleTimeString('en-GB')}</div>
+                                </div>
+                                <div class="slip-page-number">Page ${pageIndex + 1} of ${pages.length}</div>
+                                <table class="slip-table">
+                                    <thead><tr><th>S.No.</th><th class="col-mrp">MRP</th><th class="col-item-name">ITEM</th><th class="col-qty">QTY / UNIT</th><th class="col-price">PRICE</th></tr></thead>
+                                    <tbody>${tableBodyHtml}</tbody>
+                                </table>
+                                ${footerHtml}
+                             </div>`;
             });
-            document.getElementById('packing-slip-content').innerHTML = slipHtml; document.body.classList.add('printing', 'printing-packing-slip'); setTimeout(() => window.print(), 100);
+            
+            document.getElementById('packing-slip-content').innerHTML = slipHtml;
+            document.body.classList.add('printing', 'printing-packing-slip');
+            setTimeout(() => window.print(), 100);
         };
 
         const handleHistoryClick = async (e) => {
@@ -2824,8 +3029,9 @@ const container = document.getElementById('payment-customer-list-container');
             endInput.addEventListener('change', (e) => { appState.reporting.endDate = e.target.value; updateFilterUI(filterId); renderFn(); });
 
             clearBtn.addEventListener('click', () => {
-                appState.reporting.startDate = null; appState.reporting.endDate = null;
-                startInput.value = ''; endInput.value = '';
+                const { startDate, endDate } = getDefaultDateRange();
+                appState.reporting.startDate = startDate; appState.reporting.endDate = endDate;
+                startInput.value = startDate; endInput.value = endDate;
                 updateFilterUI(filterId); renderFn();
             });
         };
@@ -2835,9 +3041,9 @@ const container = document.getElementById('payment-customer-list-container');
         setupBetweenDateFilter('payment-history-date-filter', renderHistoryTabs);
         setupBetweenDateFilter('location-report-date-filter', renderLocationReportPage);
 
-        const printPaymentSummary = () => {
+        const printPaymentSummary = (salesman) => {
             const { start, end } = getReportDateRange();
-            let salesmanPayments = appState.payments[appState.salesman] || [];
+            let salesmanPayments = appState.payments[salesman] || [];
             if (start && end) {
                 salesmanPayments = salesmanPayments.filter(p => { const pDate = new Date(p.date); return pDate >= start && pDate <= end; });
             }
@@ -2846,7 +3052,7 @@ const container = document.getElementById('payment-customer-list-container');
             const grandTotal = totalCash + totalUPI;
             salesmanPayments.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            document.getElementById('print-summary-salesman').textContent = `Salesman: ${appState.salesman}`;
+            document.getElementById('print-summary-salesman').textContent = `Salesman: ${salesman}`;
             const dateRangeText = start && end ? `Date Range: ${formatDDMMYYYY(start)} - ${formatDDMMYYYY(end)}` : 'Date Range: All Time';
             document.getElementById('print-summary-daterange').textContent = dateRangeText;
             document.getElementById('print-summary-cash').textContent = formatPreciseCurrency(totalCash);
@@ -2876,7 +3082,7 @@ const container = document.getElementById('payment-customer-list-container');
             showPage('page-payment-summary'); 
         };
         document.getElementById('view-collection-summary-btn').addEventListener('click', renderSalesmanSummaryPage);
-        document.getElementById('print-summary-btn').addEventListener('click', printPaymentSummary);
+        document.getElementById('print-summary-btn').addEventListener('click',() => printPaymentSummary(appState.salesman));
 
         const offerModal = document.getElementById('offer-modal'), offerModalBody = document.getElementById('offer-modal-body');
         const renderFlyerBuilder = () => { const customer = appState.customer; const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === customer.Customer); let previouslyOrderedItemsHtml = ''; appState.flyerBuilder.items = []; if (customerOrders.length > 0) { const uniqueItemCodes = new Set(); customerOrders.forEach(order => {(order.items || []).forEach(item => uniqueItemCodes.add(item.item.Code))}); [...uniqueItemCodes].forEach(code => { const fullItem = appState.items.find(i => i.Code == code); if (fullItem) { appState.flyerBuilder.items.push({ item: fullItem, price: fullItem.Price2, isPrevious: true }); } }); if(appState.flyerBuilder.items.length > 0) { previouslyOrderedItemsHtml = `<h4 style="margin-bottom:10px;">Previously Ordered Items</h4>`; } } offerModalBody.innerHTML = `<div id="offer-flyer-preview-container"></div><div id="offer-builder-content">${previouslyOrderedItemsHtml}<div id="offer-builder-item-list"></div><hr style="border: 1px solid #f0f0f0; margin: 20px 0;"><h4 style="margin-bottom:10px;">Add New Item to Offer</h4><div id="offer-item-search-container" style="position: relative;"><input type="text" id="offer-item-search-input" placeholder="Search for products..."><div id="offer-item-search-results"></div></div></div>`; renderFlyerBuilderItems(); };
@@ -3032,7 +3238,7 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
         const renderPackerHome = () => {
             const container = document.getElementById('packer-order-list');
             const { start, end } = getReportDateRange();
-            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'pending');
+            let allOrders = Object.values(appState.orders).flat().filter(o => ['pending', 'packing'].includes(o.status));
             
             if (start && end) {
                 allOrders = allOrders.filter(o => {
@@ -3042,104 +3248,86 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
             }
              allOrders.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-            container.innerHTML = allOrders.map(o => `
+            if(allOrders.length === 0) {
+                 container.innerHTML = `<div class="card" style="text-align: center;">No pending orders found.</div>`;
+                 return;
+            }
+
+            container.innerHTML = allOrders.map(o => {
+                const isPacking = o.status === 'packing';
+                return `
                 <div class="list-item" data-order-id="${o.id}">
                     <div class="info">${o.customer.Customer} (${o.salesman})</div>
-                    <button class="list-item-action pack-order-btn" data-order-id="${o.id}">Pack</button>
-                </div>
-            `).join('');
+                    <button class="list-item-action start-pack-btn" data-order-id="${o.id}" style="display: ${isPacking ? 'none' : 'block'};">Start Packing</button>
+                    <button class="list-item-action packing finish-pack-btn" data-order-id="${o.id}" style="display: ${isPacking ? 'block' : 'none'};">Finish Packing</button>
+                </div>`;
+            }).join('');
         };
         
-        document.getElementById('packer-order-list').addEventListener('click', e => {
-            const packBtn = e.target.closest('.pack-order-btn');
-            if(packBtn) {
-                const orderId = packBtn.dataset.orderId;
+        document.getElementById('packer-order-list').addEventListener('click', async e => {
+            const startBtn = e.target.closest('.start-pack-btn');
+            const finishBtn = e.target.closest('.finish-pack-btn');
+            
+            if (startBtn) {
+                const orderId = startBtn.dataset.orderId;
+                startBtn.disabled = true;
+                try {
+                    await updateDoc(doc(db, "orders", orderId), {
+                        status: 'packing',
+                        packingStartTime: new Date().toISOString()
+                    });
+                    startBtn.style.display = 'none';
+                    startBtn.closest('.list-item').querySelector('.finish-pack-btn').style.display = 'block';
+                } catch(err) {
+                    alert('Could not start packing. Please try again.');
+                    console.error(err);
+                } finally {
+                    startBtn.disabled = false;
+                }
+            }
+
+            if (finishBtn) {
+                const orderId = finishBtn.dataset.orderId;
                 const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
-                appState.packingOrder = JSON.parse(JSON.stringify(order)); // Deep copy
-                showPage('page-packing-interface');
-                renderPackingInterface();
+                finishBtn.disabled = true;
+                try {
+                    const startTime = new Date(order.packingStartTime);
+                    const endTime = new Date();
+                    const durationMs = endTime - startTime;
+
+                    await updateDoc(doc(db, "orders", orderId), {
+                        status: 'packed',
+                        packingEndTime: endTime.toISOString(),
+                        packingDuration: durationMs
+                    });
+
+                    const listItem = finishBtn.closest('.list-item');
+                    listItem.classList.add('removing');
+                    setTimeout(() => listItem.remove(), 500);
+                    showToast('Packing finished!');
+
+                } catch(err) {
+                    alert('Could not finish packing. Please try again.');
+                     console.error(err);
+                } finally {
+                     finishBtn.disabled = false;
+                }
             }
         });
         
-        const renderPackingInterface = () => {
-            const order = appState.packingOrder;
-            document.getElementById('packing-order-customer').textContent = `Packing for ${order.customer.Customer}`;
-            const itemList = document.getElementById('packing-item-list');
-            itemList.innerHTML = order.items.map((itemData, index) => `
-                <div class="list-item">
-                    <input type="checkbox" data-index="${index}" ${itemData.wasUnchecked ? '' : 'checked'}>
-                    <div class="info">
-                        <span class="packing-item-name">${itemData.item.ItemName}</span>
-                        <span class="packing-item-details">
-                            QTY: ${itemData.quantity} ${itemData.item.Unit || ''} | MRP: ${formatPreciseCurrency(itemData.item.Mrp)}
-                        </span>
-                    </div>
-                </div>
-            `).join('');
+        const formatDuration = (ms) => {
+            if (!ms || ms < 0) return 'N/A';
+            const seconds = Math.floor((ms / 1000) % 60);
+            const minutes = Math.floor((ms / (1000 * 60)) % 60);
+            const hours = Math.floor(ms / (1000 * 60 * 60));
+            if (hours > 0) return `${hours}h ${minutes}m`;
+            if (minutes > 0) return `${minutes}m ${seconds}s`;
+            return `${seconds}s`;
         };
-        
-        document.getElementById('packing-item-search').addEventListener('input', e => {
-            renderItemSearchResults(e.target.value, 'packing-item-search-results');
-        });
-
-        document.getElementById('packing-item-search-results').addEventListener('click', e => {
-            const resultItem = e.target.closest('.search-result-item');
-            if (resultItem) {
-                const item = appState.items.find(i => i.Code == resultItem.dataset.itemCode);
-                const qty = prompt(`Enter quantity for ${item.ItemName}:`);
-                const qtyNum = parseFloat(qty);
-                if(qty && !isNaN(qtyNum) && qtyNum > 0) {
-                    appState.packingOrder.items.push({ item, quantity: qtyNum, sellingPrice: item.Price2, isNew: true });
-                    renderPackingInterface();
-                }
-                document.getElementById('packing-item-search').value = '';
-                document.getElementById('packing-item-search-results').innerHTML = '';
-            }
-        });
-       
-        document.getElementById('confirm-packing-btn').addEventListener('click', async () => {
-            const packingOrder = appState.packingOrder;
-            const packedOrderId = packingOrder.id;
-
-            const checkboxes = document.querySelectorAll('#packing-item-list input[type="checkbox"]');
-            
-            packingOrder.items.forEach((item, index) => {
-                const checkbox = document.querySelector(`#packing-item-list input[data-index="${index}"]`);
-                if (checkbox && !checkbox.checked) {
-                    item.wasUnchecked = true;
-                } else {
-                    delete item.wasUnchecked;
-                }
-            });
-            
-            const updateData = {
-                status: 'packed',
-                packedItems: packingOrder.items
-            };
-
-            try {
-                await updateDoc(doc(db, "orders", packedOrderId), updateData);
-                showPage('page-packer-home');
-
-                const itemToRemove = document.querySelector(`#packer-order-list .list-item[data-order-id="${packedOrderId}"]`);
-                if(itemToRemove) {
-                    itemToRemove.classList.add('removing');
-                    setTimeout(() => itemToRemove.remove(), 500);
-                }
-                
-                showProfessionalModal('Success', 'Order has been marked as packed.');
-
-            } catch (error) {
-                console.error("Error confirming packing:", error);
-                alert("Failed to confirm packing.");
-            } finally {
-                 appState.packingOrder = null;
-            }
-        });
         
         const renderPackerHistory = () => {
              const container = document.getElementById('packer-history-list');
-            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'packed');
+            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'packed' || o.status === 'billed');
              allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
              
             if (allOrders.length === 0) {
@@ -3153,52 +3341,303 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                         <div class="info">
                            <p><strong>Customer:</strong> ${o.customer.Customer}</p>
                            <p><strong>Salesman:</strong> ${o.salesman}</p>
-                           <p class="date-display">${formatDDMMYYYYTime(o.date)}</p>
-                        </div>
-                        <div class="actions">
-                            <button class="button button-outline undo-pack-btn" style="padding: 5px 10px; font-size: 0.8rem;">Undo</button>
+                           <p><strong>Time Taken:</strong> ${formatDuration(o.packingDuration)}</p>
+                           <p class="date-display">${formatDDMMYYYYTime(o.packingEndTime || o.date)}</p>
                         </div>
                     </div>
                 </div>
             `).join('');
         };
+        
+        document.getElementById('packer-logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('packer-history-btn').addEventListener('click', () => { showPage('page-packer-history'); renderPackerHistory(); });
+        document.getElementById('back-to-packer-home-from-history-btn').addEventListener('click', () => showPage('page-packer-home'));
+        document.getElementById('billed-orders-btn').addEventListener('click', () => { showPage('page-billed-orders'); renderBilledOrders(); });
+        document.getElementById('back-to-main-from-billed-orders-btn').addEventListener('click', () => showPage('page-main-view'));
+        setupBetweenDateFilter('packer-date-filter', renderPackerHome);
 
-        document.getElementById('packer-history-list').addEventListener('click', async e => {
-            const undoBtn = e.target.closest('.undo-pack-btn');
+        // --- BILLER (ANISHAD) LOGIC ---
+        const renderBillerHome = () => {
+            const container = document.getElementById('biller-order-list');
+            const { start, end } = getReportDateRange();
+            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'packed');
+            
+            if (start && end) {
+                allOrders = allOrders.filter(o => {
+                    const orderDate = new Date(o.packingEndTime || o.date);
+                    return orderDate >= start && orderDate <= end;
+                });
+            }
+            allOrders.sort((a,b) => new Date(b.packingEndTime) - new Date(a.packingEndTime));
+
+            if(allOrders.length === 0) {
+                container.innerHTML = `<div class="card" style="text-align: center;">No orders pending for billing.</div>`;
+                return;
+            }
+
+            container.innerHTML = allOrders.map(o => `
+                <div class="list-item" data-order-id="${o.id}">
+                    <div class="info">${o.customer.Customer} (${o.salesman})</div>
+                    <button class="list-item-action start-bill-btn" data-order-id="${o.id}">Start Billing</button>
+                </div>
+            `).join('');
+        };
+        
+        document.getElementById('biller-order-list').addEventListener('click', e => {
+            const billBtn = e.target.closest('.start-bill-btn');
+            if(billBtn) {
+                const orderId = billBtn.dataset.orderId;
+                const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
+                appState.billingOrder = JSON.parse(JSON.stringify(order));
+                showPage('page-billing-interface');
+                renderBillingInterface();
+            }
+        });
+
+        const renderBillingInterface = () => {
+            const order = appState.billingOrder;
+            document.getElementById('billing-order-customer').textContent = `Billing for ${order.customer.Customer}`;
+            const itemList = document.getElementById('billing-item-list');
+            itemList.innerHTML = order.items.map((itemData, index) => `
+                <div class="list-item">
+                    <input type="checkbox" data-index="${index}" ${itemData.wasUnchecked ? '' : 'checked'}>
+                    <div class="info">
+                        <span class="billing-item-name">${itemData.item.ItemName}</span>
+                        <span class="billing-item-details">
+                            QTY: ${itemData.quantity} ${itemData.item.Unit || ''} | MRP: ${formatPreciseCurrency(itemData.item.Mrp)}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        };
+        
+        document.getElementById('billing-item-search').addEventListener('input', e => {
+            renderItemSearchResults(e.target.value, 'billing-item-search-results');
+        });
+
+        document.getElementById('billing-item-search-results').addEventListener('click', e => {
+            const resultItem = e.target.closest('.search-result-item');
+            if (resultItem) {
+                const item = appState.items.find(i => i.Code == resultItem.dataset.itemCode);
+                const qty = prompt(`Enter quantity for ${item.ItemName}:`);
+                const qtyNum = parseFloat(qty);
+                if(qty && !isNaN(qtyNum) && qtyNum > 0) {
+                    appState.billingOrder.items.push({ item, quantity: qtyNum, sellingPrice: item.Price2, isNew: true });
+                    renderBillingInterface();
+                }
+                document.getElementById('billing-item-search').value = '';
+                document.getElementById('billing-item-search-results').innerHTML = '';
+            }
+        });
+       
+        document.getElementById('confirm-billing-btn').addEventListener('click', async () => {
+            const billingOrder = appState.billingOrder;
+            const billedOrderId = billingOrder.id;
+
+            billingOrder.items.forEach((item, index) => {
+                const checkbox = document.querySelector(`#billing-item-list input[data-index="${index}"]`);
+                if (checkbox && !checkbox.checked) {
+                    item.wasUnchecked = true;
+                } else {
+                    delete item.wasUnchecked;
+                }
+            });
+            
+            const updateData = {
+                status: 'billed',
+                billedItems: billingOrder.items,
+                billedBy: 'ANISHAD',
+                billedAt: new Date().toISOString()
+            };
+
+            try {
+                await updateDoc(doc(db, "orders", billedOrderId), updateData);
+                const listItem = document.querySelector(`#biller-order-list .list-item[data-order-id="${billedOrderId}"]`);
+                if(listItem) {
+                    listItem.classList.add('removing');
+                    setTimeout(() => listItem.remove(), 500);
+                }
+                showPage('page-biller-home');
+                showProfessionalModal('Success', 'Order has been billed successfully.');
+            } catch (error) {
+                console.error("Error confirming billing:", error);
+                alert("Failed to confirm billing.");
+            } finally {
+                 appState.billingOrder = null;
+            }
+        });
+
+        const renderBillerHistory = () => {
+            const container = document.getElementById('biller-history-list');
+            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'billed');
+            allOrders.sort((a, b) => new Date(b.billedAt) - new Date(a.billedAt));
+             
+            if (allOrders.length === 0) {
+                container.innerHTML = `<p class="card" style="text-align:center;">No billed orders found.</p>`;
+                return;
+            }
+
+            container.innerHTML = allOrders.map(o => `
+                <div class="history-card" data-id="${o.id}">
+                    <div class="history-card-header">
+                        <div class="info">
+                           <p><strong>Customer:</strong> ${o.customer.Customer}</p>
+                           <p><strong>Salesman:</strong> ${o.salesman}</p>
+                           <p class="date-display">${formatDDMMYYYYTime(o.billedAt)}</p>
+                        </div>
+                        <div class="actions">
+                            <button class="history-action-btn download-bill-btn" title="Download Excel"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
+                            <button class="history-action-btn print-loading-slip-btn" title="Print Loading Slip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></button>
+                            <button class="button button-outline undo-bill-btn" style="padding: 5px 10px; font-size: 0.8rem;">Undo</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        };
+        
+        const jsonToExcel = (jsonData, fileName) => {
+            let csv = Object.keys(jsonData[0]).join(',') + '\r\n';
+            jsonData.forEach(row => {
+                const values = Object.values(row).map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+                csv += values + '\r\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", fileName + '.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        };
+        
+        const printLoadingSlip = (order) => {
+             const highlightCategories = ['CATTLE FEED', 'RICE', 'SUGAR', 'VELLAM', 'SALT,SUGAR&JAGGERY'];
+             const loadingItems = (order.billedItems || [])
+                .filter(itemData => !itemData.wasUnchecked)
+                .map(itemData => ({
+                    ...itemData,
+                    fullItem: appState.items.find(i => i.Code === itemData.item.Code)
+                }))
+                .filter(itemData => {
+                    const category = (itemData.fullItem?.Category || '').toUpperCase();
+                    return highlightCategories.includes(category);
+                });
+
+            if (loadingItems.length === 0) {
+                alert('No items from loading categories found in this order.');
+                return;
+            }
+            
+            const tableBodyHtml = loadingItems.map((item, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${item.item.ItemName}</td>
+                    <td class="col-qty">${item.quantity} ${item.item.Unit || ''}</td>
+                </tr>
+            `).join('');
+
+            const slipHtml = `
+                <div class="loading-slip-header">
+                    <h2>Loading Slip</h2>
+                </div>
+                <div class="loading-slip-details">
+                    <p><strong>Customer:</strong> ${order.customer.Customer}</p>
+                    <p><strong>Date:</strong> ${formatDDMMYYYY(order.billedAt)}</p>
+                </div>
+                <table class="loading-slip-table">
+                    <thead>
+                        <tr>
+                            <th>S.No.</th>
+                            <th>Item Name</th>
+                            <th class="col-qty">Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableBodyHtml}</tbody>
+                </table>`;
+            
+            document.getElementById('loading-slip-content').innerHTML = slipHtml;
+            document.body.classList.add('printing', 'printing-loading-slip');
+            setTimeout(() => window.print(), 100);
+        };
+
+        document.getElementById('biller-history-list').addEventListener('click', async e => {
+            const undoBtn = e.target.closest('.undo-bill-btn');
+            const downloadBtn = e.target.closest('.download-bill-btn');
+            const printBtn = e.target.closest('.print-loading-slip-btn');
+
             if (undoBtn) {
                 const card = undoBtn.closest('.history-card');
                 const orderId = card.dataset.id;
-                if (confirm('Are you sure you want to undo this packing? This will move the order back to the pending list.')) {
+                if (confirm('Are you sure you want to undo this billing? This will move the order back to the pending for billing list.')) {
                     try {
                         await updateDoc(doc(db, "orders", orderId), { 
-                            status: 'pending',
-                            packedItems: deleteField() 
+                            status: 'packed',
+                            billedItems: deleteField(),
+                            billedBy: deleteField(),
+                            billedAt: deleteField()
                         });
-                        showToast('Packing undone. Order is now pending.');
+                        showToast('Billing undone. Order is now pending for billing.');
                         card.classList.add('removing');
-                        setTimeout(() => card.remove(), 400);
+                        setTimeout(() => {
+                            card.remove();
+                            renderBillerHome(); // Refresh the pending list
+                        }, 400);
                     } catch (error) {
-                        console.error("Error undoing pack status:", error);
-                        alert('Failed to undo packing.');
+                        console.error("Error undoing bill status:", error);
+                        alert('Failed to undo billing.');
                     }
                 }
+            } else if (downloadBtn) {
+                const card = downloadBtn.closest('.history-card');
+                const orderId = card.dataset.id;
+                const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
+                const itemsToExport = (order.billedItems || [])
+                    .filter(item => !item.wasUnchecked)
+                    .map(item => ({
+                        'Item Code': item.item.Code,
+                        'Item Name': item.item.ItemName,
+                        'Quantity': item.quantity,
+                    }));
+                if (itemsToExport.length > 0) {
+const formattedDate = new Date(order.billedAt || order.date).toLocaleDateString('en-GB').replace(/\//g, '-');
+jsonToExcel(itemsToExport, `${order.salesman}-${order.customer.Customer}-${formattedDate}`);
+                } else {
+                    alert('No items to export.');
+                }
+            } else if (printBtn) {
+                 const card = printBtn.closest('.history-card');
+                 const orderId = card.dataset.id;
+                 const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
+                 printLoadingSlip(order);
             }
         });
-        
-        const renderPackedOrders = () => {
-            const container = document.getElementById('packed-orders-list');
-            const salesmanOrders = (appState.orders[appState.salesman] || []).filter(o => o.status === 'packed').sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        document.getElementById('biller-history-btn').addEventListener('click', () => { showPage('page-biller-history'); renderBillerHistory(); });
+        document.getElementById('back-to-biller-home-btn').addEventListener('click', () => showPage('page-biller-home'));
+        document.getElementById('back-to-biller-home-from-history-btn').addEventListener('click', () => showPage('page-biller-home'));
+        setupBetweenDateFilter('biller-date-filter', renderBillerHome);
+
+
+        // --- SALESMAN BILLED ORDERS ---
+        const renderBilledOrders = () => {
+            const container = document.getElementById('billed-orders-list');
+            const salesmanOrders = (appState.orders[appState.salesman] || []).filter(o => o.status === 'billed').sort((a, b) => new Date(b.billedAt) - new Date(a.billedAt));
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             if (salesmanOrders.length === 0) {
-                container.innerHTML = `<p class="card" style="text-align:center;">No packed orders to display.</p>`;
+                container.innerHTML = `<p class="card" style="text-align:center;">No billed orders to display.</p>`;
                 return;
             }
 
             container.innerHTML = salesmanOrders.map(order => {
                 let finalTotal = 0;
                 let finalCost = 0;
-                const itemsToProcess = order.packedItems || order.items;
+                const itemsToProcess = order.billedItems || order.items;
                 
                 const itemDetailsHtml = (itemsToProcess).map(i => {
                     let style = '';
@@ -3235,10 +3674,10 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                                <p><strong>Customer:</strong> ${order.customer.Customer}</p>
                                <p><strong>Final Total:</strong> ${formatPreciseCurrency(finalTotal)}</p>
                                ${profitHtml}
-                               <p class="date-display">${formatDDMMYYYYTime(order.date)}</p>
+                               <p class="date-display">${formatDDMMYYYYTime(order.billedAt || order.date)}</p>
                             </div>
                         </div>
-                        <div class="history-card-body" id="packed-details-${order.id}">
+                        <div class="history-card-body" id="billed-details-${order.id}">
                             <div class="table-responsive-wrapper">
                                 <table class="history-item-table">
                                     <thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead>
@@ -3246,7 +3685,7 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                                 </table>
                             </div>
                         </div>
-                        <a class="toggle-details" data-target="packed-details-${order.id}">View Details</a>
+                        <a class="toggle-details" data-target="billed-details-${order.id}">View Details</a>
                     </div>`;
             }).join('');
             
@@ -3258,15 +3697,163 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                 });
             });
         };
+
+        // --- ACCOUNTANT (NANDU) LOGIC ---
+        const accountantLedgerView = document.getElementById('accountant-ledger-view');
+        const accountantCollectionView = document.getElementById('accountant-collection-view');
+        const accountantHeader = document.getElementById('accountant-header');
+        const accountantPrintBtn = document.getElementById('accountant-print-collection-btn');
+
+        const renderAccountantView = () => {
+            if (appState.salesman !== 'NANDU') return;
+            const currentViewIsLedger = accountantCollectionView.style.display === 'none';
+            if (currentViewIsLedger) {
+                renderAccountantLedgerView();
+            } else {
+                renderAccountantCollectionView();
+            }
+        };
+
+        const renderAccountantLedgerView = (filter = '') => {
+            const customerList = document.getElementById('accountant-customer-list');
+            const lowerFilter = filter.toLowerCase();
+            const filteredCustomers = appState.customers.filter(c => (c.Customer || '').toLowerCase().includes(lowerFilter));
+            
+            customerList.innerHTML = filteredCustomers.map(c => `
+                <div class="list-item" data-customer='${JSON.stringify(c)}'>
+                    <div class="info">${c.Customer}</div>
+                    <button class="list-item-action">View Ledger</button>
+                </div>`).join('');
+        };
         
+        const renderAccountantCollectionView = () => {
+            const container = document.getElementById('accountant-collection-content');
+            const salesman = appState.reporting.accountantSalesman;
+            const { start, end } = getReportDateRange();
+            
+            let salesmanPayments = appState.payments[salesman] || []; 
+            if (start && end) {
+                salesmanPayments = salesmanPayments.filter(p => {
+                    const pDate = new Date(p.date);
+                    return pDate >= start && pDate <= end;
+                });
+            }
+            
+            let totalCash = 0, totalUPI = 0;
+            const customerCollections = {};
+            salesmanPayments.forEach(p => {
+                if (p.method === 'Cash') totalCash += p.amount;
+                else if (p.method === 'UPI') totalUPI += p.amount;
+
+                if (!customerCollections[p.customer.Customer]) {
+                    customerCollections[p.customer.Customer] = { total: 0, payments: [] };
+                }
+                customerCollections[p.customer.Customer].total += p.amount;
+                customerCollections[p.customer.Customer].payments.push(p);
+            });
+            const grandTotal = totalCash + totalUPI;
+
+            const customerListHtml = Object.entries(customerCollections).sort((a,b) => b[1].total - a[1].total).map(([customer, data]) => `
+                <div class="customer-item-container">
+                    <div class="customer-item-header">
+                         <span class="info">${customer}</span>
+                         <strong>${formatPreciseCurrency(data.total)}</strong>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = `
+                <div class="report-header-card" style="margin-bottom: 20px;">
+                    <div><div class="label">Total Collected</div><div class="value">${formatPreciseCurrency(grandTotal)}</div></div>
+                    <div><div class="label">Total Cash</div><div class="value">${formatPreciseCurrency(totalCash)}</div></div>
+                    <div><div class="label">Total UPI</div><div class="value">${formatPreciseCurrency(totalUPI)}</div></div>
+                </div>
+                <div class="card">
+                    <h3>Collections by Customer</h3>
+                    ${customerListHtml || '<p style="text-align:center;padding:20px;">No collections for this period.</p>'}
+                </div>
+            `;
+        };
+
+        const renderAccountantCustomerLedger = (customer) => {
+            document.getElementById('accountant-customer-ledger-name').textContent = `Ledger for ${customer.Customer}`;
+            const container = document.getElementById('accountant-customer-ledger-content');
+            
+            const allSales = Object.values(appState.orders).flat().filter(o => o.customer.Customer === customer.Customer && o.status === 'billed');
+            const allCollections = Object.values(appState.payments).flat().filter(p => p.customer.Customer === customer.Customer);
+            
+            const salesTransactions = allSales.map(s => {
+                const finalTotal = (s.billedItems || s.items || []).reduce((acc, item) => item.wasUnchecked ? acc : acc + (item.quantity * item.sellingPrice), 0);
+                return { date: new Date(s.date), type: `Sale (${s.salesman})`, debit: finalTotal, credit: 0, id: s.id, order: s };
+            });
+            const collectionTransactions = allCollections.map(p => ({ date: new Date(p.date), type: `Collection (${p.method} via ${p.salesman})`, debit: 0, credit: p.amount, id: p.id }));
+            const allTransactions = [...salesTransactions, ...collectionTransactions].sort((a, b) => b.date - a.date);
+
+            const transactionRows = allTransactions.map(t => `
+                 <tr>
+                    <td>${formatDDMMYYYY(t.date)}</td>
+                    <td>${t.type}</td>
+                    <td class="numeric">${t.debit > 0 ? formatPreciseCurrency(t.debit) : '-'}</td>
+                    <td class="numeric">${t.credit > 0 ? formatPreciseCurrency(t.credit) : '-'}</td>
+                </tr>`).join('');
+            
+            container.innerHTML = `
+                <div class="card">
+                    <div class="report-header-card"><div><div class="label">Current Balance</div><div class="value" style="color: ${customer.Outstanding > 0 ? 'var(--danger-color)' : 'var(--success-color)'};">${formatCurrency(customer.Outstanding || 0)}</div></div></div>
+                    <div class="table-responsive-wrapper"><table class="report-table ledger-table">
+                        <thead><tr><th>Date</th><th>Particulars</th><th class="numeric">Debit (₹)</th><th class="numeric">Credit (₹)</th></tr></thead>
+                        <tbody>${transactionRows || `<tr><td colspan="4" style="text-align:center; padding: 20px;">No transactions found.</td></tr>`}</tbody>
+                    </table></div>
+                </div>`;
+            showPage('page-accountant-customer-ledger');
+        };
+
+        document.getElementById('accountant-customer-search').addEventListener('input', e => renderAccountantLedgerView(e.target.value));
+        document.getElementById('accountant-customer-list').addEventListener('click', e => {
+            const customerItem = e.target.closest('.list-item');
+            if (customerItem) {
+                const customerData = JSON.parse(customerItem.dataset.customer);
+                renderAccountantCustomerLedger(customerData);
+            }
+        });
         
-        document.getElementById('packer-logout-btn').addEventListener('click', handleLogout);
-        document.getElementById('packer-history-btn').addEventListener('click', () => { showPage('page-packer-history'); renderPackerHistory(); });
-        document.getElementById('back-to-packer-home-btn').addEventListener('click', () => showPage('page-packer-home'));
-        document.getElementById('back-to-packer-home-from-history-btn').addEventListener('click', () => showPage('page-packer-home'));
-        document.getElementById('packed-orders-btn').addEventListener('click', () => { showPage('page-packed-orders'); renderPackedOrders(); });
-        document.getElementById('back-to-main-from-packed-orders-btn').addEventListener('click', () => showPage('page-main-view'));
-        setupBetweenDateFilter('packer-date-filter', renderPackerHome);
+        document.querySelector('#page-accountant-dashboard .footer').addEventListener('click', e => {
+            const ledgerTab = e.target.closest('#accountant-ledger-tab');
+            const collectionTab = e.target.closest('#accountant-collection-tab');
+            if (ledgerTab) {
+                document.getElementById('accountant-ledger-tab').classList.add('active');
+                document.getElementById('accountant-collection-tab').classList.remove('active');
+                accountantHeader.textContent = 'Customer Ledger';
+                accountantLedgerView.style.display = 'block';
+                accountantCollectionView.style.display = 'none';
+                accountantPrintBtn.style.display = 'none';
+                renderAccountantLedgerView();
+            } else if (collectionTab) {
+                 document.getElementById('accountant-collection-tab').classList.add('active');
+                 document.getElementById('accountant-ledger-tab').classList.remove('active');
+                accountantHeader.textContent = 'Collection Report';
+                accountantLedgerView.style.display = 'none';
+                accountantCollectionView.style.display = 'block';
+                accountantPrintBtn.style.display = 'block';
+                renderAccountantCollectionView();
+            }
+        });
+
+        document.getElementById('accountant-salesman-toggle').addEventListener('click', e => {
+            if (e.target.matches('.toggle-btn')) {
+                appState.reporting.accountantSalesman = e.target.dataset.salesman;
+                document.querySelectorAll('#accountant-salesman-toggle .toggle-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                renderAccountantCollectionView();
+            }
+        });
+
+        accountantPrintBtn.addEventListener('click', () => {
+            printPaymentSummary(appState.reporting.accountantSalesman);
+        });
+
+        document.querySelector('[data-action="back-to-accountant-main"]').addEventListener('click', () => showPage('page-accountant-dashboard'));
+        setupBetweenDateFilter('accountant-date-filter', renderAccountantCollectionView);
 
 
         const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v3'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
