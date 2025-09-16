@@ -1532,8 +1532,7 @@
             <div id="billed-orders-list"></div>
         </div>
     </div>
-
-    <!-- BILLER (ANISHAD) PAGES -->
+<!-- BILLER (ANISHAD) PAGES -->
      <div id="page-biller-home" class="page">
         <div class="header">
             <button class="icon-button" id="biller-logout-btn">
@@ -1738,6 +1737,7 @@
             salesman: null, customer: null, items: [], customers: [],
             salesmanItems: [], 
             orders: {}, payments: {}, customerCarts: {},
+            userStatus: {}, // NEW: To hold live user status
             editingPackingSlipId: null,
             currentPayment: {}, currentView: 'customers',
             editing: { type: null, id: null },
@@ -1779,6 +1779,21 @@
                 }
             }
         };
+
+        const updateUserStatus = async (status, task = 'Idle') => {
+            if (!appState.salesman || appState.salesman === 'ADMIN' || appState.salesman === 'NANDU') return;
+            try {
+                const statusRef = doc(db, "user_status", appState.salesman);
+                await setDoc(statusRef, {
+                    status: status,
+                    task: task,
+                    lastUpdate: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error("Failed to update user status:", error);
+            }
+        };
+
         const formatCurrency = (v) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
         const formatPreciseCurrency = (v) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(v);
         
@@ -1899,6 +1914,16 @@
                 if (appState.salesman === 'ADMIN' && document.getElementById('admin-main-view').style.display !== 'none') renderAdminDashboard();
                 if (document.getElementById('page-payment-history').classList.contains('active')) renderHistoryTabs();
                 if (appState.salesman === 'NANDU' && document.getElementById('accountant-collection-view').style.display !== 'none') renderAccountantCollectionView();
+            });
+            // NEW: Realtime listener for user status
+            onSnapshot(collection(db, "user_status"), (snapshot) => {
+                appState.userStatus = {};
+                snapshot.docs.forEach(doc => {
+                    appState.userStatus[doc.id] = doc.data();
+                });
+                if (appState.salesman === 'ADMIN' && document.getElementById('page-admin-operations').classList.contains('active')) {
+                    renderAdminOperationsPage();
+                }
             });
         };
 
@@ -2600,6 +2625,8 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                 const { startDate, endDate } = getDefaultDateRange();
                 appState.reporting.startDate = startDate; appState.reporting.endDate = endDate;
                 
+                updateUserStatus('idle'); // Set status to idle on login
+
                 if (salesman === 'ADMIN') { 
                     document.getElementById('admin-footer').style.display = 'flex'; 
                     document.getElementById('settings-icon-btn').style.display = 'flex';
@@ -2633,6 +2660,7 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
         });
 
         const handleLogout = () => { 
+            updateUserStatus('idle'); // Set status to idle on logout
             appState.salesman = null; 
             localStorage.removeItem('lastSalesman'); 
             appState.customerCarts = {}; 
@@ -2702,7 +2730,8 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                     try {
                         const location = await getCurrentLocation();
                         appState.currentOrderLocation = location;
-                        appState.currentOrderStartTime = new Date().toISOString(); // <-- Set start time
+                        appState.currentOrderStartTime = new Date().toISOString(); 
+                        updateUserStatus('active', `Ordering for ${appState.customer.Customer}`);
                         document.getElementById('order-customer-name').textContent = `New Order: ${appState.customer.Customer}`; 
                         updateCartBadge(); renderPreviousItemsAsTiles(); showPage('page-order');
                     } catch (error) { alert(`Could not start order. Location is required.\n\nError: ${error.message}`);
@@ -2729,6 +2758,7 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                 printSaleBill(orderId);
             }
         });
+        
         document.getElementById('payment-customer-list-container').addEventListener('click', (e) => { 
             const collectBtn = e.target.closest('.list-item-action');
             if (collectBtn) { 
@@ -2748,6 +2778,7 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
         document.querySelectorAll('#back-to-main-btn-order-history, #back-to-main-btn-payment-history, #back-to-main-btn-payment').forEach(btn => btn.addEventListener('click', () => showPage('page-main-view')));
         
         document.getElementById('back-to-customers-btn').addEventListener('click', () => {
+            updateUserStatus('idle');
             const destinationPage = appState.editingPackingSlipId ? 'page-order-history' : 'page-main-view';
             if (appState.editingPackingSlipId) {
                 appState.editingPackingSlipId = null;
@@ -2820,7 +2851,7 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                     items: cart.map(i => ({ item: { ItemName: i.item.ItemName, Mrp: i.item.Mrp, Code: i.item.Code, Unit: i.item.Unit, Price1: i.item.Price1, Price2: i.item.Price2, Price3: i.item.Price3, CostRate: i.item.CostRate }, quantity: i.quantity, sellingPrice: i.sellingPrice })),
                     total,
                     salesman: appState.salesman,
-                    date: appState.currentOrderStartTime, // Use start time as the primary order date
+                    date: appState.currentOrderStartTime,
                     orderSavedAt: saveTime.toISOString(),
                     salesDuration: salesDuration,
                     location: appState.currentOrderLocation,
@@ -2828,11 +2859,9 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                 };
                 
                 if (appState.editingPackingSlipId) {
-                    // When updating, we don't change the original date or location, just the items and total.
                     const updateData = {
                         items: orderData.items,
                         total: orderData.total,
-                        // Retain original metadata, but could update a 'lastEdited' field if needed
                     };
                     await updateDoc(doc(db, "orders", appState.editingPackingSlipId), updateData);
                     showProfessionalModal('Success', 'The packing slip has been updated.', () => {
@@ -2850,6 +2879,8 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                         showPage('page-main-view');
                     });
                 }
+                updateUserStatus('idle');
+
             } catch (error) {
                 console.error("Error saving packing slip:", error);
                 alert(`Failed to save slip. Reason: ${error.message}`);
@@ -3069,7 +3100,6 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                     appState.customer = appState.customers.find(c => c.Customer === orderData.customer.Customer) || orderData.customer;
                     appState.customerCarts[appState.customer.id] = orderData.items.map(i => ({...i}));
                     appState.editingPackingSlipId = id;
-                    // For editing, we don't need to recapture location or start time.
                     appState.currentOrderLocation = orderData.location;
                     appState.currentOrderStartTime = orderData.date;
                     
@@ -3366,14 +3396,14 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
             
             if (startBtn) {
                 const orderId = startBtn.dataset.orderId;
+                const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
                 startBtn.disabled = true;
                 try {
                     await updateDoc(doc(db, "orders", orderId), {
                         status: 'packing',
                         packingStartTime: new Date().toISOString()
                     });
-                    startBtn.style.display = 'none';
-                    startBtn.closest('.list-item').querySelector('.finish-pack-btn').style.display = 'block';
+                    updateUserStatus('active', `Packing for ${order.customer.Customer}`);
                 } catch(err) {
                     alert('Could not start packing. Please try again.');
                     console.error(err);
@@ -3396,10 +3426,8 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                         packingEndTime: endTime.toISOString(),
                         packingDuration: durationMs
                     });
-
-                    const listItem = finishBtn.closest('.list-item');
-                    listItem.classList.add('removing');
-                    setTimeout(() => listItem.remove(), 500);
+                    
+                    updateUserStatus('idle');
                     showToast('Packing finished!');
 
                 } catch(err) {
@@ -3484,7 +3512,8 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                 const orderId = billBtn.dataset.orderId;
                 const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
                 appState.billingOrder = JSON.parse(JSON.stringify(order));
-                appState.billingOrder.billingStartTime = new Date().toISOString(); // <-- Set start time
+                appState.billingOrder.billingStartTime = new Date().toISOString();
+                updateUserStatus('active', `Billing for ${order.customer.Customer}`);
                 showPage('page-billing-interface');
                 renderBillingInterface();
             }
@@ -3553,11 +3582,7 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
 
             try {
                 await updateDoc(doc(db, "orders", billedOrderId), updateData);
-                const listItem = document.querySelector(`#biller-order-list .list-item[data-order-id="${billedOrderId}"]`);
-                if(listItem) {
-                    listItem.classList.add('removing');
-                    setTimeout(() => listItem.remove(), 500);
-                }
+                updateUserStatus('idle');
                 showPage('page-biller-home');
                 showProfessionalModal('Success', 'Order has been billed successfully.');
             } catch (error) {
@@ -3685,11 +3710,6 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
                             billingDuration: deleteField()
                         });
                         showToast('Billing undone. Order is now pending for billing.');
-                        card.classList.add('removing');
-                        setTimeout(() => {
-                            card.remove();
-                            renderBillerHome(); // Refresh the pending list
-                        }, 400);
                     } catch (error) {
                         console.error("Error undoing bill status:", error);
                         alert('Failed to undo billing.');
@@ -3721,7 +3741,7 @@ jsonToExcel(itemsToExport, `${order.salesman}-${order.customer.Customer}-${forma
         });
 
         document.getElementById('biller-history-btn').addEventListener('click', () => { showPage('page-biller-history'); renderBillerHistory(); });
-        document.getElementById('back-to-biller-home-btn').addEventListener('click', () => showPage('page-biller-home'));
+        document.getElementById('back-to-biller-home-btn').addEventListener('click', () => { updateUserStatus('idle'); showPage('page-biller-home'); });
         document.getElementById('back-to-biller-home-from-history-btn').addEventListener('click', () => showPage('page-biller-home'));
         setupBetweenDateFilter('biller-date-filter', renderBillerHome);
 
@@ -4021,7 +4041,7 @@ jsonToExcel(itemsToExport, `${order.salesman}-${order.customer.Customer}-${forma
                 </div>
             `;
 
-            const userStatusHtml = getUserStatusHtml(allOrders);
+            const userStatusHtml = getUserStatusHtml();
 
             const reportTableHtml = `
                 <div class="card">
@@ -4052,58 +4072,18 @@ jsonToExcel(itemsToExport, `${order.salesman}-${order.customer.Customer}-${forma
             contentEl.innerHTML = kpiHtml + userStatusHtml + reportTableHtml;
         };
         
-        const getUserStatusHtml = (allOrders) => {
+        const getUserStatusHtml = () => {
             const users = ['UNNI', 'RIYAS', 'SUNNY', 'ANISHAD'];
             let html = '<div class="user-status-grid">';
 
             users.forEach(user => {
-                const isSalesman = ['UNNI', 'RIYAS'].includes(user);
-                const isPacker = user === 'SUNNY';
-                const isBiller = user === 'ANISHAD';
-
-                let status = 'idle';
-                let currentTask = 'Idle';
-                let lastCompleted = 'N/A';
-                let lastCompletedTime = null;
-
-                const userOrders = allOrders.filter(o => {
-                    if (isSalesman) return o.salesman === user;
-                    if (isPacker && ['packing', 'packed', 'billed'].includes(o.status)) return true;
-                    if (isBiller && ['billed'].includes(o.status)) return true;
-                    return false;
-                }).sort((a,b) => new Date(b.date) - new Date(a.date));
-
-                if (isSalesman) {
-                    const lastOrder = userOrders[0];
-                    if (lastOrder) {
-                        lastCompleted = `Order for ${lastOrder.customer.Customer}`;
-                        lastCompletedTime = lastOrder.orderSavedAt || lastOrder.date;
-                    }
-                } else if (isPacker) {
-                    const packingOrder = allOrders.find(o => o.status === 'packing');
-                    if (packingOrder) {
-                        status = 'active';
-                        currentTask = `Packing for ${packingOrder.customer.Customer}`;
-                    }
-                    const lastPacked = userOrders.find(o => o.status === 'packed' || o.status === 'billed');
-                    if(lastPacked) {
-                        lastCompleted = `Packed for ${lastPacked.customer.Customer}`;
-                        lastCompletedTime = lastPacked.packingEndTime;
-                    }
-                } else if (isBiller) {
-                    // Biller status is harder to track live without a dedicated "billing" status
-                    const lastBilled = userOrders.find(o => o.status === 'billed');
-                    if(lastBilled) {
-                        lastCompleted = `Billed for ${lastBilled.customer.Customer}`;
-                        lastCompletedTime = lastBilled.billedAt;
-                    }
-                }
+                const statusData = appState.userStatus[user] || { status: 'idle', task: 'Idle', lastUpdate: null };
                 
                 html += `
                     <div class="user-status-card">
-                        <h4 data-user="${user}">${user} <span class="status-badge ${status}">${status}</span></h4>
-                        <p><strong>Current:</strong> ${currentTask}</p>
-                        <p><strong>Last:</strong> ${lastCompleted} ${lastCompletedTime ? `(${formatDDMMYYYYTime(lastCompletedTime)})` : ''}</p>
+                        <h4 data-user="${user}">${user} <span class="status-badge ${statusData.status}">${statusData.status}</span></h4>
+                        <p><strong>Task:</strong> ${statusData.task}</p>
+                        <p><strong>Last Update:</strong> ${statusData.lastUpdate ? formatDDMMYYYYTime(statusData.lastUpdate) : 'N/A'}</p>
                     </div>`;
             });
 
@@ -4134,8 +4114,11 @@ jsonToExcel(itemsToExport, `${order.salesman}-${order.customer.Customer}-${forma
 
             const timelineEvents = [];
             allOrders.forEach(o => {
+                if (o.salesman === user && o.date) {
+                    timelineEvents.push({ time: o.date, event: `Started Order for ${o.customer.Customer}` });
+                }
                 if (o.salesman === user && o.orderSavedAt) {
-                    timelineEvents.push({ time: o.orderSavedAt, event: `Order Placed for ${o.customer.Customer}` });
+                    timelineEvents.push({ time: o.orderSavedAt, event: `Finished Order for ${o.customer.Customer}` });
                 }
                 if (user === 'SUNNY' && o.packingStartTime) {
                     timelineEvents.push({ time: o.packingStartTime, event: `Started Packing for ${o.customer.Customer}` });
@@ -4143,8 +4126,11 @@ jsonToExcel(itemsToExport, `${order.salesman}-${order.customer.Customer}-${forma
                 if (user === 'SUNNY' && o.packingEndTime) {
                     timelineEvents.push({ time: o.packingEndTime, event: `Finished Packing for ${o.customer.Customer}` });
                 }
+                 if (user === 'ANISHAD' && o.billingStartTime) {
+                    timelineEvents.push({ time: o.billingStartTime, event: `Started Billing for ${o.customer.Customer}` });
+                }
                 if (user === 'ANISHAD' && o.billedAt) {
-                    timelineEvents.push({ time: o.billedAt, event: `Billed Order for ${o.customer.Customer}` });
+                    timelineEvents.push({ time: o.billedAt, event: `Finished Billing for ${o.customer.Customer}` });
                 }
             });
 
@@ -4164,7 +4150,7 @@ jsonToExcel(itemsToExport, `${order.salesman}-${order.customer.Customer}-${forma
         document.getElementById('back-to-operations-from-timeline-btn').addEventListener('click', () => { showPage('page-admin-operations'); });
         setupBetweenDateFilter('operations-date-filter', renderAdminOperationsPage);
         
-        const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v3'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
+        const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v4'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
         
         setupPWA();
         setupRealtimeListeners(); 
