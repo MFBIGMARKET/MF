@@ -749,8 +749,8 @@
         .role-tile[data-role="UNNI"], .role-tile[data-role="RIYAS"] { border-color: var(--sales-accent); }
         .role-tile[data-role="SUNNY"] { border-color: var(--packing-accent); }
         .role-tile[data-role="ADMIN"] { border-color: var(--admin-accent); }
-        .role-tile.dummy[data-role="SHAJU"] { border-color: var(--loading-accent); }
-        .role-tile.dummy[data-role="BENNY"] { border-color: var(--delivery-accent); }
+        .role-tile[data-role="SHAJU"] { border-color: var(--loading-accent); }
+        .role-tile[data-role="BENNY"] { border-color: var(--delivery-accent); }
         .role-tile[data-role="ANISHAD"] { border-color: var(--billing-accent); }
         .role-tile[data-role="NANDU"] { border-color: var(--accounts-accent); }
         
@@ -785,11 +785,15 @@
 
         .role-tile[data-role="SHAJU"]:hover {
             background-color: var(--loading-accent-light);
+            box-shadow: 0 4px 10px rgba(41, 128, 185, 0.2);
+            transform: translateY(-4px);
         }
         .role-tile[data-role="SHAJU"]:hover svg { color: #21618c; }
 
         .role-tile[data-role="BENNY"]:hover {
             background-color: var(--delivery-accent-light);
+            box-shadow: 0 4px 10px rgba(230, 126, 34, 0.2);
+            transform: translateY(-4px);
         }
         .role-tile[data-role="BENNY"]:hover svg { color: #b9671b; }
 
@@ -830,34 +834,40 @@
         #icon-delivery { color: var(--delivery-accent); }
         #icon-accounts { color: var(--accounts-accent); }
 
-        /* Biller & Packer UI Enhancements */
+        /* Biller & Packer & Loader UI Enhancements */
         #billing-item-list .list-item,
-        #packing-item-list .list-item {
+        #packing-item-list .list-item,
+        #loader-order-list .list-item {
             gap: 15px;
             align-items: center;
         }
         #billing-item-list .list-item input[type="checkbox"],
-        #packing-item-list .list-item input[type="checkbox"] {
+        #packing-item-list .list-item input[type="checkbox"],
+        #loader-order-list .list-item input[type="checkbox"] {
             width: 24px;
             height: 24px;
             flex-shrink: 0;
         }
         #billing-item-list .list-item .info,
-        #packing-item-list .list-item .info {
+        #packing-item-list .list-item .info,
+        #loader-order-list .list-item .info {
             display: flex;
             flex-direction: column;
             gap: 4px;
             flex-grow: 1;
             margin: 0;
         }
-        .packing-item-name, .billing-item-name {
+        .packing-item-name, .billing-item-name, .loader-item-name {
             font-weight: 600;
             font-size: 1rem;
         }
-        .packing-item-details, .billing-item-details {
+        .packing-item-details, .billing-item-details, .loader-item-details {
             font-size: 0.85rem;
             color: #666;
             font-weight: 500;
+        }
+        .page-actions {
+             padding: 15px; flex-shrink: 0;
         }
 
         /* CUSTOMER LEDGER STYLES */
@@ -1033,14 +1043,14 @@
                         <span>ADMIN</span>
                     </button>
                     <!-- Row 2 -->
-                    <div class="role-tile dummy" data-role="SHAJU">
+                    <button class="role-tile" data-role="SHAJU">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                         <span>SHAJU</span>
-                    </div>
-                    <div class="role-tile dummy" data-role="BENNY">
+                    </button>
+                    <button class="role-tile" data-role="BENNY">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                         <span>BENNY</span>
-                    </div>
+                    </button>
                      <button class="role-tile" data-role="ANISHAD">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
                         <span>ANISHAD</span>
@@ -1747,6 +1757,112 @@
         <div class="content" id="user-timeline-content"></div>
     </div>
 
+    <!-- LOADER (SHAJU) PAGES -->
+    <div id="page-loader-home" class="page">
+        <div class="header">
+            <button class="icon-button" id="loader-logout-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            </button>
+            <h1>Pending Loads</h1>
+            <div class="header-actions">
+                <button class="icon-button" id="loader-history-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div class="content">
+            <div id="loader-date-filter" class="between-date-filter">
+                <input type="date" class="date-input start-date-input">
+                <button class="date-btn start-date-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">Start Date</span>
+                </button>
+                <input type="date" class="date-input end-date-input">
+                <button class="date-btn end-date-btn">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">End Date</span>
+                </button>
+                <button class="filter-action-btn clear-btn">Clear</button>
+            </div>
+            <div id="loader-order-list"></div>
+        </div>
+        <div class="page-actions">
+            <button id="start-loading-batch-btn" class="button" disabled>Start Loading Batch</button>
+        </div>
+    </div>
+
+    <div id="page-loading-interface" class="page">
+        <div class="header">
+            <h1 id="loading-interface-header">Loading in Progress</h1>
+        </div>
+        <div class="content">
+            <div class="card">
+                <h3>Customers in this Batch</h3>
+                <div id="loading-batch-customer-list"></div>
+            </div>
+        </div>
+        <div class="page-actions">
+            <button id="finish-loading-btn" class="button">Finish Loading</button>
+        </div>
+    </div>
+
+    <div id="page-loader-history" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-loader-home-btn">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Loading History</h1>
+             <div class="header-actions" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+            <div id="loader-history-list"></div>
+        </div>
+    </div>
+    
+    <!-- DELIVERY (BENNY) PAGES -->
+    <div id="page-delivery-home" class="page">
+        <div class="header">
+            <button class="icon-button" id="delivery-logout-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            </button>
+            <h1>Pending Deliveries</h1>
+            <div class="header-actions">
+                <button class="icon-button" id="delivery-history-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div class="content">
+            <div id="delivery-batch-list"></div>
+        </div>
+    </div>
+
+    <div id="page-delivery-interface" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-delivery-home-btn">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Delivery Batch</h1>
+            <div class="header-actions" id="delivery-header-actions"></div>
+        </div>
+        <div class="content">
+            <div id="delivery-customer-list"></div>
+        </div>
+    </div>
+
+    <div id="page-delivery-history" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-delivery-home-from-history-btn">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Delivery History</h1>
+            <div class="header-actions" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+            <div id="delivery-history-list"></div>
+        </div>
+    </div>
+
 
     <!-- Hidden elements for generation -->
     <div id="packing-slip-wrapper"><div id="packing-slip-content"></div></div>
@@ -1800,6 +1916,8 @@
             outstandingUpdateTimeout: null,
             outstandingSort: 'default', // 'default', 'desc', 'asc'
             billingOrder: null,
+            currentLoadingBatch: [],
+            currentDeliveryBatch: null,
         };
 
         const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField } = window.firebaseTools;
@@ -1832,7 +1950,7 @@
                     status: status,
                     task: task,
                     lastUpdate: new Date().toISOString()
-                });
+                }, { merge: true });
             } catch (error) {
                 console.error("Failed to update user status:", error);
             }
@@ -1920,7 +2038,7 @@
         const setupRealtimeListeners = () => {
             onSnapshot(collection(db, "customers"), (snapshot) => { 
                 appState.customers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-                if(appState.salesman !== 'ADMIN' && appState.salesman !== 'SUNNY' && appState.salesman !== 'ANISHAD' && appState.salesman !== 'NANDU') renderCurrentView();
+                if(appState.salesman !== 'ADMIN' && appState.salesman !== 'SUNNY' && appState.salesman !== 'ANISHAD' && appState.salesman !== 'NANDU' && appState.salesman !== 'SHAJU' && appState.salesman !== 'BENNY') renderCurrentView();
                 if(document.getElementById('page-outstanding-balances').classList.contains('active')) renderOutstandingBalancesPage();
                 if(appState.salesman === 'NANDU') renderAccountantView();
             });
@@ -1946,6 +2064,10 @@
                 if (appState.salesman === 'SUNNY' && document.getElementById('page-packer-history').classList.contains('active')) renderPackerHistory();
                 if (appState.salesman === 'ANISHAD' && document.getElementById('page-biller-home').classList.contains('active')) renderBillerHome();
                 if (appState.salesman === 'ANISHAD' && document.getElementById('page-biller-history').classList.contains('active')) renderBillerHistory();
+                if (appState.salesman === 'SHAJU' && document.getElementById('page-loader-home').classList.contains('active')) renderLoaderHome();
+                if (appState.salesman === 'SHAJU' && document.getElementById('page-loader-history').classList.contains('active')) renderLoaderHistory();
+                if (appState.salesman === 'BENNY' && document.getElementById('page-delivery-home').classList.contains('active')) renderDeliveryHome();
+                if (appState.salesman === 'BENNY' && document.getElementById('page-delivery-history').classList.contains('active')) renderDeliveryHistory();
                 if (appState.salesman === 'NANDU') renderAccountantView();
             });
             onSnapshot(query(collection(db, "payments")), (snapshot) => { 
@@ -2176,12 +2298,32 @@ const container = document.getElementById('payment-customer-list-container');
                      actionsHtml = `<button class="history-action-btn delete-history-btn" data-type="payments" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
                 } else { // Packing Slips
                     const isBilled = item.status === 'billed';
-                    if (isBilled) {
-                         actionsHtml = `
-                            <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+                    const isLoaded = item.status === 'loaded';
+                    const isDelivered = item.status === 'delivered';
+
+                    let statusBadge = '';
+                    if (isDelivered) {
+                        statusBadge = `
+                            <span style="display:flex; align-items:center; gap: 5px; color: var(--delivery-accent);" title="This order has been Delivered.">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Delivered
+                            </span>`;
+                    }
+                    else if (isLoaded) {
+                        statusBadge = `
+                            <span style="display:flex; align-items:center; gap: 5px; color: #2980b9;" title="This order has been loaded.">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg> Loaded
+                            </span>`;
+                    } else if (isBilled) {
+                         statusBadge = `
                             <span style="display:flex; align-items:center; gap: 5px; color: var(--success-color);" title="This order has been billed.">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Billed
                             </span>`;
+                    }
+
+                    if (isBilled || isLoaded || isDelivered) {
+                         actionsHtml = `
+                            <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+                            ${statusBadge}`;
                     } else {
                          actionsHtml = `
                             <button class="history-action-btn edit-packing-slip-btn" title="Edit Slip"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
@@ -2231,7 +2373,7 @@ const container = document.getElementById('payment-customer-list-container');
             const { start, end } = getReportDateRange();
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
             
-            let orders = Object.values(appState.orders).flat().filter(o => o.status === 'billed');
+            let orders = Object.values(appState.orders).flat().filter(o => o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered');
             let payments = Object.values(appState.payments).flat();
 
             if (start && end) {
@@ -2368,7 +2510,7 @@ const container = document.getElementById('payment-customer-list-container');
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             const { start, end } = getReportDateRange();
-            let salesmanOrders = (appState.orders[salesman] || []).filter(o => o.status === 'billed');
+            let salesmanOrders = (appState.orders[salesman] || []).filter(o => o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered');
 
             if (start && end) {
                 salesmanOrders = salesmanOrders.filter(o => { const orderDate = new Date(o.date); return orderDate >= start && orderDate <= end; });
@@ -2422,7 +2564,7 @@ const container = document.getElementById('payment-customer-list-container');
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             const { start, end } = getReportDateRange();
-            let customerOrders = (appState.orders[salesman] || []).filter(o => o.customer.Customer === customerName && o.status === 'billed');
+            let customerOrders = (appState.orders[salesman] || []).filter(o => o.customer.Customer === customerName && (o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered'));
             if (start && end) {
                 customerOrders = customerOrders.filter(o => { const orderDate = new Date(o.date); return orderDate >= start && orderDate <= end; });
             }
@@ -2484,7 +2626,7 @@ const container = document.getElementById('payment-customer-list-container');
             const container = document.getElementById('customer-ledger-content');
             
             const customerSales = (appState.orders[appState.salesman] || [])
-                .filter(o => o.customer.Customer === c.Customer && o.status === 'billed');
+                .filter(o => o.customer.Customer === c.Customer && (o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered'));
 
             const customerCollections = (appState.payments[appState.salesman] || [])
                 .filter(p => p.customer.Customer === c.Customer);
@@ -2561,21 +2703,19 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                             </div>
                         </div>
                     </div>
-                    <div class="table-responsive-wrapper">
-                        <table class="report-table ledger-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Particulars</th>
-                                    <th class="numeric">Debit (₹)</th>
-                                    <th class="numeric">Credit (₹)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${transactionRows || `<tr><td colspan="4" style="text-align:center; padding: 20px;">No transactions found.</td></tr>`}
-                            </tbody>
-                        </table>
-                    </div>
+                    <div class="table-responsive-wrapper"><table class="report-table ledger-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Particulars</th>
+                                <th class="numeric">Debit (₹)</th>
+                                <th class="numeric">Credit (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${transactionRows || `<tr><td colspan="4" style="text-align:center; padding: 20px;">No transactions found.</td></tr>`}
+                        </tbody>
+                    </table></div>
                 </div>`;
             showPage('page-customer-ledger');
         };
@@ -2683,10 +2823,20 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
                     document.getElementById('footer').style.display = 'none';
                     showPage('page-biller-home'); 
                     renderBillerHome();
-                } else if (salesman === 'NANDU') {
+                } else if (salesman === 'SHAJU') {
+                    document.getElementById('footer').style.display = 'none';
+                    showPage('page-loader-home');
+                    renderLoaderHome();
+                }
+                 else if (salesman === 'NANDU') {
                     document.getElementById('footer').style.display = 'flex';
                     showPage('page-accountant-dashboard');
                     renderAccountantView();
+                }
+                 else if (salesman === 'BENNY') {
+                    document.getElementById('footer').style.display = 'none';
+                    showPage('page-delivery-home');
+                    renderDeliveryHome();
                 }
                 else {
                     document.getElementById('footer').style.display = 'flex'; 
@@ -2714,13 +2864,15 @@ const allTransactions = [...salesTransactions, ...collectionTransactions].sort((
         document.getElementById('admin-logout-btn').addEventListener('click', handleLogout);
         document.getElementById('accountant-logout-btn').addEventListener('click', handleLogout);
         document.getElementById('biller-logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('loader-logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('delivery-logout-btn').addEventListener('click', handleLogout);
 
         const customerView = document.getElementById('customer-view'), paymentView = document.getElementById('payment-view'), mainHeader = document.getElementById('main-view-header');
         const productInfoBtn = document.getElementById('product-info-icon-btn');
         const pendingBalanceBtn = document.getElementById('pending-balance-btn');
 
         const renderCurrentView = () => {
-             if (appState.salesman === 'ADMIN' || appState.salesman === 'SUNNY' || appState.salesman === 'ANISHAD' || appState.salesman === 'NANDU') return; 
+             if (appState.salesman === 'ADMIN' || appState.salesman === 'SUNNY' || appState.salesman === 'ANISHAD' || appState.salesman === 'NANDU' || appState.salesman === 'SHAJU' || appState.salesman === 'BENNY') return; 
              if (appState.currentView === 'customers') { 
                  mainHeader.textContent = 'Customers';
                  productInfoBtn.style.display = 'flex';
@@ -3495,7 +3647,7 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
         
         const renderPackerHistory = () => {
              const container = document.getElementById('packer-history-list');
-            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'packed' || o.status === 'billed');
+            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'packed' || o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered');
              allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
              
             if (allOrders.length === 0) {
@@ -3550,13 +3702,18 @@ uploadCSV(e.target.files[0], 'customers'); e.target.value = ''; });
             `).join('');
         };
         
-        document.getElementById('biller-order-list').addEventListener('click', e => {
+        document.getElementById('biller-order-list').addEventListener('click', async e => {
             const billBtn = e.target.closest('.start-bill-btn');
             if(billBtn) {
                 const orderId = billBtn.dataset.orderId;
                 const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
                 appState.billingOrder = JSON.parse(JSON.stringify(order));
                 appState.billingOrder.billingStartTime = new Date().toISOString();
+                
+                await updateDoc(doc(db, "orders", orderId), {
+                    billingStartTime: appState.billingOrder.billingStartTime
+                });
+
                 updateUserStatus('active', `Billing for ${order.customer.Customer}`);
                 showPage('page-billing-interface');
                 renderBillingInterface();
@@ -3652,7 +3809,7 @@ document.getElementById('confirm-billing-btn').addEventListener('click', async (
 
         const renderBillerHistory = () => {
             const container = document.getElementById('biller-history-list');
-            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'billed');
+            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered');
             allOrders.sort((a, b) => new Date(b.billedAt) - new Date(a.billedAt));
              
             if (allOrders.length === 0) {
@@ -3761,7 +3918,6 @@ document.getElementById('biller-history-list').addEventListener('click', async e
     if (undoBtn) {
         if (confirm('Are you sure you want to undo this billing? This will move the order back to the pending for billing list.')) {
             try {
-                // 1. Update the database and wait for it to complete.
                 await updateDoc(doc(db, "orders", orderId), { 
                     status: 'packed',
                     billedItems: deleteField(),
@@ -3770,37 +3926,8 @@ document.getElementById('biller-history-list').addEventListener('click', async e
                     billingDuration: deleteField(),
                     billingStartTime: deleteField()
                 });
-
-                // 2. Manually update the local appState immediately.
-                // This is critical to ensure the next render is correct.
-                let orderToUpdate;
-                for (const salesman in appState.orders) {
-                    const foundOrder = appState.orders[salesman].find(o => o.id === orderId);
-                    if (foundOrder) {
-                        orderToUpdate = foundOrder;
-                        break;
-                    }
-                }
-
-                if (orderToUpdate) {
-                    orderToUpdate.status = 'packed';
-                    delete orderToUpdate.billedItems;
-                    delete orderToUpdate.billedBy;
-                    delete orderToUpdate.billedAt;
-                    delete orderToUpdate.billingDuration;
-                    delete orderToUpdate.billingStartTime;
-                }
-
-                // 3. Force a re-render of the target page's content *before* showing it.
-                renderBillerHome();
-                
-                // 4. Now, navigate to the page. It will show the updated content.
-                showPage('page-biller-home');
+                renderAdminOperationsPage();
                 showToast('Billing undone. Order is now pending for billing.');
-                
-                // 5. Animate the removal from the history page.
-                card.classList.add('removing');
-                setTimeout(() => card.remove(), 400);
 
             } catch (error) {
                 console.error("Error undoing bill status:", error);
@@ -3837,7 +3964,7 @@ document.getElementById('biller-history-list').addEventListener('click', async e
         // --- SALESMAN BILLED ORDERS ---
         const renderBilledOrders = () => {
             const container = document.getElementById('billed-orders-list');
-            const salesmanOrders = (appState.orders[appState.salesman] || []).filter(o => o.status === 'billed').sort((a, b) => new Date(b.billedAt) - new Date(a.billedAt));
+            const salesmanOrders = (appState.orders[appState.salesman] || []).filter(o => o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered').sort((a, b) => new Date(b.billedAt || b.date) - new Date(a.billedAt || a.date));
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
             if (salesmanOrders.length === 0) {
@@ -3991,7 +4118,7 @@ document.getElementById('biller-history-list').addEventListener('click', async e
             document.getElementById('accountant-customer-ledger-name').textContent = `Ledger for ${customer.Customer}`;
             const container = document.getElementById('accountant-customer-ledger-content');
             
-            const allSales = Object.values(appState.orders).flat().filter(o => o.customer.Customer === customer.Customer && o.status === 'billed');
+            const allSales = Object.values(appState.orders).flat().filter(o => o.customer.Customer === customer.Customer && (o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered'));
             const allCollections = Object.values(appState.payments).flat().filter(p => p.customer.Customer === customer.Customer);
             
             const salesTransactions = allSales.map(s => {
@@ -4179,7 +4306,7 @@ const renderAdminOperationsPage = () => {
 };
         
 const getUserStatusHtml = () => {
-    const users = ['UNNI', 'RIYAS', 'SUNNY', 'ANISHAD'];
+    const users = ['UNNI', 'RIYAS', 'SUNNY', 'ANISHAD', 'SHAJU', 'BENNY'];
     let html = '<h3>Live Status</h3><div class="user-status-grid">';
     const allOrders = Object.values(appState.orders).flat();
 
@@ -4188,6 +4315,7 @@ const getUserStatusHtml = () => {
         const currentTaskDisplay = (statusData.status === 'active') ? statusData.task : 'Idle';
 
         let lastOrderInfo = 'N/A';
+        let lastActivityDate = null;
 
         if (user === 'SUNNY') {
             const lastPackedOrder = allOrders
@@ -4203,20 +4331,37 @@ const getUserStatusHtml = () => {
             if (lastBilledOrder) {
                 lastOrderInfo = `Billed for ${lastBilledOrder.customer.Customer} (${formatDDMMYYYYTime(lastBilledOrder.billedAt)})`;
             }
-        } else { // Salesmen
-            const lastSavedOrder = allOrders
-                .filter(o => o.salesman === user && o.orderSavedAt)
-                .sort((a, b) => new Date(b.orderSavedAt) - new Date(a.orderSavedAt))[0];
-            if (lastSavedOrder) {
-                lastOrderInfo = `Order for ${lastSavedOrder.customer.Customer} (${formatDDMMYYYYTime(lastSavedOrder.orderSavedAt)})`;
+        } else if (user === 'SHAJU') {
+            const lastLoadedOrder = allOrders
+                .filter(o => o.loadedAt)
+                .sort((a, b) => new Date(b.loadedAt) - new Date(a.loadedAt))[0];
+            if (lastLoadedOrder) {
+                lastOrderInfo = `Loaded for ${lastLoadedOrder.customer.Customer} (${formatDDMMYYYYTime(lastLoadedOrder.loadedAt)})`;
             }
+        } else if (user === 'BENNY') {
+             const lastDeliveredOrder = allOrders
+                .filter(o => o.deliveredAt)
+                .sort((a, b) => new Date(b.deliveredAt) - new Date(a.deliveredAt))[0];
+            if(lastDeliveredOrder) {
+                lastOrderInfo = `Delivered to ${lastDeliveredOrder.customer.Customer} (${formatDDMMYYYYTime(lastDeliveredOrder.deliveredAt)})`;
+            }
+        }
+         else { // Salesmen
+            const salesmanOrders = allOrders.filter(o => o.salesman === user);
+            salesmanOrders.forEach(o => {
+                const activityDate = new Date(o.deliveredAt || o.loadedAt || o.billedAt || o.orderSavedAt || o.date);
+                if (!lastActivityDate || activityDate > lastActivityDate) {
+                    lastActivityDate = activityDate;
+                    lastOrderInfo = `Order for ${o.customer.Customer} (${formatDDMMYYYYTime(activityDate)})`;
+                }
+            });
         }
 
         html += `
             <div class="user-status-card">
                 <h4 data-user="${user}">${user} <span class="status-badge ${statusData.status}">${statusData.status}</span></h4>
                 <p><strong>Current Task:</strong> ${currentTaskDisplay}</p>
-                <p><strong>Last Order:</strong> ${lastOrderInfo}</p>
+                <p><strong>Last Activity:</strong> ${lastOrderInfo}</p>
             </div>`;
     });
 
@@ -4246,7 +4391,7 @@ const getUserStatusHtml = () => {
             }
 
             const userOrders = allOrders.filter(o => {
-                return (o.salesman === user) || (user === 'SUNNY' && o.packingStartTime) || (user === 'ANISHAD' && o.billingStartTime);
+                return (o.salesman === user) || (user === 'SUNNY' && o.packingStartTime) || (user === 'ANISHAD' && o.billingStartTime) || (user === 'SHAJU' && o.loadingStartTime) || (user === 'BENNY' && o.deliveryStartTime);
             }).sort((a,b) => new Date(b.date) - new Date(a.date));
 
             if(userOrders.length === 0) {
@@ -4254,35 +4399,59 @@ const getUserStatusHtml = () => {
                 return;
             }
 
-            const timelineHtml = userOrders.map(o => {
-                let detailsHtml = '';
-                if(user === o.salesman) {
-                    detailsHtml = `
-                        <div class="detail-row"><span class="label">Order Start:</span> <span class="value">${formatDDMMYYYYTime(o.date)}</span></div>
-                        <div class="detail-row"><span class="label">Order Finish:</span> <span class="value">${formatDDMMYYYYTime(o.orderSavedAt)}</span></div>
-                        <div class="detail-row total-duration"><span class="label">Total Time:</span> <span class="value">${formatDuration(o.salesDuration)}</span></div>
-                    `;
-                } else if (user === 'SUNNY') {
-                     detailsHtml = `
-                        <div class="detail-row"><span class="label">Packing Start:</span> <span class="value">${formatDDMMYYYYTime(o.packingStartTime)}</span></div>
-                        <div class="detail-row"><span class="label">Packing Finish:</span> <span class="value">${formatDDMMYYYYTime(o.packingEndTime)}</span></div>
-                        <div class="detail-row total-duration"><span class="label">Total Time:</span> <span class="value">${formatDuration(o.packingDuration)}</span></div>
-                    `;
-                } else if (user === 'ANISHAD') {
-                     detailsHtml = `
-                        <div class="detail-row"><span class="label">Billing Start:</span> <span class="value">${formatDDMMYYYYTime(o.billingStartTime)}</span></div>
-                        <div class="detail-row"><span class="label">Billing Finish:</span> <span class="value">${formatDDMMYYYYTime(o.billedAt)}</span></div>
-                        <div class="detail-row total-duration"><span class="label">Total Time:</span> <span class="value">${formatDuration(o.billingDuration)}</span></div>
-                    `;
-                }
+            let timelineHtml = '';
+            if (user === 'SHAJU' || user === 'BENNY') {
+                const batches = {};
+                const timeKey = user === 'SHAJU' ? 'loadingStartTime' : 'deliveryStartTime';
+                const endTimeKey = user === 'SHAJU' ? 'loadedAt' : 'deliveryFinishedAt';
 
-                return `
-                    <div class="timeline-order-card">
-                        <h4>${o.customer.Customer}</h4>
-                        ${detailsHtml}
+                userOrders.forEach(o => {
+                    if (o[timeKey]) {
+                        if (!batches[o[timeKey]]) batches[o[timeKey]] = { orders: [], endTime: null };
+                        batches[o[timeKey]].orders.push(o);
+                        if (o[endTimeKey]) batches[o[timeKey]].endTime = o[endTimeKey];
+                    }
+                });
+
+                timelineHtml = Object.entries(batches).sort((a,b) => new Date(b[0]) - new Date(a[0])).map(([startTime, batch]) => `
+                     <div class="timeline-order-card">
+                        <h4>Batch of ${batch.orders.length} orders</h4>
+                         <div class="detail-row"><span class="label">Start:</span> <span class="value">${formatDDMMYYYYTime(startTime)}</span></div>
+                        <div class="detail-row"><span class="label">Finish:</span> <span class="value">${batch.endTime ? formatDDMMYYYYTime(batch.endTime) : 'In Progress'}</span></div>
                     </div>
-                `;
-            }).join('');
+                `).join('');
+
+            } else {
+                 timelineHtml = userOrders.map(o => {
+                    let detailsHtml = '';
+                    if(user === o.salesman) {
+                        detailsHtml = `
+                            <div class="detail-row"><span class="label">Order Start:</span> <span class="value">${formatDDMMYYYYTime(o.date)}</span></div>
+                            <div class="detail-row"><span class="label">Order Finish:</span> <span class="value">${formatDDMMYYYYTime(o.orderSavedAt)}</span></div>
+                            <div class="detail-row total-duration"><span class="label">Total Time:</span> <span class="value">${formatDuration(o.salesDuration)}</span></div>
+                        `;
+                    } else if (user === 'SUNNY') {
+                         detailsHtml = `
+                            <div class="detail-row"><span class="label">Packing Start:</span> <span class="value">${formatDDMMYYYYTime(o.packingStartTime)}</span></div>
+                            <div class="detail-row"><span class="label">Packing Finish:</span> <span class="value">${formatDDMMYYYYTime(o.packingEndTime)}</span></div>
+                            <div class="detail-row total-duration"><span class="label">Total Time:</span> <span class="value">${formatDuration(o.packingDuration)}</span></div>
+                        `;
+                    } else if (user === 'ANISHAD') {
+                         detailsHtml = `
+                            <div class="detail-row"><span class="label">Billing Start:</span> <span class="value">${formatDDMMYYYYTime(o.billingStartTime)}</span></div>
+                            <div class="detail-row"><span class="label">Billing Finish:</span> <span class="value">${formatDDMMYYYYTime(o.billedAt)}</span></div>
+                            <div class="detail-row total-duration"><span class="label">Total Time:</span> <span class="value">${formatDuration(o.billingDuration)}</span></div>
+                        `;
+                    } 
+
+                    return `
+                        <div class="timeline-order-card">
+                            <h4>${o.customer.Customer}</h4>
+                            ${detailsHtml}
+                        </div>
+                    `;
+                }).join('');
+            }
 
             contentEl.innerHTML = timelineHtml;
         };
@@ -4298,6 +4467,286 @@ const getUserStatusHtml = () => {
 
         setupBetweenDateFilter('operations-date-filter', renderAdminOperationsPage);
         
+        // --- LOADER (SHAJU) LOGIC ---
+        const renderLoaderHome = () => {
+            const container = document.getElementById('loader-order-list');
+            const { start, end } = getReportDateRange();
+
+            let pendingLoadOrders = Object.values(appState.orders).flat().filter(o => o.status === 'billed');
+            
+            if (start && end) {
+                 pendingLoadOrders = pendingLoadOrders.filter(o => {
+                    const billedDate = new Date(o.billedAt);
+                    return billedDate >= start && billedDate <= end;
+                });
+            }
+            
+            pendingLoadOrders.sort((a,b) => new Date(b.billedAt) - new Date(a.billedAt));
+
+            if(pendingLoadOrders.length === 0) {
+                container.innerHTML = `<div class="card" style="text-align: center;">No orders found for the selected dates.</div>`;
+                return;
+            }
+
+            container.innerHTML = pendingLoadOrders.map(o => `
+                <div class="list-item">
+                    <input type="checkbox" data-order-id="${o.id}">
+                    <div class="info">
+                        <span class="loader-item-name">${o.customer.Customer}</span>
+                        <span class="loader-item-details">${o.salesman} | Billed: ${formatDDMMYYYYTime(o.billedAt)}</span>
+                    </div>
+                </div>`).join('');
+        };
+        
+        document.getElementById('loader-order-list').addEventListener('change', () => {
+            const checkedBoxes = document.querySelectorAll('#loader-order-list input[type="checkbox"]:checked');
+            document.getElementById('start-loading-batch-btn').disabled = checkedBoxes.length === 0;
+        });
+
+        document.getElementById('start-loading-batch-btn').addEventListener('click', async () => {
+            const checkedBoxes = document.querySelectorAll('#loader-order-list input[type="checkbox"]:checked');
+            appState.currentLoadingBatch = Array.from(checkedBoxes).map(cb => cb.dataset.orderId);
+            
+            if (appState.currentLoadingBatch.length === 0) return;
+
+            const batch = writeBatch(db);
+            const loadingStartTime = new Date().toISOString();
+            appState.currentLoadingBatch.forEach(orderId => {
+                const orderRef = doc(db, "orders", orderId);
+                batch.update(orderRef, { loadingStartTime: loadingStartTime });
+            });
+            
+            await batch.commit();
+            await updateUserStatus('active', `Loading Batch (${appState.currentLoadingBatch.length} orders)`);
+            renderLoadingInterface();
+            showPage('page-loading-interface');
+        });
+        
+        const renderLoadingInterface = () => {
+            const container = document.getElementById('loading-batch-customer-list');
+            const ordersInBatch = appState.currentLoadingBatch.map(id => Object.values(appState.orders).flat().find(o => o.id === id)).filter(Boolean);
+            container.innerHTML = ordersInBatch.map(o => `<div class="list-item" style="padding: 10px 15px;"><div class="info">${o.customer.Customer}</div></div>`).join('');
+        };
+
+        document.getElementById('finish-loading-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('finish-loading-btn');
+            btn.disabled = true;
+
+            const batch = writeBatch(db);
+            const loadedAt = new Date().toISOString();
+
+            appState.currentLoadingBatch.forEach(orderId => {
+                const orderRef = doc(db, "orders", orderId);
+                batch.update(orderRef, { status: 'loaded', loadedAt: loadedAt });
+            });
+
+            try {
+                await batch.commit();
+                await updateUserStatus('idle');
+                showToast('Batch loading complete!');
+                appState.currentLoadingBatch = [];
+                renderLoaderHome();
+                showPage('page-loader-home');
+            } catch (error) {
+                console.error("Error finishing loading batch:", error);
+                alert("Failed to update orders. Please try again.");
+            } finally {
+                btn.disabled = false;
+            }
+        });
+        
+        const renderLoaderHistory = () => {
+            const container = document.getElementById('loader-history-list');
+            const loadedOrders = Object.values(appState.orders).flat().filter(o => o.status === 'loaded' || o.status === 'delivered').sort((a,b) => new Date(b.loadedAt) - new Date(a.loadedAt));
+
+             if(loadedOrders.length === 0) {
+                container.innerHTML = `<div class="card" style="text-align: center;">No loading history found.</div>`;
+                return;
+            }
+
+            container.innerHTML = loadedOrders.map(o => `
+                 <div class="history-card">
+                    <div class="history-card-header">
+                        <div class="info">
+                           <p><strong>Customer:</strong> ${o.customer.Customer}</p>
+                           <p><strong>Salesman:</strong> ${o.salesman}</p>
+                           <p class="date-display">Loaded on: ${formatDDMMYYYYTime(o.loadedAt)}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        document.getElementById('loader-history-btn').addEventListener('click', () => { renderLoaderHistory(); showPage('page-loader-history'); });
+        document.getElementById('back-to-loader-home-btn').addEventListener('click', () => showPage('page-loader-home'));
+        setupBetweenDateFilter('loader-date-filter', renderLoaderHome);
+
+        // --- DELIVERY (BENNY) LOGIC ---
+        const renderDeliveryHome = () => {
+            const container = document.getElementById('delivery-batch-list');
+            const loadedOrders = Object.values(appState.orders).flat().filter(o => o.status === 'loaded');
+            
+            const batches = {};
+            loadedOrders.forEach(o => {
+                if (o.loadedAt) {
+                    if (!batches[o.loadedAt]) batches[o.loadedAt] = [];
+                    batches[o.loadedAt].push(o);
+                }
+            });
+
+            if (Object.keys(batches).length === 0) {
+                container.innerHTML = `<div class="card" style="text-align: center;">No batches pending for delivery.</div>`;
+                return;
+            }
+
+            container.innerHTML = Object.entries(batches).sort((a, b) => new Date(b[0]) - new Date(a[0])).map(([loadedAt, orders]) => `
+                <div class="list-item">
+                    <div class="info">
+                        Batch from ${formatDDMMYYYYTime(loadedAt)} (${orders.length} orders)
+                    </div>
+                    <button class="list-item-action view-delivery-batch-btn" data-batch-id="${loadedAt}">View Batch</button>
+                </div>
+            `).join('');
+        };
+        
+        document.getElementById('delivery-batch-list').addEventListener('click', e => {
+            const viewBtn = e.target.closest('.view-delivery-batch-btn');
+            if(viewBtn) {
+                const batchId = viewBtn.dataset.batchId;
+                const ordersInBatch = Object.values(appState.orders).flat().filter(o => o.loadedAt === batchId);
+                const isAlreadyStarted = ordersInBatch.some(o => o.deliveryStartTime);
+                appState.currentDeliveryBatch = {
+                    id: batchId,
+                    orders: ordersInBatch,
+                    isStarted: isAlreadyStarted,
+                    startTime: isAlreadyStarted ? ordersInBatch[0].deliveryStartTime : null
+                };
+                renderDeliveryInterface();
+                showPage('page-delivery-interface');
+            }
+        });
+        
+        const renderDeliveryInterface = () => {
+            const container = document.getElementById('delivery-customer-list');
+            const headerActions = document.getElementById('delivery-header-actions');
+            const isStarted = appState.currentDeliveryBatch.isStarted;
+
+            headerActions.innerHTML = isStarted 
+                ? `<button class="icon-button" id="finish-delivery-btn" title="Finish Trip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></button>`
+                : `<button class="icon-button" id="start-delivery-btn" title="Start Trip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></button>`;
+
+            container.innerHTML = appState.currentDeliveryBatch.orders.map(o => `
+                 <div class="list-item" data-order-id="${o.id}">
+                    <div class="info">${o.customer.Customer}</div>
+                    <button class="list-item-action mark-delivered-btn" ${!isStarted || o.status === 'delivered' ? 'disabled' : ''} style="${o.status === 'delivered' ? 'background-color: var(--warning-color); border: 2px solid #c87000; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);' : ''}">${o.status === 'delivered' ? 'Delivered' : 'Completed'}</button>
+                </div>
+            `).join('');
+        };
+        
+        document.getElementById('delivery-header-actions').addEventListener('click', async e => {
+            const startBtn = e.target.closest('#start-delivery-btn');
+            const finishBtn = e.target.closest('#finish-delivery-btn');
+
+            if (startBtn) {
+                appState.currentDeliveryBatch.isStarted = true;
+                const batch = appState.currentDeliveryBatch;
+                batch.startTime = new Date().toISOString();
+                
+                const dbBatch = writeBatch(db);
+                batch.orders.forEach(o => {
+                    const orderRef = doc(db, "orders", o.id);
+                    dbBatch.update(orderRef, { deliveryStartTime: batch.startTime });
+                });
+                await dbBatch.commit();
+                await updateUserStatus('active', `Delivering batch (${batch.orders.length} orders)`);
+                renderDeliveryInterface();
+            }
+
+            if (finishBtn) {
+                const batch = appState.currentDeliveryBatch;
+                batch.endTime = new Date().toISOString();
+                
+                const dbBatch = writeBatch(db);
+                batch.orders.forEach(o => {
+                    const orderRef = doc(db, "orders", o.id);
+                    dbBatch.update(orderRef, { deliveryFinishedAt: batch.endTime });
+                });
+                await dbBatch.commit();
+                await updateUserStatus('idle');
+                showToast('Delivery trip finished!');
+                appState.currentDeliveryBatch = null;
+                renderDeliveryHome();
+                showPage('page-delivery-home');
+            }
+        });
+
+        document.getElementById('delivery-customer-list').addEventListener('click', async e => {
+            const markBtn = e.target.closest('.mark-delivered-btn');
+            if (markBtn && !markBtn.disabled) {
+                const orderId = markBtn.closest('.list-item').dataset.orderId;
+                const order = appState.currentDeliveryBatch.orders.find(o => o.id === orderId);
+                
+                markBtn.disabled = true;
+                markBtn.textContent = 'Delivered';
+                markBtn.style.backgroundColor = 'var(--warning-color)';
+                
+                try {
+                    await updateDoc(doc(db, "orders", orderId), {
+                        status: 'delivered',
+                        deliveredAt: new Date().toISOString()
+                    });
+                     await updateUserStatus('active', `Delivered to ${order.customer.Customer}`);
+                } catch(err) {
+                     console.error("Failed to mark as delivered:", err);
+                     alert('Update failed. Please try again.');
+                     markBtn.disabled = false;
+                     markBtn.textContent = 'Completed';
+                     markBtn.style.backgroundColor = '';
+                }
+            }
+        });
+        
+        const renderDeliveryHistory = () => {
+            const container = document.getElementById('delivery-history-list');
+            const deliveredOrders = Object.values(appState.orders).flat().filter(o => o.status === 'delivered' || (o.deliveryStartTime && o.deliveryFinishedAt));
+            const batches = {};
+            deliveredOrders.forEach(o => {
+                if (o.deliveryStartTime) {
+                    if (!batches[o.deliveryStartTime]) batches[o.deliveryStartTime] = { orders: [], endTime: null };
+                    batches[o.deliveryStartTime].orders.push(o);
+                    if (o.deliveryFinishedAt) batches[o.deliveryStartTime].endTime = o.deliveryFinishedAt;
+                }
+            });
+            
+             if(Object.keys(batches).length === 0) {
+                container.innerHTML = `<div class="card" style="text-align: center;">No delivery history found.</div>`;
+                return;
+            }
+
+             container.innerHTML = Object.entries(batches).sort((a,b) => new Date(b[0]) - new Date(a[0])).map(([startTime, batch]) => `
+                 <div class="history-card">
+                    <div class="history-card-header">
+                        <div class="info">
+                           <p><strong>Batch of ${batch.orders.length} orders</strong></p>
+                           <p class="date-display">Started: ${formatDDMMYYYYTime(startTime)}</p>
+                           <p class="date-display">Finished: ${formatDDMMYYYYTime(batch.endTime)}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        };
+        
+        document.getElementById('delivery-history-btn').addEventListener('click', () => { renderDeliveryHistory(); showPage('page-delivery-history'); });
+        document.getElementById('back-to-delivery-home-btn').addEventListener('click', () => {
+            if (appState.currentDeliveryBatch && appState.currentDeliveryBatch.isStarted) {
+                const allDelivered = appState.currentDeliveryBatch.orders.every(o => o.status === 'delivered');
+                if(!allDelivered && !confirm("This delivery trip is still in progress. Are you sure you want to go back?")) return;
+            }
+            updateUserStatus('idle');
+            showPage('page-delivery-home');
+        });
+        document.getElementById('back-to-delivery-home-from-history-btn').addEventListener('click', () => showPage('page-delivery-home'));
+
         const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v6'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
         
         setupPWA();
