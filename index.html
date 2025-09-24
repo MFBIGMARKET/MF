@@ -21,7 +21,7 @@
     <!-- FIREBASE SDKs -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-      import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocs, getDoc, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
       
       const firebaseConfig = {
         apiKey: "AIzaSyDdECOGyNKFsKtWDiArUPp0DVd_bN0BjAY",
@@ -39,7 +39,7 @@
       });
 
       window.firebaseDB = db;
-      window.firebaseTools = { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField, addDoc };
+      window.firebaseTools = { getDocs, getDoc, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField, addDoc };
 
     </script>
     
@@ -171,6 +171,60 @@
             border: 0;
             padding: 0;
             pointer-events: none;
+        }
+                #password-error-message {
+            margin-top: 10px;
+            font-weight: 500;
+        }
+                /* --- Enhanced Password Modal Styles --- */
+        #password-modal .modal-content {
+            text-align: center;
+        }
+
+        .password-icon-container {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px auto;
+            background-color: var(--light-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .password-icon-container svg {
+            width: 32px;
+            height: 32px;
+            stroke: var(--secondary-color);
+            stroke-width: 1.5;
+        }
+
+        #password-form-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-color-light);
+            margin-bottom: 8px;
+        }
+
+        #password-input {
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 0.3em; /* Spreads out the dots */
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 5px; /* Reduced margin */
+        }
+        
+        #password-input::placeholder {
+            letter-spacing: normal; /* Keep placeholder readable */
+        }
+        
+        #password-error-message {
+            margin-top: 10px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--danger-color);
         }
 
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #fff; border-radius: var(--border-radius); margin-bottom: 12px; box-shadow: var(--card-shadow); transition: transform 0.2s ease, box-shadow 0.2s, opacity 0.5s, max-height 0.5s, padding 0.5s, margin-bottom 0.5s; }
@@ -761,11 +815,11 @@
         }
 
         .role-tile[data-role="UNNI"], .role-tile[data-role="RIYAS"] { border-color: var(--sales-accent); }
-        .role-tile[data-role="SUNNY"], .role-tile[data-role="ARFATH"], .role-tile[data-role="MUFEEDA"] { border-color: var(--packing-accent); }
+        .role-tile[data-role="SUNNY"], .role-tile[data-role="ANISHAD"], .role-tile[data-role="MUFEEDA"] { border-color: var(--packing-accent); }
         .role-tile[data-role="ADMIN"] { border-color: var(--admin-accent); }
         .role-tile[data-role="SHAJU"] { border-color: var(--loading-accent); }
         .role-tile[data-role="BENNY"] { border-color: var(--delivery-accent); }
-        .role-tile[data-role="ANISHAD"] { border-color: var(--billing-accent); }
+        .role-tile[data-role="ARFATH"] { border-color: var(--billing-accent); }
         .role-tile[data-role="NANDU"] { border-color: var(--accounts-accent); }
         .role-tile[data-role="FASAL"] { border-color: var(--purchase-accent); }
         .role-tile[data-role="HR"] { border-color: var(--hr-accent); }
@@ -782,14 +836,14 @@
         }
         
         .role-tile[data-role="SUNNY"]:hover,
-        .role-tile[data-role="ARFATH"]:hover,
+        .role-tile[data-role="ANISHAD"]:hover,
         .role-tile[data-role="MUFEEDA"]:hover {
             background-color: var(--packing-accent-light);
             box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2);
              transform: translateY(-4px);
         }
         .role-tile[data-role="SUNNY"]:hover svg,
-        .role-tile[data-role="ARFATH"]:hover svg,
+        .role-tile[data-role="ANISHAD"]:hover svg,
         .role-tile[data-role="MUFEEDA"]:hover svg {
             color: #1e8449;
         }
@@ -817,12 +871,12 @@
         }
         .role-tile[data-role="BENNY"]:hover svg { color: #b9671b; }
 
-        .role-tile[data-role="ANISHAD"]:hover {
+        .role-tile[data-role="ARFATH"]:hover {
             background-color: var(--billing-accent-light);
             box-shadow: 0 4px 10px rgba(127, 140, 141, 0.2);
             transform: translateY(-4px);
         }
-        .role-tile[data-role="ANISHAD"]:hover svg { color: #626567; }
+        .role-tile[data-role="ARFATH"]:hover svg { color: #626567; }
 
         .role-tile[data-role="NANDU"]:hover {
             background-color: var(--accounts-accent-light);
@@ -1059,37 +1113,37 @@
         .purchase-view.active { display: block; }
 
         .tile-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-.purchase-tile {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #fff;
-    padding: 18px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    text-align: left;
-}
-.purchase-tile:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 95, 115, 0.12);
-}
-.purchase-tile h4 {
-    margin: 0;
-    color: var(--primary-color);
-    font-size: 1.1rem;
-}
-.purchase-tile p {
-    margin: 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--secondary-color);
-}
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .purchase-tile {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 18px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: left;
+        }
+        .purchase-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 95, 115, 0.12);
+        }
+        .purchase-tile h4 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        .purchase-tile p {
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
         .purchase-tile:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0, 95, 115, 0.15);
@@ -1119,7 +1173,7 @@
             border: 1px solid #ccc !important;
             width: 100px;
         }
-                .purchase-detail-table {
+        .purchase-detail-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
@@ -1150,6 +1204,90 @@
             width: 20%;
         }
         .purchase-detail-table .col-suggest {
+            color: var(--primary-color);
+        }
+
+        /* --- HR Dashboard Styles --- */
+        #hr-user-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+        }
+
+        .hr-user-tile {
+            background-color: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 25px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative; /* Needed for positioning the status dot */
+        }
+        .hr-user-tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 95, 115, 0.15);
+        }
+        .hr-user-tile svg {
+            width: 36px;
+            height: 36px;
+            stroke-width: 1.5;
+            color: var(--primary-color);
+        }
+        .hr-user-tile span {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+                /* --- HR Report Summary Styles --- */
+        
+        /* Special style for Admin tile in HR dashboard */
+        .hr-user-tile.admin-tile {
+            background-color: var(--admin-accent-light);
+            border: 1px solid var(--admin-accent);
+        }
+        .hr-user-tile.admin-tile svg {
+            color: var(--admin-accent);
+        }
+
+        /* Responsive grid for desktop */
+        @media (min-width: 768px) {
+            #hr-user-grid {
+                grid-template-columns: repeat(4, 1fr); /* 4 columns on desktop */
+            }
+        }
+        
+        .hr-user-tile .status-dot {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            display: none; /* Hidden by default */
+        }
+
+        .hr-user-tile[data-status="in"] .status-dot {
+            display: block; /* Show dot if user is IN */
+        }
+        
+        /* --- Attendance Modal Button Styles --- */
+        #attendance-modal .modal-body .button {
+            flex: 1;
+            margin: 0;
+        }
+
+        /* --- HR Report Table Styles --- */
+        #hr-report-container .report-table .duration-col {
+            font-weight: bold;
             color: var(--primary-color);
         }
     </style>
@@ -1205,17 +1343,17 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                         <span>BENNY</span>
                     </button>
-                     <button class="role-tile" data-role="ANISHAD">
+                     <button class="role-tile" data-role="ARFATH">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-                        <span>ANISHAD</span>
+                        <span>ARFATH</span>
                     </button>
                      <button class="role-tile" data-role="NANDU">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                         <span>NANDU</span>
                     </button>
-                    <button class="role-tile" data-role="ARFATH">
+                    <button class="role-tile" data-role="ANISHAD">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        <span>ARFATH</span>
+                        <span>ANISHAD</span>
                     </button>
                     <button class="role-tile" data-role="MUFEEDA">
                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -1225,7 +1363,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                         <span>FASAL</span>
                     </button>
-                    <button class="role-tile dummy" data-role="HR">
+                    <button class="role-tile" data-role="HR">
                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
                         <span>HR</span>
                     </button>
@@ -1587,6 +1725,10 @@
             </div>
             <div class="card">
                 <h3>Edit Existing Data</h3>
+                <button class="button button-outline" id="set-shop-location-btn" style="margin-bottom: 10px; display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    Set Shop Location
+                </button>
                 <button class="button button-outline" id="edit-customers-btn" style="margin-bottom: 10px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Edit Customers</button>
                 <button class="button button-outline" id="edit-items-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>Edit Items</button>
             </div>
@@ -2180,6 +2322,63 @@
         </div>
     </div>
 
+    <!-- ======================= HR ATTENDANCE PAGE ======================= -->
+    <div id="page-hr" class="page">
+        <div class="header">
+            <button class="icon-button" id="hr-logout-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            </button>
+            <h1>HR Dashboard</h1>
+            <div class="header-actions" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+            <div id="hr-user-grid">
+                <!-- User tiles will be dynamically inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= HR ATTENDANCE REPORT PAGE ======================= -->
+    <div id="page-hr-admin-report" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-hr-dashboard-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Attendance Report</h1>
+            <div class="header-actions" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+            <div id="hr-report-date-filter" class="between-date-filter">
+                <input type="date" class="date-input start-date-input">
+                <button class="date-btn start-date-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">Start Date</span>
+                </button>
+                <input type="date" class="date-input end-date-input">
+                <button class="date-btn end-date-btn">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">End Date</span>
+                </button>
+                <button class="filter-action-btn clear-btn">Clear</button>
+            </div>
+            <!-- In #page-hr-admin-report -->
+<div class="content">
+    <div id="hr-report-date-filter" class="between-date-filter">
+        <!-- ... date filter buttons ... -->
+    </div>
+
+    <!-- ADD THIS NEW CONTAINER FOR THE SUMMARY CARDS -->
+    <!-- NEW: Single container for the summary report table -->
+<div id="hr-report-table-container" class="card table-responsive-wrapper">
+    <!-- The summary table will be injected here by JavaScript -->
+</div>
+</div>
+            <div id="hr-report-container" class="card table-responsive-wrapper">
+                <!-- Report table will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
     <!-- Hidden elements for generation -->
     <div id="packing-slip-wrapper"><div id="packing-slip-content"></div></div>
     <div id="sale-bill-wrapper"><div id="sale-bill-content"></div></div>
@@ -2197,7 +2396,7 @@
         <div class="modal-content">
             <h2>Transfer Order</h2>
             <div id="transfer-assistant-buttons">
-                <button class="button" data-assistant="ARFATH">Transfer to ARFATH</button>
+                <button class="button" data-assistant="ANISHAD">Transfer to ANISHAD</button>
                 <button class="button" data-assistant="MUFEEDA">Transfer to MUFEEDA</button>
             </div>
         </div>
@@ -2242,6 +2441,39 @@
             </div>
         </div>
     </div>
+        <!-- ======================= PASSWORD AUTH MODAL ======================= -->
+    <div id="password-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="password-modal-title">Enter Password</h2>
+            <!-- In #password-modal -->
+<div class="modal-body">
+    <div class="password-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+    </div>
+    <div class="form-group" id="password-form-group">
+        <label for="password-input">Password Required</label>
+        <input type="password" id="password-input" placeholder="••••••••">
+    </div>
+    <p id="password-error-message" style="display: none;">Incorrect Password. Please try again.</p>
+</div>
+            <div class="modal-footer">
+                <button class="button button-outline" id="password-cancel-btn">Cancel</button>
+                <button class="button" id="password-submit-btn">Submit</button>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= ATTENDANCE MARKING MODAL ======================= -->
+    <div id="attendance-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="attendance-modal-title">Mark Attendance for [User]</h2>
+            <div class="modal-body" id="attendance-modal-body" style="text-align: center;">
+                <!-- The IN or OUT button will be injected here by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button class="button button-outline" data-action="close">Cancel</button>
+            </div>
+        </div>
+    </div>
 
 <script type="module">
     document.addEventListener('DOMContentLoaded', () => {
@@ -2267,7 +2499,8 @@
             userStatus: {},
             purchaseVendors: [], purchaseLocations: [],
             currentPurchaseListItems: [],
-            packerAssistants: ['ARFATH', 'MUFEEDA'],
+            // Role Swap: ANISHAD is now a packer assistant, ARFATH is no longer.
+            packerAssistants: ['ANISHAD', 'MUFEEDA'], 
             editingPackingSlipId: null,
             currentPayment: {}, 
             currentView: 'customers',
@@ -2294,10 +2527,26 @@
             orderToTransfer: null,
             purchaseItemSort: 'alpha',
             currentPurchaseContext: null,
+             pendingRole: null,
         };
 
-        const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField, addDoc } = window.firebaseTools;
+        const { getDocs, getDoc, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField, addDoc } = window.firebaseTools;
         const db = window.firebaseDB;
+
+        const calculateDistance = (lat1, lon1, lat2, lon2) => {
+            const R = 6371e3; // Earth's radius in metres
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c; // Distance in metres
+        };
 
         const getActiveCart = () => {
             if (!appState.customer || !appState.customer.id) return [];
@@ -2319,7 +2568,7 @@
         };
 
         const updateUserStatus = async (status, task = 'Idle') => {
-            if (!appState.salesman || appState.salesman === 'ADMIN' || appState.salesman === 'NANDU' || appState.salesman === 'SUNNY') return;
+            if (!appState.salesman || appState.salesman === 'ADMIN' || appState.salesman === 'NANDU' || appState.salesman === 'SUNNY' || appState.salesman === 'HR') return;
             try {
                 const statusRef = doc(db, "user_status", appState.salesman);
                 await setDoc(statusRef, {
@@ -2413,7 +2662,7 @@
         const setupRealtimeListeners = () => {
             onSnapshot(collection(db, "customers"), (snapshot) => { 
                 appState.customers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-                if(appState.salesman && !['ADMIN', 'SUNNY', 'ANISHAD', 'NANDU', 'SHAJU', 'BENNY', 'FASAL', ...appState.packerAssistants].includes(appState.salesman)) renderCurrentView();
+                if(appState.salesman && !['ADMIN', 'SUNNY', 'ARFATH', 'NANDU', 'SHAJU', 'BENNY', 'FASAL', 'HR', ...appState.packerAssistants].includes(appState.salesman)) renderCurrentView();
                 if(document.getElementById('page-outstanding-balances').classList.contains('active')) renderOutstandingBalancesPage();
                 if(appState.salesman === 'NANDU') renderAccountantView();
             });
@@ -2442,8 +2691,8 @@
                 if (appState.salesman === 'SUNNY' && document.getElementById('page-packer-home').classList.contains('active')) renderPackerHome();
                 if (appState.salesman === 'SUNNY' && document.getElementById('page-packer-history').classList.contains('active')) renderPackerHistory();
                 if (appState.packerAssistants.includes(appState.salesman)) renderPackerAssistantHome();
-                if (appState.salesman === 'ANISHAD' && document.getElementById('page-biller-home').classList.contains('active')) renderBillerHome();
-                if (appState.salesman === 'ANISHAD' && document.getElementById('page-biller-history').classList.contains('active')) renderBillerHistory();
+                if (appState.salesman === 'ARFATH' && document.getElementById('page-biller-home').classList.contains('active')) renderBillerHome();
+                if (appState.salesman === 'ARFATH' && document.getElementById('page-biller-history').classList.contains('active')) renderBillerHistory();
                 if (appState.salesman === 'SHAJU' && document.getElementById('page-loader-home').classList.contains('active')) renderLoaderHome();
                 if (appState.salesman === 'SHAJU' && document.getElementById('page-loader-history').classList.contains('active')) renderLoaderHistory();
                 if (appState.salesman === 'BENNY' && document.getElementById('page-delivery-home').classList.contains('active')) renderDeliveryHome();
@@ -2531,6 +2780,50 @@
                     <button class="list-item-action collect-credit-payment-btn" data-customer='${JSON.stringify(c)}'>Collect</button>
                 </div>`).join('');
         };
+                // ===============================================
+        // START: PACKER ASSISTANT LOGIC
+        // ===============================================
+
+        const renderPackerAssistantHome = () => {
+            const container = document.getElementById('packer-assistant-order-list');
+            const assistantName = appState.salesman;
+            
+            if (!assistantName) {
+                container.innerHTML = `<div class="card">Could not identify the user.</div>`;
+                return;
+            }
+
+            const assignedOrders = Object.values(appState.orders).flat().filter(o =>
+                o.packerAssistant === assistantName && o.status === 'packing'
+            );
+
+            assignedOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (assignedOrders.length === 0) {
+                container.innerHTML = `<div class="card" style="text-align: center;">No orders assigned to you at the moment.</div>`;
+                return;
+            }
+
+            container.innerHTML = assignedOrders.map(o => {
+                const billTypeBadge = o.billType === 'cash' ? '<span class="bill-type-badge">Cash Bill</span>' : '';
+                // Determine button text based on whether packing has been started
+                const buttonText = o.packingStartTime ? 'Continue Packing' : 'Start Packing';
+                const buttonClass = o.packingStartTime ? 'finish-pack-btn' : 'start-pack-btn';
+
+                return `
+                <div class="list-item" data-order-id="${o.id}">
+                    <div class="info">
+                        <span class="assistant-packing-item-name">${o.customer.Customer} (${o.salesman}) ${billTypeBadge}</span>
+                        <span class="assistant-packing-item-details">Assigned: ${formatDDMMYYYYTime(o.date)}</span>
+                    </div>
+                    <button class="list-item-action ${buttonClass}" data-order-id="${o.id}">${buttonText}</button>
+                </div>`;
+            }).join('');
+        };
+
+        // ===============================================
+        // END: PACKER ASSISTANT LOGIC
+        // ===============================================
                 // NEW: Renders the customer list for starting a new Cash Bill
         const renderCashBillView = () => {
             const container = document.getElementById('cash-bill-customer-list-container');
@@ -2696,10 +2989,7 @@
             const saveUpdateBtn = document.getElementById('save-update-slip-btn');
             
             if(appState.editingPackingSlipId) {
-                document.getElementById('order-summary-header').textContent = 'Edit Slip Summary';
-                saveUpdateBtn.textContent = 'Update Packing Slip';
-            } else {
-                document.getElementById('order-summary-header').textContent = 'Order Summary';
+                document.getElementById('order-summary-header').textContent = 'Edit SlipSummary';
                 saveUpdateBtn.textContent = 'Save Packing Slip';
             }
         };
@@ -3271,72 +3561,130 @@
             }
         });
 
+                // REPLACEMENT for the entire role selection click listener
         roleModal.querySelector('.role-grid').addEventListener('click', (e) => {
             const roleTile = e.target.closest('.role-tile');
-            if (roleTile && !roleTile.classList.contains('dummy')) {
-                const salesman = roleTile.dataset.role;
-                roleModal.classList.remove('active');
-                
-                appState.salesman = salesman;
-                localStorage.setItem('lastSalesman', salesman);
-                const { startDate, endDate } = getDefaultDateRange();
-                appState.reporting.startDate = startDate; appState.reporting.endDate = endDate;
-                
-                updateUserStatus('idle');
+            if (!roleTile || roleTile.classList.contains('dummy')) return;
 
-                if (salesman === 'ADMIN') { 
-                    document.getElementById('admin-footer').style.display = 'flex'; 
-                    document.getElementById('settings-icon-btn').style.display = 'flex';
-                    showPage('page-admin-dashboard'); 
-                    renderAdminDashboard();
-                } else if (salesman === 'SUNNY') {
-                    document.getElementById('footer').style.display = 'none';
-                    showPage('page-packer-home'); 
-                    renderPackerHome();
-                } else if (appState.packerAssistants.includes(salesman)) {
-                    document.getElementById('footer').style.display = 'none';
-                    showPage('page-packer-assistant');
-                    renderPackerAssistantHome();
-                } else if (salesman === 'FASAL') {
-                    document.getElementById('footer').style.display = 'flex';
-                    showPage('page-purchase-planner');
-                    renderPurchasePlanner();
-                } else if (salesman === 'HR') {
-                    showProfessionalModal("Coming Soon", "The HR module is currently under development.");
-                    appState.salesman = null;
-                    localStorage.removeItem('lastSalesman');
-                } else if (salesman === 'ANISHAD') {
-                    document.getElementById('footer').style.display = 'none';
-                    showPage('page-biller-home'); 
-                    renderBillerHome();
-                } else if (salesman === 'SHAJU') {
-                    document.getElementById('footer').style.display = 'none';
-                    showPage('page-loader-home');
-                    renderLoaderHome();
-                }
-                 else if (salesman === 'NANDU') {
-                    document.getElementById('footer').style.display = 'flex';
-                    showPage('page-accountant-dashboard');
-                    renderAccountantView();
-                }
-                 else if (salesman === 'BENNY') {
-                    document.getElementById('footer').style.display = 'none';
-                    showPage('page-delivery-home');
-                    renderDeliveryHome();
-                }
-                else {
-                    document.getElementById('footer').style.display = 'flex'; 
-                    document.getElementById('admin-footer').style.display = 'none';
-                    document.getElementById('settings-icon-btn').style.display = 'none';
-                    document.getElementById('billed-orders-btn').style.display = 'flex';
-                    appState.currentView = 'customers';
-                    document.querySelectorAll('#footer .footer-button').forEach(btn => btn.classList.remove('active'));
-                    document.getElementById('orders-tab-btn').classList.add('active'); 
-                    showPage('page-main-view'); 
-                    renderCurrentView();
-                }
-            } else if (roleTile && roleTile.classList.contains('dummy')) {
-                showProfessionalModal("Coming Soon", "This role is currently under development.");
+            const selectedRole = roleTile.dataset.role;
+            
+            // The list of roles that require a password
+            const protectedRoles = ['ADMIN', 'HR'];
+
+            if (protectedRoles.includes(selectedRole)) {
+                // For protected roles, store the role and open the password modal
+                appState.pendingRole = selectedRole;
+                openPasswordModal(selectedRole);
+            } else {
+                // For all other roles, log in directly as before
+                proceedWithLogin(selectedRole);
+            }
+        });
+
+        const openPasswordModal = (role) => {
+            const modal = document.getElementById('password-modal');
+            const passwordInput = document.getElementById('password-input');
+            const errorMessage = document.getElementById('password-error-message');
+
+            document.getElementById('password-modal-title').textContent = `Enter Password for ${role}`;
+            passwordInput.value = '';
+            errorMessage.style.display = 'none'; // Hide any previous errors
+            modal.classList.add('active');
+            setTimeout(() => passwordInput.focus(), 100); // Focus after transition
+        };
+
+        const handlePasswordSubmit = () => {
+            const passwordInput = document.getElementById('password-input');
+            const errorMessage = document.getElementById('password-error-message');
+            const enteredPassword = passwordInput.value;
+            const role = appState.pendingRole;
+
+            const correctPasswords = {
+                ADMIN: 'ADMIN456',
+                HR: '1234'
+            };
+
+            if (enteredPassword === correctPasswords[role]) {
+                errorMessage.style.display = 'none';
+                document.getElementById('password-modal').classList.remove('active');
+                proceedWithLogin(role); // Password is correct, proceed
+            } else {
+                errorMessage.style.display = 'block'; // Show error
+                passwordInput.value = ''; // Clear input
+                passwordInput.focus();
+            }
+        };
+
+        // This new function contains the logic to actually switch to a user's page
+        const proceedWithLogin = (salesman) => {
+            roleModal.classList.remove('active');
+            appState.salesman = salesman;
+            localStorage.setItem('lastSalesman', salesman);
+            const { startDate, endDate } = getDefaultDateRange();
+            appState.reporting.startDate = startDate;
+            appState.reporting.endDate = endDate;
+
+            updateUserStatus('idle');
+
+            // This is the original logic from the old click listener
+            if (salesman === 'ADMIN') { 
+                document.getElementById('admin-footer').style.display = 'flex'; 
+                document.getElementById('settings-icon-btn').style.display = 'flex';
+                showPage('page-admin-dashboard'); 
+                renderAdminDashboard();
+            } else if (salesman === 'SUNNY') {
+                document.getElementById('footer').style.display = 'none';
+                showPage('page-packer-home'); 
+                renderPackerHome();
+            } else if (appState.packerAssistants.includes(salesman)) {
+                document.getElementById('footer').style.display = 'none';
+                showPage('page-packer-assistant');
+                renderPackerAssistantHome();
+            } else if (salesman === 'FASAL') {
+                document.getElementById('footer').style.display = 'flex';
+                showPage('page-purchase-planner');
+                renderPurchasePlanner();
+            } else if (salesman === 'HR') {
+                document.getElementById('footer').style.display = 'none';
+                showPage('page-hr');
+                renderHRPage();
+            } else if (salesman === 'ARFATH') { // Role Swap: ARFATH is Biller
+                document.getElementById('footer').style.display = 'none';
+                showPage('page-biller-home'); 
+                renderBillerHome();
+            } else if (salesman === 'SHAJU') {
+                document.getElementById('footer').style.display = 'none';
+                showPage('page-loader-home');
+                renderLoaderHome();
+            } else if (salesman === 'NANDU') {
+                document.getElementById('footer').style.display = 'flex';
+                showPage('page-accountant-dashboard');
+                renderAccountantView();
+            } else if (salesman === 'BENNY') {
+                document.getElementById('footer').style.display = 'none';
+                showPage('page-delivery-home');
+                renderDeliveryHome();
+            } else { // Salesmen (UNNI, RIYAS)
+                document.getElementById('footer').style.display = 'flex'; 
+                document.getElementById('admin-footer').style.display = 'none';
+                document.getElementById('settings-icon-btn').style.display = 'none';
+                document.getElementById('billed-orders-btn').style.display = 'flex';
+                appState.currentView = 'customers';
+                document.querySelectorAll('#footer .footer-button').forEach(btn => btn.classList.remove('active'));
+                document.getElementById('orders-tab-btn').classList.add('active'); 
+                showPage('page-main-view'); 
+                renderCurrentView();
+            }
+        };
+
+        // Add event listeners for the new password modal buttons
+        document.getElementById('password-submit-btn').addEventListener('click', handlePasswordSubmit);
+        document.getElementById('password-cancel-btn').addEventListener('click', () => {
+            document.getElementById('password-modal').classList.remove('active');
+        });
+        document.getElementById('password-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handlePasswordSubmit();
             }
         });
 
@@ -3357,6 +3705,7 @@
         document.getElementById('biller-logout-btn').addEventListener('click', handleLogout);
         document.getElementById('loader-logout-btn').addEventListener('click', handleLogout);
         document.getElementById('delivery-logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('hr-logout-btn').addEventListener('click', handleLogout);
         
         const customerView = document.getElementById('customer-view');
         const paymentView = document.getElementById('payment-view');
@@ -3367,7 +3716,7 @@
         const pendingBalanceBtn = document.getElementById('pending-balance-btn');
 
         const renderCurrentView = () => {
-             if (!appState.salesman || ['ADMIN', 'SUNNY', 'ANISHAD', 'NANDU', 'SHAJU', 'BENNY', 'FASAL', ...appState.packerAssistants].includes(appState.salesman)) return; 
+             if (!appState.salesman || ['ADMIN', 'SUNNY', 'ARFATH', 'NANDU', 'SHAJU', 'BENNY', 'FASAL', 'HR', ...appState.packerAssistants].includes(appState.salesman)) return; 
              
             customerView.style.display = 'none';
             paymentView.style.display = 'none';
@@ -3542,7 +3891,50 @@
         });
         
         document.querySelectorAll('[data-action="back-to-main"]').forEach(btn => btn.addEventListener('click', () => showPage('page-main-view')));
-        const showSettingsPage = () => showPage('page-settings');
+        
+        const showSettingsPage = () => {
+            if (appState.salesman === 'ADMIN') {
+                document.getElementById('set-shop-location-btn').style.display = 'flex';
+            } else {
+                document.getElementById('set-shop-location-btn').style.display = 'none';
+            }
+            showPage('page-settings');
+        };
+
+        document.getElementById('set-shop-location-btn').addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by your browser.");
+                return;
+            }
+
+            const btn = document.getElementById('set-shop-location-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Getting Location...';
+            btn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    try {
+                        const locationRef = doc(db, "app_config", "shop_location");
+                        await setDoc(locationRef, { latitude, longitude });
+                        showToast('Shop location has been updated successfully!');
+                    } catch (error) {
+                        console.error("Error saving shop location:", error);
+                        alert("Failed to save location to the database.");
+                    } finally {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                },
+                (error) => {
+                    alert(`Error getting location: ${error.message}`);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            );
+        });
+        
         document.getElementById('settings-icon-btn').addEventListener('click', showSettingsPage);
         document.getElementById('admin-settings-btn').addEventListener('click', showSettingsPage);
         document.querySelectorAll('#back-to-main-btn-order-history, #back-to-main-btn-payment-history, #back-to-main-btn-payment').forEach(btn => btn.addEventListener('click', () => showPage('page-main-view')));
@@ -4215,6 +4607,7 @@
             }
         });
 
+                // REPLACEMENT for the transfer-modal event listener
         document.getElementById('transfer-modal').addEventListener('click', async e => {
             const modal = document.getElementById('transfer-modal');
             if (e.target === modal) {
@@ -4228,9 +4621,12 @@
                 
                 assistantBtn.disabled = true;
                 try {
+                    // *** FIX IS HERE: We now add packingStartTime on transfer ***
+                    const startTime = new Date().toISOString();
                     await updateDoc(doc(db, "orders", orderId), {
                         packerAssistant: assistant,
-                        status: 'packing' // Directly set to packing on transfer
+                        status: 'packing',
+                        packingStartTime: startTime // Start the timer immediately
                     });
                     showToast(`Order transferred to ${assistant}`);
                     modal.classList.remove('active');
@@ -4400,7 +4796,7 @@
             const updateData = {
                 status: 'billed',
                 billedItems: billingOrder.items,
-                billedBy: 'ANISHAD',
+                billedBy: 'ARFATH', // Role Swap
                 billedAt: endTime.toISOString(),
                 billingDuration: billingDuration,
             };
@@ -4927,7 +5323,7 @@
         };
                 
         const getUserStatusHtml = () => {
-            const users = ['UNNI', 'RIYAS', 'ARFATH', 'MUFEEDA', 'ANISHAD', 'SHAJU', 'BENNY'];
+            const users = ['UNNI', 'RIYAS', 'ANISHAD', 'MUFEEDA', 'ARFATH', 'SHAJU', 'BENNY'];
             let html = '<h3>Live Status</h3><div class="user-status-grid">';
             const allOrders = Object.values(appState.orders).flat();
 
@@ -4944,7 +5340,7 @@
                     if (lastPackedOrder) {
                         lastActivityInfo = `Packed for ${lastPackedOrder.customer.Customer} (${formatDDMMYYYYTime(lastPackedOrder.packingEndTime)})`;
                     }
-                } else if (user === 'ANISHAD') {
+                } else if (user === 'ARFATH') { // Role Swap
                     const lastBilledOrder = allOrders
                         .filter(o => o.billedAt)
                         .sort((a, b) => new Date(b.billedAt) - new Date(a.billedAt))[0];
@@ -5009,7 +5405,7 @@
             }
 
             const userOrders = allOrders.filter(o => {
-                return (o.salesman === user) || (o.packerAssistant === user && o.packingStartTime) || (user === 'ANISHAD' && o.billingStartTime) || (user === 'SHAJU' && o.loadingStartTime) || (user === 'BENNY' && o.deliveryStartTime);
+                return (o.salesman === user) || (o.packerAssistant === user && o.packingStartTime) || (user === 'ARFATH' && o.billingStartTime) || (user === 'SHAJU' && o.loadingStartTime) || (user === 'BENNY' && o.deliveryStartTime);
             }).sort((a,b) => new Date(b.date) - new Date(a.date));
 
             if(userOrders.length === 0) {
@@ -5054,7 +5450,7 @@
                             <div class="detail-row"><span class="label">Packing Finish:</span> <span class="value">${formatDDMMYYYYTime(o.packingEndTime)}</span></div>
                             <div class="detail-row total-duration"><span class="label">Total Time:</span> <span class="value">${formatDuration(o.packingDuration)}</span></div>
                         `;
-                    } else if (user === 'ANISHAD') {
+                    } else if (user === 'ARFATH') { // Role Swap
                          detailsHtml = `
                             <div class="detail-row"><span class="label">Billing Start:</span> <span class="value">${formatDDMMYYYYTime(o.billingStartTime)}</span></div>
                             <div class="detail-row"><span class="label">Billing Finish:</span> <span class="value">${formatDDMMYYYYTime(o.billedAt)}</span></div>
@@ -5812,6 +6208,249 @@
         
         const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v8'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
         
+        // ===============================================
+        // START: HR ATTENDANCE FEATURE LOGIC
+        // ===============================================
+
+        const renderHRPage = async () => {
+            const gridContainer = document.getElementById('hr-user-grid');
+            gridContainer.innerHTML = '<p>Loading employee status...</p>';
+
+            const today = new Date().toISOString().split('T')[0];
+            let dailyStatus = {};
+            
+            try {
+                const statusDoc = await window.firebaseTools.getDoc(doc(db, "daily_attendance_status", today));
+                if (statusDoc.exists()) {
+                    dailyStatus = statusDoc.data();
+                }
+            } catch (error) {
+                console.error("Could not fetch daily attendance status:", error);
+            }
+
+            const employees = ['UNNI', 'RIYAS', 'SUNNY', 'SHAJU', 'BENNY', 'ARFATH', 'NANDU', 'ANISHAD', 'MUFEEDA', 'FASAL'];
+            
+            let tilesHtml = '';
+            
+            employees.forEach(name => {
+                const status = dailyStatus[name] || 'out';
+                tilesHtml += `
+                <div class="hr-user-tile" data-username="${name}" data-status="${status}">
+                    <span class="status-dot"></span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <span>${name}</span>
+                </div>`;
+            });
+            
+            tilesHtml += `
+                <div class="hr-user-tile admin-tile" data-username="ADMIN">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>Attendance Report</span>
+                </div>`;
+
+            gridContainer.innerHTML = tilesHtml;
+        };
+        
+        const openAttendanceModal = (username, status) => {
+            const modal = document.getElementById('attendance-modal');
+            const modalBody = document.getElementById('attendance-modal-body');
+            document.getElementById('attendance-modal-title').textContent = `Mark Attendance for ${username}`;
+
+            if (status === 'in') {
+                modalBody.innerHTML = `
+                    <p>This user is currently marked IN.</p>
+                    <button id="mark-out-btn" class="button" style="background: var(--danger-color); margin-top: 20px;" data-username="${username}">Mark OUT</button>
+                `;
+            } else { // 'out' or undefined
+                modalBody.innerHTML = `
+                    <p>This user is currently marked OUT.</p>
+                    <button id="mark-in-btn" class="button" style="background: var(--success-color); margin-top: 20px;" data-username="${username}">Mark IN</button>
+                `;
+            }
+
+            modal.classList.add('active');
+        };
+
+        document.getElementById('hr-user-grid').addEventListener('click', e => {
+            const tile = e.target.closest('.hr-user-tile');
+            if (!tile) return;
+
+            const username = tile.dataset.username;
+            if (username === 'ADMIN') {
+                showPage('page-hr-admin-report');
+                renderHRAttendanceReport();
+            } else {
+                const status = tile.dataset.status;
+                openAttendanceModal(username, status);
+            }
+        });
+        
+        document.getElementById('attendance-modal').addEventListener('click', async (e) => {
+            const modal = document.getElementById('attendance-modal');
+            const modalBody = document.getElementById('attendance-modal-body');
+
+            if (e.target === modal || e.target.closest('[data-action="close"]')) {
+                modal.classList.remove('active');
+                return;
+            }
+
+            const markInBtn = e.target.closest('#mark-in-btn');
+            const markOutBtn = e.target.closest('#mark-out-btn');
+
+            if (!markInBtn && !markOutBtn) return;
+
+            const btn = markInBtn || markOutBtn;
+            const username = btn.dataset.username;
+            const type = markInBtn ? 'in' : 'out';
+            const usersToExcludeFromGeoFence = ['UNNI', 'RIYAS'];
+
+            btn.disabled = true;
+            modalBody.innerHTML = '<p>Processing... Please wait.</p>';
+
+            try {
+                if (!usersToExcludeFromGeoFence.includes(username)) {
+                    modalBody.innerHTML = '<p>Getting shop location...</p>';
+                    const shopLocationDoc = await window.firebaseTools.getDoc(doc(db, "app_config", "shop_location"));
+                    if (!shopLocationDoc.exists()) {
+                        throw new Error("Shop location is not set. Please ask an Admin to set it in the settings.");
+                    }
+                    const shopLocation = shopLocationDoc.data();
+
+                    modalBody.innerHTML = '<p>Getting your current location... Please approve the request.</p>';
+                    const userPosition = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 15000 });
+                    });
+                    const userLocation = { latitude: userPosition.coords.latitude, longitude: userPosition.coords.longitude };
+                    
+                    const distance = calculateDistance(shopLocation.latitude, shopLocation.longitude, userLocation.latitude, userLocation.longitude);
+
+                    if (distance > 200) { // 200 meters radius
+                        throw new Error(`You are ${distance.toFixed(0)} meters away from the shop. You must be within 200 meters to mark attendance.`);
+                    }
+                }
+                
+                modalBody.innerHTML = '<p>Saving attendance...</p>';
+                const today = new Date().toISOString().split('T')[0];
+                const statusRef = doc(db, "daily_attendance_status", today);
+                const batch = writeBatch(db);
+                const logRef = doc(collection(db, "attendance_logs"));
+                batch.set(logRef, { username, type, timestamp: new Date().toISOString() });
+                batch.set(statusRef, { [username]: type }, { merge: true });
+                await batch.commit();
+
+                showToast(`Successfully marked '${type}' for ${username}`);
+                modal.classList.remove('active');
+                await renderHRPage();
+
+            } catch (error) {
+                console.error("Attendance marking failed:", error);
+                modalBody.innerHTML = `
+                    <p style="color: var(--danger-color); font-weight: bold;">Error</p>
+                    <p>${error.message}</p>
+                `;
+            }
+        });
+
+                // Event listener for the back button on the report page
+        document.getElementById('back-to-hr-dashboard-btn').addEventListener('click', () => {
+            showPage('page-hr');
+        });
+        
+        // FINAL REPLACEMENT for the entire renderHRAttendanceReport function
+        const renderHRAttendanceReport = async () => {
+            // Target the correct container ID that matches the HTML
+            const container = document.getElementById('hr-report-table-container');
+            if (!container) {
+                console.error("Error: The report container 'hr-report-table-container' was not found in the HTML.");
+                return;
+            }
+            container.innerHTML = '<p>Loading report...</p>';
+
+            try {
+                // Fetch all attendance logs once
+                const logsSnapshot = await getDocs(collection(db, "attendance_logs"));
+                if (logsSnapshot.empty) {
+                    container.innerHTML = '<p style="text-align:center; padding: 20px;">No attendance records found in the database.</p>';
+                    return;
+                }
+                const allLogs = logsSnapshot.docs.map(doc => doc.data());
+
+                // Get the date range from the filter
+                const { start, end } = getReportDateRange();
+
+                // Filter the logs based on the selected date range
+                const filteredLogs = allLogs.filter(log => {
+                    if (!log.timestamp) return false;
+                    const logDate = new Date(log.timestamp);
+                    const isAfterStart = !start || logDate >= start;
+                    const isBeforeEnd = !end || logDate <= end;
+                    return isAfterStart && isBeforeEnd;
+                });
+                
+                if (filteredLogs.length === 0) {
+                     container.innerHTML = '<p style="text-align:center; padding: 20px;">No attendance records found for the selected dates.</p>';
+                     return;
+                }
+
+                // --- 1. Process data to count unique working days ---
+                const employeeData = {};
+
+                filteredLogs.forEach(log => {
+                    const username = log.username;
+                    if (!username) return; // Skip logs without a username
+
+                    const date = new Date(log.timestamp).toISOString().split('T')[0];
+                    
+                    if (!employeeData[username]) {
+                        employeeData[username] = { workingDays: new Set() };
+                    }
+                    
+                    // A working day is any day with an "in" record.
+                    if (log.type === 'in') {
+                        employeeData[username].workingDays.add(date);
+                    }
+                });
+
+                // --- 2. Build the HTML for the summary table ---
+                const tableRowsHtml = Object.keys(employeeData).sort().map(username => {
+                    const workDays = employeeData[username].workingDays.size;
+                    return `
+                        <tr>
+                            <td>${username}</td>
+                            <td class="numeric" style="font-weight: bold; font-size: 1.1rem;">${workDays}</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                container.innerHTML = `
+                    <h3>Working Days Summary</h3>
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Employee Name</th>
+                                <th class="numeric">Total Working Days</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRowsHtml}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error("Error generating attendance report:", error);
+                container.innerHTML = '<p style="color: var(--danger-color);">Could not load the report. Please try again.</p>';
+            }
+        };
+        
+        // Setup date filter for the new report page
+        setupBetweenDateFilter('hr-report-date-filter', renderHRAttendanceReport);
+        
+        setupBetweenDateFilter('hr-report-date-filter', renderHRAttendanceReport);
+        
+        // ===============================================
+        // END: HR ATTENDANCE FEATURE LOGIC
+        // ===============================================
+
         setupPWA();
         setupRealtimeListeners(); 
     });
