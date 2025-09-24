@@ -21,7 +21,7 @@
     <!-- FIREBASE SDKs -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-      import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
       
       const firebaseConfig = {
         apiKey: "AIzaSyDdECOGyNKFsKtWDiArUPp0DVd_bN0BjAY",
@@ -39,7 +39,7 @@
       });
 
       window.firebaseDB = db;
-      window.firebaseTools = { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField };
+      window.firebaseTools = { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField, addDoc };
 
     </script>
     
@@ -309,7 +309,7 @@
         .search-view { display: none; }
         .search-view.active { display: block; }
 
-        #offer-item-search-results, #offer-item-search-results-bulk, #info-salesman-item-search-results, #info-item-search-results, #packing-item-search-results, #billing-item-search-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 var(--border-radius) var(--border-radius); max-height: 250px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        #offer-item-search-results, #offer-item-search-results-bulk, #info-salesman-item-search-results, #info-item-search-results, #packing-item-search-results, #billing-item-search-results, #assistant-packing-item-search-results, #purchase-item-search-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 var(--border-radius) var(--border-radius); max-height: 250px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
         
         .search-result-item { padding: 12px 15px; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; border-bottom: 1px solid #f0f0f0; }
         .search-result-item:last-child { border-bottom: none; }
@@ -322,7 +322,7 @@
         .search-result-item .item-margin.profit { color: var(--success-color); }
         .search-result-item .item-margin.loss { color: var(--danger-color); }
         
-        #packing-slip-wrapper, #payment-receipt-wrapper, #payment-summary-print-wrapper, #sale-bill-wrapper, #loading-slip-wrapper { display: none; }
+        #packing-slip-wrapper, #payment-receipt-wrapper, #payment-summary-print-wrapper, #sale-bill-wrapper, #loading-slip-wrapper, #purchase-planner-print-wrapper { display: none; }
         #collection-report-wrapper { position: absolute; left: -9999px; top: -9999px; }
         #collection-report { background: #fff; padding: 40px; }
         
@@ -559,6 +559,11 @@
             --billing-accent-light: #f2f4f4;
             --accounts-accent: #2c3e50;
             --accounts-accent-light: #e5e7e9;
+            --purchase-accent: #34495e;
+            --purchase-accent-light: #ebedef;
+            --hr-accent: #c0392b;
+            --hr-accent-light: #f9ebea;
+
         }
 
         @keyframes float {
@@ -687,7 +692,7 @@
             border-radius: var(--border-radius-lg);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
             width: 100%;
-            max-width: 380px;
+            max-width: 420px;
             transform: scale(0.9);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -756,12 +761,14 @@
         }
 
         .role-tile[data-role="UNNI"], .role-tile[data-role="RIYAS"] { border-color: var(--sales-accent); }
-        .role-tile[data-role="SUNNY"] { border-color: var(--packing-accent); }
+        .role-tile[data-role="SUNNY"], .role-tile[data-role="ARFATH"], .role-tile[data-role="MUFEEDA"] { border-color: var(--packing-accent); }
         .role-tile[data-role="ADMIN"] { border-color: var(--admin-accent); }
         .role-tile[data-role="SHAJU"] { border-color: var(--loading-accent); }
         .role-tile[data-role="BENNY"] { border-color: var(--delivery-accent); }
         .role-tile[data-role="ANISHAD"] { border-color: var(--billing-accent); }
         .role-tile[data-role="NANDU"] { border-color: var(--accounts-accent); }
+        .role-tile[data-role="FASAL"] { border-color: var(--purchase-accent); }
+        .role-tile[data-role="HR"] { border-color: var(--hr-accent); }
         
         .role-tile[data-role="UNNI"]:hover,
         .role-tile[data-role="RIYAS"]:hover {
@@ -774,12 +781,16 @@
             color: #c28802;
         }
         
-        .role-tile[data-role="SUNNY"]:hover {
+        .role-tile[data-role="SUNNY"]:hover,
+        .role-tile[data-role="ARFATH"]:hover,
+        .role-tile[data-role="MUFEEDA"]:hover {
             background-color: var(--packing-accent-light);
             box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2);
              transform: translateY(-4px);
         }
-        .role-tile[data-role="SUNNY"]:hover svg {
+        .role-tile[data-role="SUNNY"]:hover svg,
+        .role-tile[data-role="ARFATH"]:hover svg,
+        .role-tile[data-role="MUFEEDA"]:hover svg {
             color: #1e8449;
         }
 
@@ -820,6 +831,20 @@
         }
         .role-tile[data-role="NANDU"]:hover svg { color: #1c2833; }
         
+        .role-tile[data-role="FASAL"]:hover {
+            background-color: var(--purchase-accent-light);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 10px rgba(52, 73, 94, 0.2);
+        }
+        .role-tile[data-role="FASAL"]:hover svg { color: #212f3d; }
+
+        .role-tile[data-role="HR"]:hover {
+            background-color: var(--hr-accent-light);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 10px rgba(192, 57, 43, 0.2);
+        }
+        .role-tile[data-role="HR"]:hover svg { color: #943126; }
+
         .workflow-container {
             grid-row: 3;
             align-self: center;
@@ -845,12 +870,14 @@
 
         #billing-item-list .list-item,
         #packing-item-list .list-item,
+        #assistant-packing-item-list .list-item,
         #loader-order-list .list-item {
             gap: 15px;
             align-items: center;
         }
         #billing-item-list .list-item input[type="checkbox"],
         #packing-item-list .list-item input[type="checkbox"],
+        #assistant-packing-item-list .list-item input[type="checkbox"],
         #loader-order-list .list-item input[type="checkbox"] {
             width: 24px;
             height: 24px;
@@ -858,6 +885,7 @@
         }
         #billing-item-list .list-item .info,
         #packing-item-list .list-item .info,
+        #assistant-packing-item-list .list-item .info,
         #loader-order-list .list-item .info {
             display: flex;
             flex-direction: column;
@@ -865,11 +893,11 @@
             flex-grow: 1;
             margin: 0;
         }
-        .packing-item-name, .billing-item-name, .loader-item-name {
+        .packing-item-name, .billing-item-name, .assistant-packing-item-name, .loader-item-name {
             font-weight: 600;
             font-size: 1rem;
         }
-        .packing-item-details, .billing-item-details, .loader-item-details {
+        .packing-item-details, .billing-item-details, .assistant-packing-item-details, .loader-item-details {
             font-size: 0.85rem;
             color: #666;
             font-weight: 500;
@@ -945,7 +973,8 @@
             body.printing-receipt #payment-receipt-wrapper,
             body.printing-summary #payment-summary-print-wrapper,
             body.printing-loading-slip #loading-slip-wrapper,
-            body.printing-sale-bill #sale-bill-wrapper { display: block !important; position: static !important; }
+            body.printing-sale-bill #sale-bill-wrapper,
+            body.printing-purchase-planner #purchase-planner-print-wrapper { display: block !important; position: static !important; }
             #payment-summary-print-content { display: block !important; }
             .slip-page-break, .bill-page-break { page-break-before: always; }
             .slip-table thead, .bill-table thead { display: table-header-group; }
@@ -995,6 +1024,133 @@
 
         #admin-operations-content .report-table .customer-info small {
             font-size: 0.75rem;
+        }
+
+        #transfer-modal .modal-content {
+            text-align: center;
+        }
+        #transfer-assistant-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .fab-button {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .fab-button svg { width: 28px; height: 28px; }
+        
+        .purchase-view { display: none; }
+        .purchase-view.active { display: block; }
+
+        .tile-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.purchase-tile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    padding: 18px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: left;
+}
+.purchase-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 95, 115, 0.12);
+}
+.purchase-tile h4 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+.purchase-tile p {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--secondary-color);
+}
+        .purchase-tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 95, 115, 0.15);
+        }
+        .purchase-tile h4 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin: 0;
+            word-break: break-word;
+        }
+        .purchase-tile p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        #purchase-planner-print-content .print-header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        #purchase-planner-print-content .print-table {
+            font-size: 9pt;
+        }
+        #purchase-planner-print-content .print-table th, #purchase-planner-print-content .print-table td {
+            padding: 8px;
+        }
+        #purchase-planner-print-content .blank-col {
+            border: 1px solid #ccc !important;
+            width: 100px;
+        }
+                .purchase-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .purchase-detail-table th, .purchase-detail-table td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .purchase-detail-table th {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #888;
+            background-color: #f8f9fa;
+        }
+        .purchase-detail-table td {
+            font-size: 0.95rem;
+        }
+        .purchase-detail-table .col-item-name {
+            font-weight: 500;
+            color: var(--text-color);
+            width: 60%;
+        }
+        .purchase-detail-table .col-stock, .purchase-detail-table .col-suggest {
+            text-align: right;
+            font-weight: 600;
+            width: 20%;
+        }
+        .purchase-detail-table .col-suggest {
+            color: var(--primary-color);
         }
     </style>
 </head>
@@ -1056,6 +1212,22 @@
                      <button class="role-tile" data-role="NANDU">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                         <span>NANDU</span>
+                    </button>
+                    <button class="role-tile" data-role="ARFATH">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span>ARFATH</span>
+                    </button>
+                    <button class="role-tile" data-role="MUFEEDA">
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span>MUFEEDA</span>
+                    </button>
+                    <button class="role-tile" data-role="FASAL">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                        <span>FASAL</span>
+                    </button>
+                    <button class="role-tile dummy" data-role="HR">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                        <span>HR</span>
                     </button>
                 </div>
             </div>
@@ -1893,6 +2065,120 @@
         </div>
     </div>
 
+    <div id="page-packer-assistant" class="page">
+        <div class="header">
+            <button class="icon-button" id="packer-assistant-logout-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            </button>
+            <h1 id="packer-assistant-header">Assigned Orders</h1>
+            <div class="header-actions" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+            <div id="packer-assistant-order-list"></div>
+        </div>
+    </div>
+
+    <div id="page-packing-interface" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-packer-assistant-home-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1 id="packing-interface-order-customer">Packing Order</h1>
+            <div class="header-actions" style="width:24px;"></div>
+        </div>
+        <div class="content">
+            <div class="card">
+                <h3>Add Product</h3>
+                <div class="search-bar">
+                    <input type="text" id="assistant-packing-item-search" placeholder="Search for an item...">
+                    <div id="assistant-packing-item-search-results"></div>
+                </div>
+            </div>
+            <div id="assistant-packing-item-list"></div>
+        </div>
+        <div class="page-actions">
+            <button id="finish-packing-btn" class="button">Finish Packing</button>
+        </div>
+    </div>
+
+    <div id="page-purchase-planner" class="page">
+        <div class="header">
+             <button class="icon-button" id="purchase-logout-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            </button>
+            <h1 id="purchase-planner-header">Items</h1>
+            <div class="header-actions" id="purchase-planner-header-actions" style="width: 24px;"></div>
+        </div>
+        <div class="content" style="padding-bottom: 80px;"> 
+            <div id="purchase-items-view" class="purchase-view active">
+                <div class="filter-bar">
+                     <div class="search-bar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="purchase-item-search" placeholder="Search all items...">
+                    </div>
+                </div>
+                <div id="purchase-item-list"></div>
+            </div>
+            <div id="purchase-vendors-view" class="purchase-view">
+                <div class="filter-bar">
+                    <div class="search-bar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="purchase-vendor-search" placeholder="Search vendors...">
+                    </div>
+                </div>
+                <div id="purchase-vendor-list" class="tile-grid"></div>
+                <button class="fab-button" id="add-vendor-fab">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+            </div>
+            <div id="purchase-locations-view" class="purchase-view">
+                 <div class="filter-bar">
+                    <div class="search-bar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="purchase-location-search" placeholder="Search locations...">
+                    </div>
+                </div>
+                <div id="purchase-location-list" class="tile-grid"></div>
+                 <button class="fab-button" id="add-location-fab">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+            </div>
+        </div>
+        <div class="footer">
+            <button class="footer-button active" id="purchase-items-tab">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                <span>Items</span>
+            </button>
+            <button class="footer-button" id="purchase-vendors-tab">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span>Vendors</span>
+            </button>
+            <button class="footer-button" id="purchase-locations-tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span>Locations</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="page-purchase-detail" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-purchase-planner-btn">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1 id="purchase-detail-header"></h1>
+            <div class="header-actions">
+                 <button class="icon-button" id="print-planner-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                </button>
+            </div>
+        </div>
+        <div class="content" style="padding-bottom: 80px;">
+             <div id="purchase-detail-list"></div>
+             <button class="fab-button" id="add-item-to-purchase-list-fab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+        </div>
+    </div>
 
     <!-- Hidden elements for generation -->
     <div id="packing-slip-wrapper"><div id="packing-slip-content"></div></div>
@@ -1902,9 +2188,60 @@
     <div id="collection-report-wrapper"><div id="collection-report"><div class="report-header"><h2>MF BIGMARKET</h2><p>Daily Collection Report</p></div><div class="report-details"><div id="report-salesman"></div><div id="report-date"></div></div><table class="report-table"><thead><tr><th>CUSTOMER</th><th class="col-method">MODE</th><th class="col-amount">AMOUNT</th></tr></thead><tbody id="report-table-body"></tbody></table><div class="report-footer"><div id="report-totals"></div><div class="grand-total" id="report-grand-total"></div></div></div></div>
     <div id="flyer-template-wrapper"></div>
     <div id="payment-summary-print-wrapper"><div id="payment-summary-print-content"><div class="print-header"><h2>MF BIGMARKET</h2><p>Collection Summary Report</p></div><div class="print-details"><div id="print-summary-salesman"></div><div id="print-summary-daterange"></div></div><table class="print-table"><thead><tr><th>Date & Time</th><th>Customer</th><th>Mode</th><th class="numeric">Amount</th></tr></thead><tbody id="print-summary-table-body"></tbody></table><div class="print-totals-footer"><div><span>Total Cash:</span> <span id="print-summary-cash"></span></div><div><span>Total UPI:</span> <span id="print-summary-upi"></span></div><div class="grand-total"><span>Grand Total:</span> <span id="print-summary-grandtotal"></span></div></div></div></div>
+    <div id="purchase-planner-print-wrapper"><div id="purchase-planner-print-content"></div></div>
+
     <div id="offer-modal" class="modal"><div class="modal-content"><h2 id="offer-modal-title">Flyer Builder</h2><div class="modal-body" id="offer-modal-body"></div><div class="modal-footer"><button class="button button-outline" id="close-offer-modal-btn">Cancel</button><button class="button" id="generate-flyer-btn">Generate Flyer</button><button class="button button-accent" id="share-flyer-btn" style="display:none;">Share Flyer</button></div></div></div>
     <div id="edit-modal" class="modal"><div class="modal-content"><h2 id="edit-modal-title">Edit</h2><div class="modal-body" id="edit-modal-body"></div><div class="modal-footer"><button class="button button-outline" id="close-edit-modal-btn">Cancel</button><button class="button" id="save-edit-btn">Save Changes</button></div></div></div>
     <div id="professional-modal" class="modal"><div class="modal-content"><h2 id="professional-modal-title">Success</h2><div class="modal-body"><p id="professional-modal-message">Your action was successful.</p></div><div class="modal-footer"><button class="button" id="professional-modal-close-btn">Close</button></div></div></div>
+    <div id="transfer-modal" class="modal">
+        <div class="modal-content">
+            <h2>Transfer Order</h2>
+            <div id="transfer-assistant-buttons">
+                <button class="button" data-assistant="ARFATH">Transfer to ARFATH</button>
+                <button class="button" data-assistant="MUFEEDA">Transfer to MUFEEDA</button>
+            </div>
+        </div>
+    </div>
+    <div id="add-vendor-modal" class="modal">
+        <div class="modal-content">
+            <h2>Add New Vendor</h2>
+            <div class="modal-body">
+                <div class="form-group"><label>Vendor Name</label><input type="text" id="new-vendor-name"></div>
+                <div class="form-group"><label>Landing Frequency (in days)</label><input type="number" id="new-vendor-frequency" placeholder="e.g., 7"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="button button-outline" data-action="close">Cancel</button>
+                <button class="button" id="save-new-vendor-btn">Save Vendor</button>
+            </div>
+        </div>
+    </div>
+    <div id="add-location-modal" class="modal">
+         <div class="modal-content">
+            <h2>Add New Location</h2>
+            <div class="modal-body">
+                <div class="form-group"><label>Location Name</label><input type="text" id="new-location-name"></div>
+                <div class="form-group"><label>Landing Frequency (in days)</label><input type="number" id="new-location-frequency" placeholder="e.g., 14"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="button button-outline" data-action="close">Cancel</button>
+                <button class="button" id="save-new-location-btn">Save Location</button>
+            </div>
+        </div>
+    </div>
+     <div id="add-item-to-purchase-list-modal" class="modal">
+        <div class="modal-content">
+            <h2>Add Item</h2>
+            <div class="modal-body">
+                <div class="search-bar">
+                    <input type="text" id="purchase-item-search-input" placeholder="Search for an item to add...">
+                </div>
+                <div id="purchase-item-search-results"></div>
+            </div>
+             <div class="modal-footer">
+                <button class="button button-outline" data-action="close">Cancel</button>
+            </div>
+        </div>
+    </div>
 
 <script type="module">
     document.addEventListener('DOMContentLoaded', () => {
@@ -1928,6 +2265,9 @@
             cashOnlyItems: [],
             orders: {}, payments: {}, customerCarts: {},
             userStatus: {},
+            purchaseVendors: [], purchaseLocations: [],
+            currentPurchaseListItems: [],
+            packerAssistants: ['ARFATH', 'MUFEEDA'],
             editingPackingSlipId: null,
             currentPayment: {}, 
             currentView: 'customers',
@@ -1948,11 +2288,15 @@
             outstandingUpdateTimeout: null,
             outstandingSort: 'default',
             billingOrder: null,
+            packingOrder: null,
             currentLoadingBatch: [],
             currentDeliveryBatch: null,
+            orderToTransfer: null,
+            purchaseItemSort: 'alpha',
+            currentPurchaseContext: null,
         };
 
-        const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField } = window.firebaseTools;
+        const { getDocs, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField, addDoc } = window.firebaseTools;
         const db = window.firebaseDB;
 
         const getActiveCart = () => {
@@ -1975,7 +2319,7 @@
         };
 
         const updateUserStatus = async (status, task = 'Idle') => {
-            if (!appState.salesman || appState.salesman === 'ADMIN' || appState.salesman === 'NANDU') return;
+            if (!appState.salesman || appState.salesman === 'ADMIN' || appState.salesman === 'NANDU' || appState.salesman === 'SUNNY') return;
             try {
                 const statusRef = doc(db, "user_status", appState.salesman);
                 await setDoc(statusRef, {
@@ -2011,7 +2355,7 @@
             return date.toLocaleString('en-GB', { timeZone: 'Asia/Kolkata' }).replace(',', '');
         };
         
-        const createSearchResultItemHTML = (i) => {
+        const createSearchResultItemHTML = (i, showDetails = true) => {
             const margin = i.CostRate > 0 ? (((i.Price2 - i.CostRate) / i.CostRate) * 100) : 0;
             const marginClass = margin >= 0 ? 'profit' : 'loss';
             const stockColor = i.Clstock > 10 ? 'var(--success-color)' : (i.Clstock > 0 ? 'var(--warning-color)' : 'var(--danger-color)');
@@ -2019,12 +2363,12 @@
             return `
                 <div class="search-result-item" data-item-code="${i.Code}">
                     <div class="item-name">${i.ItemName}</div>
-                    <div class="item-details-grid">
+                    ${showDetails ? `<div class="item-details-grid">
                         <div class="detail-cell"><span class="label">P2</span><span class="value item-p2">${formatPreciseCurrency(i.Price2)}</span></div>
                         <div class="detail-cell"><span class="label">MRP</span><span class="value">${formatPreciseCurrency(i.Mrp)}</span></div>
                         <div class="detail-cell"><span class="label">Margin</span><span class="value item-margin ${marginClass}">${margin.toFixed(1)}%</span></div>
                         <div class="detail-cell"><span class="label">Stock</span><span class="value item-stock" style="color: ${stockColor};">${i.Clstock}</span></div>
-                    </div>
+                    </div>` : ''}
                 </div>`;
         };
 
@@ -2069,13 +2413,14 @@
         const setupRealtimeListeners = () => {
             onSnapshot(collection(db, "customers"), (snapshot) => { 
                 appState.customers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-                if(appState.salesman && appState.salesman !== 'ADMIN' && appState.salesman !== 'SUNNY' && appState.salesman !== 'ANISHAD' && appState.salesman !== 'NANDU' && appState.salesman !== 'SHAJU' && appState.salesman !== 'BENNY') renderCurrentView();
+                if(appState.salesman && !['ADMIN', 'SUNNY', 'ANISHAD', 'NANDU', 'SHAJU', 'BENNY', 'FASAL', ...appState.packerAssistants].includes(appState.salesman)) renderCurrentView();
                 if(document.getElementById('page-outstanding-balances').classList.contains('active')) renderOutstandingBalancesPage();
                 if(appState.salesman === 'NANDU') renderAccountantView();
             });
             onSnapshot(collection(db, "items"), (snapshot) => { 
                 appState.items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
                 if (appState.salesman === 'ADMIN' && document.getElementById('admin-dashboard-view').style.display !== 'none') renderAdminDashboard();
+                if (appState.salesman === 'FASAL' && document.getElementById('purchase-items-view').classList.contains('active')) renderPurchaseItems();
             });
             onSnapshot(doc(db, "salesman_items", "sharedList"), (docSnap) => {
                 appState.salesmanItems = docSnap.exists() ? docSnap.data().itemNames || [] : [];
@@ -2096,6 +2441,7 @@
                 if (appState.salesman === 'ADMIN' && document.getElementById('admin-operations-view').style.display !== 'none') renderAdminOperationsPage();
                 if (appState.salesman === 'SUNNY' && document.getElementById('page-packer-home').classList.contains('active')) renderPackerHome();
                 if (appState.salesman === 'SUNNY' && document.getElementById('page-packer-history').classList.contains('active')) renderPackerHistory();
+                if (appState.packerAssistants.includes(appState.salesman)) renderPackerAssistantHome();
                 if (appState.salesman === 'ANISHAD' && document.getElementById('page-biller-home').classList.contains('active')) renderBillerHome();
                 if (appState.salesman === 'ANISHAD' && document.getElementById('page-biller-history').classList.contains('active')) renderBillerHistory();
                 if (appState.salesman === 'SHAJU' && document.getElementById('page-loader-home').classList.contains('active')) renderLoaderHome();
@@ -2117,6 +2463,7 @@
                 if (appState.salesman === 'ADMIN' && document.getElementById('admin-dashboard-view').style.display !== 'none') renderAdminDashboard();
                 if (document.getElementById('page-payment-history').classList.contains('active')) renderHistoryTabs();
                 if (appState.salesman === 'NANDU' && document.getElementById('accountant-collection-view').style.display !== 'none') renderAccountantCollectionView();
+                if (document.getElementById('cash-bill-collection-view').style.display !== 'none') renderCashBillCollectionView();
             });
             onSnapshot(collection(db, "user_status"), (snapshot) => {
                 appState.userStatus = {};
@@ -2126,6 +2473,14 @@
                 if (appState.salesman === 'ADMIN' && document.getElementById('admin-operations-view').style.display !== 'none') {
                     renderAdminOperationsPage();
                 }
+            });
+            onSnapshot(collection(db, "purchaseVendors"), snapshot => {
+                appState.purchaseVendors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if(appState.salesman === 'FASAL' && document.getElementById('purchase-vendors-view').classList.contains('active')) renderPurchaseVendors();
+            });
+            onSnapshot(collection(db, "purchaseLocations"), snapshot => {
+                appState.purchaseLocations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if(appState.salesman === 'FASAL' && document.getElementById('purchase-locations-view').classList.contains('active')) renderPurchaseLocations();
             });
         };
 
@@ -2211,7 +2566,7 @@
 
             // 2. Get the IDs of cash bill orders that have already been paid
             const paidCashBillOrderIds = new Set(
-                (appState.payments[appState.salesman] || [])
+                Object.values(appState.payments).flat()
                 .filter(p => p.paymentType === 'cash_bill' && p.orderId)
                 .map(p => p.orderId)
             );
@@ -2256,11 +2611,11 @@
             const searchResults = filteredNames.map(name => appState.items.find(item => item.ItemName === name)).filter(Boolean);
             cont.innerHTML = searchResults.slice(0, 50).map(i => createSearchResultItemHTML(i)).join('');
         };
-        const renderItemSearchResults = (filter = '', resultsContainerId) => { 
+        const renderItemSearchResults = (filter = '', resultsContainerId, showDetails = true) => { 
             const cont = document.getElementById(resultsContainerId); 
             if (!filter) { cont.innerHTML = ''; return; }
             const nameFilter = item => (item.ItemName || '').toLowerCase().includes(filter.toLowerCase());
-            cont.innerHTML = appState.items.filter(i => nameFilter(i)).slice(0, 50).map(i => createSearchResultItemHTML(i)).join('');
+            cont.innerHTML = appState.items.filter(i => nameFilter(i)).slice(0, 50).map(i => createSearchResultItemHTML(i, showDetails)).join('');
         };
 
         const renderItemTiles = (itemsToDisplay) => {
@@ -2380,7 +2735,6 @@
                 const isOrderType = !isPaymentHistory;
                 const itemCount = isOrderType && item.items ? item.items.length : 0;
                 
-                // MODIFIED: Calculate total for cash bills with freight
                 let totalAmount = isOrderType ? item.total : item.amount;
                 if (isOrderType && item.billType === 'cash' && item.freight) {
                     totalAmount += item.freight;
@@ -2887,6 +3241,23 @@
             setTimeout(() => window.print(), 100);
         };
         
+        document.getElementById('customer-ledger-content').addEventListener('click', e => {
+            const saleRow = e.target.closest('.ledger-sale-row');
+            if (saleRow) {
+                const targetId = saleRow.dataset.targetId;
+                const detailsRow = document.getElementById(targetId);
+                if (detailsRow) {
+                    detailsRow.classList.toggle('visible');
+                }
+            }
+            
+            const printBtn = e.target.closest('.print-sale-bill-btn');
+            if (printBtn) {
+                const orderId = printBtn.dataset.orderId;
+                printSaleBill(orderId);
+            }
+        });
+        
         const openModalBtn = document.getElementById('open-role-modal');
         const roleModal = document.getElementById('role-modal');
 
@@ -2922,6 +3293,18 @@
                     document.getElementById('footer').style.display = 'none';
                     showPage('page-packer-home'); 
                     renderPackerHome();
+                } else if (appState.packerAssistants.includes(salesman)) {
+                    document.getElementById('footer').style.display = 'none';
+                    showPage('page-packer-assistant');
+                    renderPackerAssistantHome();
+                } else if (salesman === 'FASAL') {
+                    document.getElementById('footer').style.display = 'flex';
+                    showPage('page-purchase-planner');
+                    renderPurchasePlanner();
+                } else if (salesman === 'HR') {
+                    showProfessionalModal("Coming Soon", "The HR module is currently under development.");
+                    appState.salesman = null;
+                    localStorage.removeItem('lastSalesman');
                 } else if (salesman === 'ANISHAD') {
                     document.getElementById('footer').style.display = 'none';
                     showPage('page-biller-home'); 
@@ -2952,6 +3335,8 @@
                     showPage('page-main-view'); 
                     renderCurrentView();
                 }
+            } else if (roleTile && roleTile.classList.contains('dummy')) {
+                showProfessionalModal("Coming Soon", "This role is currently under development.");
             }
         });
 
@@ -2965,6 +3350,9 @@
 
         document.getElementById('logout-btn').addEventListener('click', handleLogout);
         document.getElementById('admin-logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('packer-logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('packer-assistant-logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('purchase-logout-btn').addEventListener('click', handleLogout);
         document.getElementById('accountant-logout-btn').addEventListener('click', handleLogout);
         document.getElementById('biller-logout-btn').addEventListener('click', handleLogout);
         document.getElementById('loader-logout-btn').addEventListener('click', handleLogout);
@@ -2979,7 +3367,7 @@
         const pendingBalanceBtn = document.getElementById('pending-balance-btn');
 
         const renderCurrentView = () => {
-             if (!appState.salesman || appState.salesman === 'ADMIN' || appState.salesman === 'SUNNY' || appState.salesman === 'ANISHAD' || appState.salesman === 'NANDU' || appState.salesman === 'SHAJU' || appState.salesman === 'BENNY') return; 
+             if (!appState.salesman || ['ADMIN', 'SUNNY', 'ANISHAD', 'NANDU', 'SHAJU', 'BENNY', 'FASAL', ...appState.packerAssistants].includes(appState.salesman)) return; 
              
             customerView.style.display = 'none';
             paymentView.style.display = 'none';
@@ -3065,7 +3453,8 @@
                 appState.currentPayment = {
                     customer: order.customer,
                     paymentType: 'cash_bill',
-                    orderId: order.id
+                    orderId: order.id,
+                    amount: totalAmount // Store the amount for receipt generation
                 };
 
                 document.getElementById('payment-customer-name').textContent = `Cash Collection for ${order.customer.Customer}`;
@@ -3134,23 +3523,6 @@
                 } else if (action === 'profile') { renderCustomerProfile();
                 } else if (action === 'ledger') { renderCustomerLedger();
                 } else if (action === 'offer') { handleGenerateOffer(appState.customer); }
-            }
-        });
-        
-        document.getElementById('customer-ledger-content').addEventListener('click', e => {
-            const saleRow = e.target.closest('.ledger-sale-row');
-            if (saleRow) {
-                const targetId = saleRow.dataset.targetId;
-                const detailsRow = document.getElementById(targetId);
-                if (detailsRow) {
-                    detailsRow.classList.toggle('visible');
-                }
-            }
-            
-            const printBtn = e.target.closest('.print-sale-bill-btn');
-            if (printBtn) {
-                const orderId = printBtn.dataset.orderId;
-                printSaleBill(orderId);
             }
         });
         
@@ -3324,6 +3696,7 @@
 
                 await setDoc(doc(collection(db, "payments")), newPayment);
                 appState.currentPayment.amount = amount;
+                appState.currentPayment.method = method; // Ensure method is saved for receipt
                 
                 document.getElementById('confirm-payment-btn').style.display = 'none';
                 document.getElementById('payment-actions-container').style.display = 'flex';
@@ -3408,7 +3781,7 @@
         });
 
 
-        window.onafterprint = () => { document.body.classList.remove('printing', 'printing-receipt', 'printing-packing-slip', 'printing-summary', 'printing-sale-bill', 'printing-loading-slip'); };
+        window.onafterprint = () => { document.body.classList.remove('printing', 'printing-receipt', 'printing-packing-slip', 'printing-summary', 'printing-sale-bill', 'printing-loading-slip', 'printing-purchase-planner'); };
         
         const printSlip = (orderId) => {
             const orderToPrint = Object.values(appState.orders).flat().find(o => o.id === orderId);
@@ -3809,7 +4182,7 @@
         const renderPackerHome = () => {
             const container = document.getElementById('packer-order-list');
             const { start, end } = getReportDateRange();
-            let allOrders = Object.values(appState.orders).flat().filter(o => ['pending', 'packing'].includes(o.status));
+            let allOrders = Object.values(appState.orders).flat().filter(o => o.status === 'pending' && !o.packerAssistant);
             
             if (start && end) {
                 allOrders = allOrders.filter(o => {
@@ -3825,68 +4198,54 @@
             }
 
             container.innerHTML = allOrders.map(o => {
-                const isPacking = o.status === 'packing';
                 const billTypeBadge = o.billType === 'cash' ? '<span class="bill-type-badge">Cash Bill</span>' : '';
                 return `
                 <div class="list-item" data-order-id="${o.id}">
                     <div class="info">${o.customer.Customer} (${o.salesman}) ${billTypeBadge}</div>
-                    <button class="list-item-action start-pack-btn" data-order-id="${o.id}" style="display: ${isPacking ? 'none' : 'block'};">Start Packing</button>
-                    <button class="list-item-action packing finish-pack-btn" data-order-id="${o.id}" style="display: ${isPacking ? 'block' : 'none'};">Finish Packing</button>
+                    <button class="list-item-action transfer-btn" data-order-id="${o.id}">Transfer</button>
                 </div>`;
             }).join('');
         };
         
         document.getElementById('packer-order-list').addEventListener('click', async e => {
-            const startBtn = e.target.closest('.start-pack-btn');
-            const finishBtn = e.target.closest('.finish-pack-btn');
-            
-            if (startBtn) {
-                const orderId = startBtn.dataset.orderId;
-                const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
-                startBtn.disabled = true;
-                try {
-                    await updateDoc(doc(db, "orders", orderId), {
-                        status: 'packing',
-                        packingStartTime: new Date().toISOString()
-                    });
-                    updateUserStatus('active', `Packing for ${order.customer.Customer}`);
-                } catch(err) {
-                    alert('Could not start packing. Please try again.');
-                    console.error(err);
-                } finally {
-                    startBtn.disabled = false;
-                }
+            const transferBtn = e.target.closest('.transfer-btn');
+            if (transferBtn) {
+                appState.orderToTransfer = transferBtn.dataset.orderId;
+                document.getElementById('transfer-modal').classList.add('active');
             }
+        });
 
-            if (finishBtn) {
-                const orderId = finishBtn.dataset.orderId;
-                const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
-                finishBtn.disabled = true;
+        document.getElementById('transfer-modal').addEventListener('click', async e => {
+            const modal = document.getElementById('transfer-modal');
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                return;
+            }
+            const assistantBtn = e.target.closest('.button[data-assistant]');
+            if (assistantBtn) {
+                const assistant = assistantBtn.dataset.assistant;
+                const orderId = appState.orderToTransfer;
+                
+                assistantBtn.disabled = true;
                 try {
-                    const startTime = new Date(order.packingStartTime);
-                    const endTime = new Date();
-                    const durationMs = endTime - startTime;
-
                     await updateDoc(doc(db, "orders", orderId), {
-                        status: 'packed',
-                        packingEndTime: endTime.toISOString(),
-                        packingDuration: durationMs
+                        packerAssistant: assistant,
+                        status: 'packing' // Directly set to packing on transfer
                     });
-                    
-                    updateUserStatus('idle', `Packed for ${order.customer.Customer}`);
-                    showToast('Packing finished!');
-
-                } catch(err) {
-                    alert('Could not finish packing. Please try again.');
-                     console.error(err);
+                    showToast(`Order transferred to ${assistant}`);
+                    modal.classList.remove('active');
+                } catch (err) {
+                    console.error("Error transferring order:", err);
+                    alert("Failed to transfer. Please try again.");
                 } finally {
-                     finishBtn.disabled = false;
+                    assistantBtn.disabled = false;
+                    appState.orderToTransfer = null;
                 }
             }
         });
         
         const formatDuration = (ms) => {
-            if (typeof ms !== 'number' || ms < 0) return 'N/A';
+            if (typeof ms !== 'number' || ms < 0 || isNaN(ms)) return 'N/A';
             const seconds = Math.floor((ms / 1000) % 60);
             const minutes = Math.floor((ms / (1000 * 60)) % 60);
             const hours = Math.floor(ms / (1000 * 60 * 60));
@@ -3913,6 +4272,7 @@
                         <div class="info">
                            <p><strong>Customer:</strong> ${o.customer.Customer} ${billTypeBadge}</p>
                            <p><strong>Salesman:</strong> ${o.salesman}</p>
+                           <p><strong>Packed By:</strong> ${o.packerAssistant || 'N/A'}</p>
                            <p class="date-display">Packed on: ${formatDDMMYYYYTime(o.packingEndTime || o.date)}</p>
                         </div>
                     </div>
@@ -3920,7 +4280,6 @@
             }).join('');
         };
         
-        document.getElementById('packer-logout-btn').addEventListener('click', handleLogout);
         document.getElementById('packer-history-btn').addEventListener('click', () => { showPage('page-packer-history'); renderPackerHistory(); });
         document.getElementById('back-to-packer-home-from-history-btn').addEventListener('click', () => showPage('page-packer-home'));
         document.getElementById('billed-orders-btn').addEventListener('click', () => { showPage('page-billed-orders'); renderBilledOrders(); });
@@ -4182,6 +4541,7 @@
 
             if (!card) return;
             const orderId = card.dataset.id;
+            const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
 
             if (undoBtn) {
                 if (confirm('Are you sure you want to undo this billing? This will move the order back to the pending for billing list.')) {
@@ -4204,7 +4564,7 @@
                     }
                 }
             } else if (downloadBtn) {
-                const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
+                if (!order) return;
                 const itemsToExport = (order.billedItems || [])
                     .filter(item => !item.wasUnchecked)
                     .map(item => ({
@@ -4219,8 +4579,7 @@
                     alert('No items to export.');
                 }
             } else if (printBtn) {
-                 const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
-                 printLoadingSlip(order);
+                 if (order) printLoadingSlip(order);
             }
         });
 
@@ -4568,7 +4927,7 @@
         };
                 
         const getUserStatusHtml = () => {
-            const users = ['UNNI', 'RIYAS', 'SUNNY', 'ANISHAD', 'SHAJU', 'BENNY'];
+            const users = ['UNNI', 'RIYAS', 'ARFATH', 'MUFEEDA', 'ANISHAD', 'SHAJU', 'BENNY'];
             let html = '<h3>Live Status</h3><div class="user-status-grid">';
             const allOrders = Object.values(appState.orders).flat();
 
@@ -4576,54 +4935,51 @@
                 const statusData = appState.userStatus[user] || { status: 'idle', task: 'Idle', lastUpdate: null };
                 const currentTaskDisplay = (statusData.status === 'active') ? statusData.task : 'Idle';
 
-                let lastOrderInfo = 'N/A';
-                let lastActivityDate = null;
-
-                if (user === 'SUNNY') {
+                let lastActivityInfo = 'N/A';
+                
+                if (appState.packerAssistants.includes(user)) {
                     const lastPackedOrder = allOrders
-                        .filter(o => o.packingEndTime)
+                        .filter(o => o.packerAssistant === user && o.packingEndTime)
                         .sort((a, b) => new Date(b.packingEndTime) - new Date(a.packingEndTime))[0];
                     if (lastPackedOrder) {
-                        lastOrderInfo = `Packed for ${lastPackedOrder.customer.Customer} (${formatDDMMYYYYTime(lastPackedOrder.packingEndTime)})`;
+                        lastActivityInfo = `Packed for ${lastPackedOrder.customer.Customer} (${formatDDMMYYYYTime(lastPackedOrder.packingEndTime)})`;
                     }
                 } else if (user === 'ANISHAD') {
                     const lastBilledOrder = allOrders
                         .filter(o => o.billedAt)
                         .sort((a, b) => new Date(b.billedAt) - new Date(a.billedAt))[0];
                     if (lastBilledOrder) {
-                        lastOrderInfo = `Billed for ${lastBilledOrder.customer.Customer} (${formatDDMMYYYYTime(lastBilledOrder.billedAt)})`;
+                        lastActivityInfo = `Billed for ${lastBilledOrder.customer.Customer} (${formatDDMMYYYYTime(lastBilledOrder.billedAt)})`;
                     }
                 } else if (user === 'SHAJU') {
                     const lastLoadedOrder = allOrders
                         .filter(o => o.loadedAt)
                         .sort((a, b) => new Date(b.loadedAt) - new Date(a.loadedAt))[0];
                     if (lastLoadedOrder) {
-                        lastOrderInfo = `Loaded for ${lastLoadedOrder.customer.Customer} (${formatDDMMYYYYTime(lastLoadedOrder.loadedAt)})`;
+                        lastActivityInfo = `Loaded for ${lastLoadedOrder.customer.Customer} (${formatDDMMYYYYTime(lastLoadedOrder.loadedAt)})`;
                     }
                 } else if (user === 'BENNY') {
                      const lastDeliveredOrder = allOrders
                         .filter(o => o.deliveredAt)
                         .sort((a, b) => new Date(b.deliveredAt) - new Date(a.deliveredAt))[0];
                     if(lastDeliveredOrder) {
-                        lastOrderInfo = `Delivered to ${lastDeliveredOrder.customer.Customer} (${formatDDMMYYYYTime(lastDeliveredOrder.deliveredAt)})`;
+                        lastActivityInfo = `Delivered to ${lastDeliveredOrder.customer.Customer} (${formatDDMMYYYYTime(lastDeliveredOrder.deliveredAt)})`;
                     }
                 }
                  else { // Salesmen
-                    const salesmanOrders = allOrders.filter(o => o.salesman === user);
-                    salesmanOrders.forEach(o => {
-                        const activityDate = new Date(o.deliveredAt || o.loadedAt || o.billedAt || o.orderSavedAt || o.date);
-                        if (!lastActivityDate || activityDate > lastActivityDate) {
-                            lastActivityDate = activityDate;
-                            lastOrderInfo = `Order for ${o.customer.Customer} (${formatDDMMYYYYTime(activityDate)})`;
-                        }
-                    });
+                    const lastOrder = allOrders
+                        .filter(o => o.salesman === user && o.orderSavedAt)
+                        .sort((a,b) => new Date(b.orderSavedAt) - new Date(a.orderSavedAt))[0];
+                    if(lastOrder) {
+                        lastActivityInfo = `Order for ${lastOrder.customer.Customer} (${formatDDMMYYYYTime(lastOrder.orderSavedAt)})`;
+                    }
                 }
 
                 html += `
                     <div class="user-status-card">
                         <h4 data-user="${user}">${user} <span class="status-badge ${statusData.status}">${statusData.status}</span></h4>
                         <p><strong>Current Task:</strong> ${currentTaskDisplay}</p>
-                        <p><strong>Last Activity:</strong> ${lastOrderInfo}</p>
+                        <p><strong>Last Activity:</strong> ${lastActivityInfo}</p>
                     </div>`;
             });
 
@@ -4653,7 +5009,7 @@
             }
 
             const userOrders = allOrders.filter(o => {
-                return (o.salesman === user) || (user === 'SUNNY' && o.packingStartTime) || (user === 'ANISHAD' && o.billingStartTime) || (user === 'SHAJU' && o.loadingStartTime) || (user === 'BENNY' && o.deliveryStartTime);
+                return (o.salesman === user) || (o.packerAssistant === user && o.packingStartTime) || (user === 'ANISHAD' && o.billingStartTime) || (user === 'SHAJU' && o.loadingStartTime) || (user === 'BENNY' && o.deliveryStartTime);
             }).sort((a,b) => new Date(b.date) - new Date(a.date));
 
             if(userOrders.length === 0) {
@@ -4692,7 +5048,7 @@
                             <div class="detail-row"><span class="label">Order Finish:</span> <span class="value">${formatDDMMYYYYTime(o.orderSavedAt)}</span></div>
                             <div class="detail-row total-duration"><span class="label">Total Time:</span> <span class="value">${formatDuration(o.salesDuration)}</span></div>
                         `;
-                    } else if (user === 'SUNNY') {
+                    } else if (appState.packerAssistants.includes(user)) {
                          detailsHtml = `
                             <div class="detail-row"><span class="label">Packing Start:</span> <span class="value">${formatDDMMYYYYTime(o.packingStartTime)}</span></div>
                             <div class="detail-row"><span class="label">Packing Finish:</span> <span class="value">${formatDDMMYYYYTime(o.packingEndTime)}</span></div>
@@ -4825,7 +5181,7 @@
                 return;
             }
 
-            container.innerHTML = loadedOrders.map(o => `
+             container.innerHTML = loadedOrders.map(o => `
                  <div class="history-card">
                     <div class="history-card-header">
                         <div class="info">
@@ -5007,7 +5363,454 @@
         });
         document.getElementById('back-to-delivery-home-from-history-btn').addEventListener('click', () => showPage('page-delivery-home'));
 
-        const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v6'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
+                const renderPurchasePlanner = () => {
+            document.querySelectorAll('#page-purchase-planner .footer-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('purchase-items-tab').classList.add('active');
+            renderPurchaseItems();
+        };
+
+        const renderPurchaseItems = (filter = '') => {
+            const container = document.getElementById('purchase-item-list');
+            const lowerFilter = filter.toLowerCase();
+            let items = [...appState.items].filter(i => (i.ItemName || '').toLowerCase().includes(lowerFilter));
+
+            if (appState.purchaseItemSort === 'stock') {
+                items.sort((a, b) => (a.Clstock || 0) - (b.Clstock || 0));
+            } else { // 'alpha'
+                items.sort((a, b) => (a.ItemName || '').localeCompare(b.ItemName || ''));
+            }
+
+            if (items.length === 0) {
+                container.innerHTML = `<div class="card" style="text-align: center;">No items found.</div>`;
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="list-item">
+                    <div class="info">${item.ItemName}</div>
+                    <span style="font-weight: 600; color: ${item.Clstock > 10 ? 'var(--success-color)' : 'var(--danger-color)'};">
+                        Stock: ${item.Clstock || 0}
+                    </span>
+                </div>
+            `).join('');
+        };
+
+        const renderPurchaseVendors = (filter = '') => {
+            const container = document.getElementById('purchase-vendor-list');
+            const lowerFilter = filter.toLowerCase();
+            const vendors = appState.purchaseVendors.filter(v => (v.name || '').toLowerCase().includes(lowerFilter));
+            if (vendors.length === 0) {
+                container.innerHTML = `<p class="card" style="text-align:center; grid-column: 1 / -1;">No vendors found. Add one using the '+' button.</p>`;
+                return;
+            }
+            container.innerHTML = vendors.map(v => `
+                <div class="purchase-tile" data-type="vendor" data-id="${v.id}">
+                    <h4>${v.name}</h4>
+                    <p>Freq: ${v.frequency} days</p>
+                </div>
+            `).join('');
+        };
+
+        const renderPurchaseLocations = (filter = '') => {
+            const container = document.getElementById('purchase-location-list');
+            const lowerFilter = filter.toLowerCase();
+            const locations = appState.purchaseLocations.filter(l => (l.name || '').toLowerCase().includes(lowerFilter));
+            if (locations.length === 0) {
+                container.innerHTML = `<p class="card" style="text-align:center; grid-column: 1 / -1;">No locations found. Add one using the '+' button.</p>`;
+                return;
+            }
+            container.innerHTML = locations.map(l => `
+                <div class="purchase-tile" data-type="location" data-id="${l.id}">
+                    <h4>${l.name}</h4>
+                    <p>Freq: ${l.frequency} days</p>
+                </div>
+            `).join('');
+        };
+                const renderPurchaseDetailPage = async (type, id) => {
+            const isVendor = type === 'vendor';
+            const sourceData = isVendor ? appState.purchaseVendors.find(v => v.id === id) : appState.purchaseLocations.find(l => l.id === id);
+            if (!sourceData) {
+                alert('Error: Could not find the selected source.');
+                return;
+            }
+
+            appState.currentPurchaseContext = { type, id, name: sourceData.name, frequency: sourceData.frequency };
+            document.getElementById('purchase-detail-header').textContent = sourceData.name;
+            const detailList = document.getElementById('purchase-detail-list');
+            detailList.innerHTML = `<div class="card">Loading items...</div>`;
+            showPage('page-purchase-detail');
+            
+            // --- Sales Calculation Logic ---
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            const salesByItemCode = {};
+            Object.values(appState.orders).flat().forEach(order => {
+                const orderDate = new Date(order.date);
+                if (orderDate >= thirtyDaysAgo) {
+                    (order.billedItems || order.items || []).forEach(item => {
+                        if (!item.wasUnchecked) {
+                            const code = item.item.Code;
+                            if (!salesByItemCode[code]) salesByItemCode[code] = 0;
+                            salesByItemCode[code] += item.quantity;
+                        }
+                    });
+                }
+            });
+                    const printPurchasePlanner = () => {
+            const context = appState.currentPurchaseContext;
+            if (!context) return;
+            
+            // --- FIX IS HERE ---
+            // First, find the table body element itself.
+            const tableBodyEl = document.querySelector('#page-purchase-detail .purchase-detail-table tbody');
+
+            // Check if the table body element actually exists.
+            if (!tableBodyEl) {
+                alert("There are no items to print.");
+                return; // Stop the function if there's no table.
+            }
+            
+            // If it exists, then get its innerHTML.
+            const tableBodyHtml = tableBodyEl.innerHTML;
+            // --- END OF FIX ---
+
+            const printContent = `
+                <div class="print-header">
+                    <h2>Purchase Planner</h2>
+                    <p><strong>${context.type.charAt(0).toUpperCase() + context.type.slice(1)}:</strong> ${context.name}</p>
+                    <p><strong>Date:</strong> ${formatDDMMYYYY(new Date())}</p>
+                </div>
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th class="col-item-name">Item Name</th>
+                            <th class="col-stock">Total Stock</th>
+                            <th class="col-suggest">Suggested</th>
+                            <th class="blank-col">Actual</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableBodyHtml}</tbody>
+                </table>`;
+
+            document.getElementById('purchase-planner-print-content').innerHTML = printContent;
+            document.body.classList.add('printing', 'printing-purchase-planner');
+            setTimeout(() => window.print(), 200);
+        };
+
+            // --- Fetch and Render Items ---
+            const subCollectionName = isVendor ? 'vendorItems' : 'locationItems';
+            const itemsSnapshot = await getDocs(collection(db, isVendor ? 'purchaseVendors' : 'purchaseLocations', id, subCollectionName));
+            appState.currentPurchaseListItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            if (appState.currentPurchaseListItems.length === 0) {
+                detailList.innerHTML = `<p class="card" style="text-align:center;">No items found. Add one using the '+' button.</p>`;
+                return;
+            }
+
+            detailList.innerHTML = appState.currentPurchaseListItems.map(pItem => {
+                const masterItem = appState.items.find(i => i.Code === pItem.itemCode);
+                if (!masterItem) return ''; // Skip if master item not found
+
+                const totalSalesLast30Days = salesByItemCode[pItem.itemCode] || 0;
+                const avgDailySales = totalSalesLast30Days / 30;
+                const requiredStock = avgDailySales * sourceData.frequency * 1.25; // Added 25% buffer
+                const suggestedPurchase = Math.max(0, Math.ceil(requiredStock - pItem.stock));
+
+                return `
+                    <div class="list-item" style="flex-wrap: wrap; gap: 10px;">
+                        <div class="info" style="flex-basis: 100%; margin-bottom: 5px;">${masterItem.ItemName}</div>
+                        <div style="flex:1; text-align:center;"><strong>Stock:</strong> ${pItem.stock}</div>
+                        <div style="flex:1; text-align:center; color: var(--primary-color);"><strong>Suggest:</strong> ${suggestedPurchase}</div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        const handlePurchaseTileClick = (e) => {
+            const tile = e.target.closest('.purchase-tile');
+            if (tile) {
+                const { type, id } = tile.dataset;
+                renderPurchaseDetailPage(type, id);
+            }
+        };
+
+        document.getElementById('purchase-vendor-list').addEventListener('click', handlePurchaseTileClick);
+        document.getElementById('purchase-location-list').addEventListener('click', handlePurchaseTileClick);
+        document.getElementById('back-to-purchase-planner-btn').addEventListener('click', () => showPage('page-purchase-planner'));
+            const addItemToPurchaseListModal = document.getElementById('add-item-to-purchase-list-modal');
+
+        document.getElementById('add-item-to-purchase-list-fab').addEventListener('click', () => {
+            document.getElementById('purchase-item-search-input').value = '';
+            document.getElementById('purchase-item-search-results').innerHTML = '';
+            addItemToPurchaseListModal.classList.add('active');
+        });
+        
+        addItemToPurchaseListModal.addEventListener('click', e => {
+            if (e.target === addItemToPurchaseListModal || e.target.closest('[data-action="close"]')) {
+                addItemToPurchaseListModal.classList.remove('active');
+            }
+        });
+        
+        document.getElementById('purchase-item-search-input').addEventListener('input', e => {
+            renderItemSearchResults(e.target.value, 'purchase-item-search-results', false);
+        });
+        
+                document.getElementById('purchase-item-search-results').addEventListener('click', async e => {
+            const itemElement = e.target.closest('.search-result-item');
+            if (itemElement) {
+                const itemCode = itemElement.dataset.itemCode;
+                const existingItem = appState.currentPurchaseListItems.find(i => i.itemCode === itemCode);
+
+                if (existingItem) {
+                    alert('This item is already in the list.');
+                    return;
+                }
+
+                // --- CHANGE IS HERE ---
+                // No longer asks for stock. Fetches it from the master list.
+                const masterItem = appState.items.find(i => i.Code === itemCode);
+                if (!masterItem) {
+                    alert("Error: Could not find item in the master list.");
+                    return;
+                }
+                const stock = masterItem.Clstock || 0; // Get stock from master list
+                // --- END OF CHANGE ---
+
+                addItemToPurchaseListModal.classList.remove('active');
+
+                try {
+                    const { type, id } = appState.currentPurchaseContext;
+                    const subCollectionName = type === 'vendor' ? 'vendorItems' : 'locationItems';
+                    const parentCollectionName = type === 'vendor' ? 'purchaseVendors' : 'purchaseLocations';
+
+                    await addDoc(collection(db, parentCollectionName, id, subCollectionName), {
+                        itemCode: itemCode,
+                        stock: stock // Save the stock from the master list
+                    });
+
+                    showToast('Item added successfully.');
+                    // Re-render the detail page to show the new item
+                    renderPurchaseDetailPage(type, id);
+
+                } catch (error) {
+                    console.error("Error adding item to purchase list:", error);
+                    alert("Failed to add item. Please try again.");
+                }
+            }
+        });
+        const addVendorModal = document.getElementById('add-vendor-modal');
+        const addLocationModal = document.getElementById('add-location-modal');
+
+        // --- Event Listeners for FABs to OPEN modals ---
+        document.getElementById('add-vendor-fab').addEventListener('click', () => {
+            document.getElementById('new-vendor-name').value = '';
+            document.getElementById('new-vendor-frequency').value = '';
+            addVendorModal.classList.add('active');
+        });
+
+        document.getElementById('add-location-fab').addEventListener('click', () => {
+            document.getElementById('new-location-name').value = '';
+            document.getElementById('new-location-frequency').value = '';
+            addLocationModal.classList.add('active');
+        });
+
+        // --- Generic Event Listeners to CLOSE modals ---
+        [addVendorModal, addLocationModal].forEach(modal => {
+            modal.addEventListener('click', e => {
+                // Close if background or a "cancel" button is clicked
+                if (e.target === modal || e.target.closest('[data-action="close"]')) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // --- Logic to SAVE a new Vendor ---
+        document.getElementById('save-new-vendor-btn').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            const name = document.getElementById('new-vendor-name').value.trim();
+            const frequency = parseInt(document.getElementById('new-vendor-frequency').value);
+
+            if (!name || isNaN(frequency) || frequency <= 0) {
+                alert('Please enter a valid name and a positive number for frequency.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            try {
+                await addDoc(collection(db, "purchaseVendors"), { name, frequency });
+                showToast('Vendor added successfully!');
+                addVendorModal.classList.remove('active');
+            } catch (error) {
+                console.error("Error adding vendor:", error);
+                alert('Failed to add vendor. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Vendor';
+            }
+        });
+
+        // --- Logic to SAVE a new Location ---
+        document.getElementById('save-new-location-btn').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            const name = document.getElementById('new-location-name').value.trim();
+            const frequency = parseInt(document.getElementById('new-location-frequency').value);
+
+            if (!name || isNaN(frequency) || frequency <= 0) {
+                alert('Please enter a valid name and a positive number for frequency.');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            try {
+                await addDoc(collection(db, "purchaseLocations"), { name, frequency });
+                showToast('Location added successfully!');
+                addLocationModal.classList.remove('active');
+            } catch (error) {
+                console.error("Error adding location:", error);
+                alert('Failed to add location. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Location';
+            }
+        });
+        document.getElementById('purchase-item-search').addEventListener('input', e => renderPurchaseItems(e.target.value));
+        document.getElementById('purchase-vendor-search').addEventListener('input', e => renderPurchaseVendors(e.target.value));
+        document.getElementById('purchase-location-search').addEventListener('input', e => renderPurchaseLocations(e.target.value));
+
+        document.querySelector('#page-purchase-planner .footer').addEventListener('click', e => {
+            const tab = e.target.closest('.footer-button');
+            if (!tab) return;
+
+            document.querySelectorAll('#page-purchase-planner .footer-button').forEach(btn => btn.classList.remove('active'));
+            tab.classList.add('active');
+
+            document.querySelectorAll('.purchase-view').forEach(view => view.classList.remove('active'));
+            
+            const header = document.getElementById('purchase-planner-header');
+            const headerActions = document.getElementById('purchase-planner-header-actions');
+            headerActions.innerHTML = '';
+
+            if (tab.id === 'purchase-items-tab') {
+                document.getElementById('purchase-items-view').classList.add('active');
+                header.textContent = 'Items';
+                headerActions.innerHTML = `<button class="icon-button" id="sort-purchase-items-btn" title="Sort Items"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>`;
+                renderPurchaseItems();
+            } else if (tab.id === 'purchase-vendors-tab') {
+                document.getElementById('purchase-vendors-view').classList.add('active');
+                header.textContent = 'Vendors';
+                renderPurchaseVendors();
+            } else if (tab.id === 'purchase-locations-tab') {
+                document.getElementById('purchase-locations-view').classList.add('active');
+                header.textContent = 'Locations';
+                renderPurchaseLocations();
+            }
+        });
+
+        const renderPackingInterface = () => {
+            const order = appState.packingOrder;
+            document.getElementById('packing-interface-order-customer').textContent = `Packing for ${order.customer.Customer}`;
+            const itemList = document.getElementById('assistant-packing-item-list');
+            
+            itemList.innerHTML = order.items.map((itemData, index) => `
+                <div class="list-item">
+                    <input type="checkbox" data-index="${index}" ${itemData.wasUnchecked ? '' : 'checked'}>
+                    <div class="info">
+                        <span class="assistant-packing-item-name">${itemData.item.ItemName}</span>
+                        <span class="assistant-packing-item-details">
+                            QTY: ${itemData.quantity} ${itemData.item.Unit || ''} | MRP: ${formatPreciseCurrency(itemData.item.Mrp)}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        document.getElementById('packer-assistant-order-list').addEventListener('click', async e => {
+            const startBtn = e.target.closest('.start-pack-btn');
+            const finishBtn = e.target.closest('.finish-pack-btn');
+
+            if (startBtn) {
+                const orderId = startBtn.dataset.orderId;
+                const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
+                appState.packingOrder = JSON.parse(JSON.stringify(order));
+
+                await updateDoc(doc(db, "orders", orderId), {
+                    packingStartTime: new Date().toISOString()
+                });
+                
+                updateUserStatus('active', `Packing for ${order.customer.Customer}`);
+                renderPackingInterface();
+                showPage('page-packing-interface');
+            }
+
+            if(finishBtn) {
+                const orderId = finishBtn.dataset.orderId;
+                const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
+                appState.packingOrder = JSON.parse(JSON.stringify(order));
+                renderPackingInterface();
+                showPage('page-packing-interface');
+            }
+        });
+
+        document.getElementById('assistant-packing-item-search').addEventListener('input', e => {
+            renderItemSearchResults(e.target.value, 'assistant-packing-item-search-results');
+        });
+
+        document.getElementById('assistant-packing-item-search-results').addEventListener('click', e => {
+            const resultItem = e.target.closest('.search-result-item');
+            if (resultItem) {
+                const item = appState.items.find(i => i.Code == resultItem.dataset.itemCode);
+                const qty = prompt(`Enter quantity for ${item.ItemName}:`);
+                const qtyNum = parseFloat(qty);
+                if(qty && !isNaN(qtyNum) && qtyNum > 0) {
+                    appState.packingOrder.items.push({ item, quantity: qtyNum, sellingPrice: item.Price2, isNew: true });
+                    renderPackingInterface();
+                }
+                document.getElementById('assistant-packing-item-search').value = '';
+                document.getElementById('assistant-packing-item-search-results').innerHTML = '';
+            }
+        });
+
+        document.getElementById('finish-packing-btn').addEventListener('click', async () => {
+             const btn = document.getElementById('finish-packing-btn');
+            btn.disabled = true;
+
+            const packingOrder = appState.packingOrder;
+            const orderId = packingOrder.id;
+
+            packingOrder.items.forEach((item, index) => {
+                const checkbox = document.querySelector(`#assistant-packing-item-list input[data-index="${index}"]`);
+                if (checkbox && !checkbox.checked) { item.wasUnchecked = true; } 
+                else { delete item.wasUnchecked; }
+            });
+
+            const endTime = new Date();
+            const startTime = new Date(packingOrder.packingStartTime);
+            const packingDuration = endTime - startTime;
+
+            try {
+                await updateDoc(doc(db, "orders", orderId), {
+                    status: 'packed',
+                    items: packingOrder.items,
+                    packingEndTime: endTime.toISOString(),
+                    packingDuration: packingDuration
+                });
+                updateUserStatus('idle', `Finished packing for ${packingOrder.customer.Customer}`);
+                showToast('Packing Finished!');
+                showPage('page-packer-assistant');
+            } catch(err) {
+                 console.error("Failed to finish packing:", err);
+                 alert('Update failed. Please try again.');
+            } finally {
+                appState.packingOrder = null;
+                btn.disabled = false;
+            }
+        });
+        document.getElementById('back-to-packer-assistant-home-btn').addEventListener('click', () => showPage('page-packer-assistant'));
+        
+        const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v8'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
         
         setupPWA();
         setupRealtimeListeners(); 
