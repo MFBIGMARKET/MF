@@ -177,6 +177,9 @@
             font-weight: 500;
         }
                 /* --- Enhanced Password Modal Styles --- */
+                /* --- Enhanced Password Modal Styles --- */
+                /* --- Enhanced Password Modal Styles --- */
+                /* --- Enhanced Password Modal Styles --- */
         #password-modal .modal-content {
             text-align: center;
         }
@@ -200,24 +203,36 @@
             stroke-width: 1.5;
         }
 
+        /* This is the container for the label AND the input */
+        #password-form-group {
+            max-width: 280px;   /* Constrain the width of the group */
+            margin: 0 auto;     /* Horizontally center the entire group */
+            text-align: center; /* Force all text inside (like the label) to be centered */
+        }
+
         #password-form-group label {
             font-size: 0.9rem;
             font-weight: 600;
-            color: var(--text-color-light);
+            color: var(--text-color); /* Corrected color for better contrast */
             margin-bottom: 8px;
+            display: block; /* Ensure it behaves as a block to respect centering */
         }
 
         #password-input {
-            text-align: center;
-            font-size: 1.5rem;
-            letter-spacing: 0.3em; /* Spreads out the dots */
-            padding: 12px 15px;
-            border-radius: var(--border-radius);
-            margin-bottom: 5px; /* Reduced margin */
+    /* Add these two new lines */
+    max-width: 280px;
+    margin: 0 auto 5px auto;
+
+    /* Existing styles below */
+    text-align: center;
+    font-size: 1.5rem;
+    letter-spacing: 0.3em;
+    padding: 12px 15px;
+            margin-bottom: 5px;
         }
         
         #password-input::placeholder {
-            letter-spacing: normal; /* Keep placeholder readable */
+            letter-spacing: normal;
         }
         
         #password-error-message {
@@ -1244,7 +1259,6 @@
             font-weight: 600;
             color: var(--text-color);
         }
-                /* --- HR Report Summary Styles --- */
         
         /* Special style for Admin tile in HR dashboard */
         .hr-user-tile.admin-tile {
@@ -1275,20 +1289,67 @@
             display: none; /* Hidden by default */
         }
 
-        .hr-user-tile[data-status="in"] .status-dot {
-            display: block; /* Show dot if user is IN */
+        .hr-user-tile[data-status="clock_in"] .status-dot {
+            display: block; /* Show dot if user is clocked IN */
         }
         
+        .hr-user-tile .calendar-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .hr-user-tile .calendar-btn svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-color-light);
+        }
+        .hr-user-tile .calendar-btn:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
         /* --- Attendance Modal Button Styles --- */
         #attendance-modal .modal-body .button {
             flex: 1;
             margin: 0;
         }
+        
+        /* --- Attendance Calendar Modal Styles --- */
+        #calendar-grid .day-name { 
+            font-weight: 600; 
+            font-size: 0.8rem; 
+            color: var(--text-color-light);
+            padding-bottom: 5px;
+        }
+        #calendar-grid .day-cell { 
+            aspect-ratio: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 50%; 
+            font-size: 0.9rem;
+        }
+        #calendar-grid .day-cell.other-month { color: #ccc; }
+        #calendar-grid .day-cell.present { background-color: var(--success-color); color: white; font-weight: bold; }
+        #calendar-grid .day-cell.half-day { background-color: var(--warning-color); color: white; font-weight: bold; }
+        #calendar-grid .day-cell.absent { background-color: var(--danger-color); color: white; font-weight: bold; }
+        #calendar-grid .day-cell.today { border: 2px solid var(--primary-color); }
 
         /* --- HR Report Table Styles --- */
         #hr-report-container .report-table .duration-col {
             font-weight: bold;
             color: var(--primary-color);
+        }
+        #hr-report-container .report-table .col-hours {
+            font-weight: 600;
         }
     </style>
 </head>
@@ -2252,16 +2313,7 @@
             <div class="header-actions" id="purchase-planner-header-actions" style="width: 24px;"></div>
         </div>
         <div class="content" style="padding-bottom: 80px;"> 
-            <div id="purchase-items-view" class="purchase-view active">
-                <div class="filter-bar">
-                     <div class="search-bar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="purchase-item-search" placeholder="Search all items...">
-                    </div>
-                </div>
-                <div id="purchase-item-list"></div>
-            </div>
-            <div id="purchase-vendors-view" class="purchase-view">
+            <div id="purchase-vendors-view" class="purchase-view active">
                 <div class="filter-bar">
                     <div class="search-bar">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -2287,11 +2339,7 @@
             </div>
         </div>
         <div class="footer">
-            <button class="footer-button active" id="purchase-items-tab">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                <span>Items</span>
-            </button>
-            <button class="footer-button" id="purchase-vendors-tab">
+            <button class="footer-button active" id="purchase-vendors-tab">
                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                 <span>Vendors</span>
             </button>
@@ -2361,18 +2409,6 @@
                 </button>
                 <button class="filter-action-btn clear-btn">Clear</button>
             </div>
-            <!-- In #page-hr-admin-report -->
-<div class="content">
-    <div id="hr-report-date-filter" class="between-date-filter">
-        <!-- ... date filter buttons ... -->
-    </div>
-
-    <!-- ADD THIS NEW CONTAINER FOR THE SUMMARY CARDS -->
-    <!-- NEW: Single container for the summary report table -->
-<div id="hr-report-table-container" class="card table-responsive-wrapper">
-    <!-- The summary table will be injected here by JavaScript -->
-</div>
-</div>
             <div id="hr-report-container" class="card table-responsive-wrapper">
                 <!-- Report table will be inserted here by JavaScript -->
             </div>
@@ -2429,7 +2465,7 @@
     </div>
      <div id="add-item-to-purchase-list-modal" class="modal">
         <div class="modal-content">
-            <h2>Add Item</h2>
+            <h2>Add Item to List</h2>
             <div class="modal-body">
                 <div class="search-bar">
                     <input type="text" id="purchase-item-search-input" placeholder="Search for an item to add...">
@@ -2441,21 +2477,31 @@
             </div>
         </div>
     </div>
-        <!-- ======================= PASSWORD AUTH MODAL ======================= -->
+    <div id="add-vendor-to-location-modal" class="modal">
+        <div class="modal-content">
+            <h2>Add Vendor to Location</h2>
+            <div class="modal-body" id="add-vendor-to-location-modal-body">
+                <!-- Vendor list will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="button button-outline" data-action="close">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= PASSWORD AUTH MODAL ======================= -->
     <div id="password-modal" class="modal">
         <div class="modal-content">
             <h2 id="password-modal-title">Enter Password</h2>
-            <!-- In #password-modal -->
-<div class="modal-body">
-    <div class="password-icon-container">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-    </div>
-    <div class="form-group" id="password-form-group">
-        <label for="password-input">Password Required</label>
-        <input type="password" id="password-input" placeholder="••••••••">
-    </div>
-    <p id="password-error-message" style="display: none;">Incorrect Password. Please try again.</p>
-</div>
+            <div class="modal-body">
+                <div class="password-icon-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <div class="form-group" id="password-form-group">
+                    <label for="password-input">Password Required</label>
+                    <input type="password" id="password-input" placeholder="••••••••">
+                </div>
+                <p id="password-error-message" style="display: none;">Incorrect Password. Please try again.</p>
+            </div>
             <div class="modal-footer">
                 <button class="button button-outline" id="password-cancel-btn">Cancel</button>
                 <button class="button" id="password-submit-btn">Submit</button>
@@ -2470,10 +2516,33 @@
                 <!-- The IN or OUT button will be injected here by JavaScript -->
             </div>
             <div class="modal-footer">
-                <button class="button button-outline" data-action="close">Cancel</button>
+                <button class="button button-outline" data-action="close-attendance">Cancel</button>
             </div>
         </div>
     </div>
+    <!-- ======================= ATTENDANCE CALENDAR MODAL ======================= -->
+    <div id="attendance-calendar-modal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2 id="calendar-modal-title">Attendance Calendar</h2>
+            <div class="modal-body">
+                <div id="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <button id="calendar-prev-month" class="button button-outline" style="padding: 5px 10px; width: auto; min-width: 40px;">&lt;</button>
+                    <h3 id="calendar-month-year" style="margin: 0; text-align: center;"></h3>
+                    <button id="calendar-next-month" class="button button-outline" style="padding: 5px 10px; width: auto; min-width: 40px;">&gt;</button>
+                </div>
+                <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center;"></div>
+                <div id="calendar-legend" style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; margin-top: 20px; font-size: 0.8rem; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <div style="display: flex; align-items: center;"><span style="display: inline-block; width: 12px; height: 12px; background-color: var(--success-color); border-radius: 3px; margin-right: 5px;"></span> Present</div>
+                    <div style="display: flex; align-items: center;"><span style="display: inline-block; width: 12px; height: 12px; background-color: var(--warning-color); border-radius: 3px; margin-right: 5px;"></span> Half Day</div>
+                    <div style="display: flex; align-items: center;"><span style="display: inline-block; width: 12px; height: 12px; background-color: var(--danger-color); border-radius: 3px; margin-right: 5px;"></span> Absent</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="button" data-action="close-calendar">Close</button>
+            </div>
+        </div>
+    </div>
+
 
 <script type="module">
     document.addEventListener('DOMContentLoaded', () => {
@@ -2499,7 +2568,6 @@
             userStatus: {},
             purchaseVendors: [], purchaseLocations: [],
             currentPurchaseListItems: [],
-            // Role Swap: ANISHAD is now a packer assistant, ARFATH is no longer.
             packerAssistants: ['ANISHAD', 'MUFEEDA'], 
             editingPackingSlipId: null,
             currentPayment: {}, 
@@ -2528,6 +2596,7 @@
             purchaseItemSort: 'alpha',
             currentPurchaseContext: null,
              pendingRole: null,
+             calendarContext: { username: null, year: null, month: null },
         };
 
         const { getDocs, getDoc, collection, doc, setDoc, onSnapshot, deleteDoc, writeBatch, query, updateDoc, deleteField, addDoc } = window.firebaseTools;
@@ -2754,8 +2823,7 @@
                         <span class="info">${c.Customer}</span>
                         <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
-                    <div class="customer-actions-panel">
-                        <button class="action-button" data-action="profile"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Profile</span></button>
+                    <div class="customer-actions-panel"><button class="action-button" data-action="profile"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Profile</span></button>
                         <button class="action-button" data-action="ledger"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg><span>Ledger</span></button>
                         <button class="action-button" data-action="order"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg><span>Order</span></button>
                         <button class="action-button" data-action="offer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg><span>Offer</span></button>
@@ -2875,11 +2943,11 @@
                 return;
             }
 
+            // --- NEW, CORRECTED CODE ---
             container.innerHTML = pendingCollections.map(order => {
-                const finalTotal = (order.billedItems || order.items).reduce((acc, item) => {
-                    return item.wasUnchecked ? acc : acc + (item.quantity * item.sellingPrice);
-                }, 0);
-                const totalWithFreight = finalTotal + (order.freight || 0);
+                // Use the authoritative finalBilledTotal saved during billing.
+                // The '?? 0' handles any older orders that might not have this field yet.
+                const totalToCollect = order.finalBilledTotal ?? 0;
 
                 return `
                 <div class="list-item">
@@ -2889,8 +2957,8 @@
                            Billed: ${formatDDMMYYYYTime(order.billedAt)}
                         </div>
                     </div>
-                    <button class="list-item-action collect-cash-payment-btn" style="background-color: var(--danger-color);" data-order='${JSON.stringify(order)}' data-total="${totalWithFreight}">
-                        Collect ${formatCurrency(totalWithFreight)}
+                    <button class="list-item-action collect-cash-payment-btn" style="background-color: var(--danger-color);" data-order='${JSON.stringify(order)}' data-total="${totalToCollect}">
+                        Collect ${formatCurrency(totalToCollect)}
                     </button>
                 </div>`;
             }).join('');
@@ -2941,8 +3009,7 @@
             const customerOrders = (appState.orders[appState.salesman] || []).filter(o => o.customer.Customer === appState.customer.Customer);
             if (customerOrders.length === 0) {
                 document.getElementById('item-tiles-container').innerHTML = `<p class="card" style="text-align:center;">No previous items for this customer. Use search to find items.</p>`;
-                return;
-            }
+                return;}
             
             const uniqueItemCodes = new Set();
             customerOrders.forEach(order => { (order.items || []).forEach(item => uniqueItemCodes.add(item.item.Code)); });
@@ -3168,7 +3235,7 @@
                 else if (p.method === 'UPI') { collectionsBySalesman[salesman].upi += p.amount; grandTotalUPI += p.amount; }
             });
 
-            return { totalRevenue, totalProfit: totalRevenue - totalCost, totalOrders, uniqueCustomers: customerSet.size, salesBySalesman, itemsSold: Object.entries(itemsSold).sort((a, b) => b[1].revenue - a[1].revenue), collectionsBySalesman, grandTotalCash, grandTotalUPI };
+            return { totalRevenue, totalProfit: totalRevenue - totalCost, totalOrders, uniqueCustomers: customerSet.size, salesBySalesman, itemsSold: Object.entries(itemsSold).sort((a, b) => b.revenue - a.revenue), collectionsBySalesman, grandTotalCash, grandTotalUPI };
         };
         const renderAdminDashboard = () => {
             const dashboardContent = document.getElementById("admin-dashboard-content");
@@ -3198,7 +3265,7 @@
             
             const kpiCardHtml = `<div class="data-list-card"><h3>Key Performance Indicators</h3><ul class="data-list-container" style="max-height: none;">${kpiListHtml}</ul></div>`;
 
-            const salesListHtml = Object.entries(data.salesBySalesman).sort((a, b) => b[1].revenue - a[1].revenue).map(([salesman, d]) => { const profit = d.revenue - d.cost; const margin = d.revenue > 0 ? profit / d.revenue * 100 : 0; return `<li class="data-list-item" data-salesman="${salesman}"><div class="item-main">${salesman}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary"><span class="${profit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(profit)} (${margin.toFixed(1)}%)</span></span></div></li>` }).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>';
+            const salesListHtml = Object.entries(data.salesBySalesman).sort((a, b) => b.revenue - a.revenue).map(([salesman, d]) => { const profit = d.revenue - d.cost; const margin = d.revenue > 0 ? profit / d.revenue * 100 : 0; return `<li class="data-list-item" data-salesman="${salesman}"><div class="item-main">${salesman}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary"><span class="${profit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(profit)} (${margin.toFixed(1)}%)</span></span></div></li>` }).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No sales data available.</li>';
             const itemsSoldHtml = data.itemsSold.map(([name, d]) => `<li class="data-list-item" style="cursor:default;"><div class="item-main">${name}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(d.revenue)}</span><span class="value-secondary">Qty: ${d.quantity.toFixed(2)}</span></div></li>`).join("") || '<li style="padding: 15px 5px; text-align: center; color: #6c757d;">No item data available.</li>';
             const totalCollections = data.grandTotalCash + data.grandTotalUPI;
             const collectionsBreakdownHtml = Object.entries(data.collectionsBySalesman).map(([salesman, d]) => `<div class="salesman-header">${salesman}</div><ul class="salesman-breakdown"><li><span>Cash</span> <span>${formatPreciseCurrency(d.cash)}</span></li><li><span>UPI</span> <span>${formatPreciseCurrency(d.upi)}</span></li><li><span>Sub-Total</span> <span>${formatPreciseCurrency(d.cash + d.upi)}</span></li></ul>`).join("");
@@ -3229,7 +3296,7 @@
 
             let summaryHtml = '<div class="card"><h3>Last Activity Summary</h3><div id="location-summary-list">';
             allSalesmen.forEach(salesman => {
-                const lastOrder = filteredOrders.filter(o => o.salesman === salesman && o.location).sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+                const lastOrder = filteredOrders.filter(o => o.salesman === salesman && o.location).sort((a, b) => new Date(b.date) - new Date(a.date));
                 if (lastOrder) {
                     summaryHtml += `<div class="list-item"><div class="info"><strong style="color: var(--primary-color); font-size: 1.1rem;">${salesman}</strong><p><strong>Last Order:</strong> ${lastOrder.customer.Customer} (${formatPreciseCurrency(lastOrder.total)})</p><p><strong>Time:</strong> ${formatDDMMYYYYTime(lastOrder.date)}</p></div><a href="https://www.google.com/maps?q=${lastOrder.location.lat},${lastOrder.location.lng}" target="_blank" class="button button-outline" style="width: auto; padding: 8px 15px; font-size: 0.9rem;">View Last Location</a></div>`;
                 } else {
@@ -3288,7 +3355,7 @@
                 });
             });
 
-            const customerListHtml = Object.entries(customerSales).sort((a, b) => b[1].revenue - a[1].revenue).map(([customerName, data]) => `<li class="data-list-item" data-customer="${customerName}"><div class="item-main">${customerName}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(data.revenue)}</span><span class="value-secondary"><span class="${data.profit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(data.profit)} (${(data.revenue > 0 ? (data.profit / data.revenue) * 100 : 0).toFixed(1)}%)</span></span></div></li>`).join('');
+            const customerListHtml = Object.entries(customerSales).sort((a, b) => b.revenue - a.revenue).map(([customerName, data]) => `<li class="data-list-item" data-customer="${customerName}"><div class="item-main">${customerName}</div><div class="item-details"><span class="value-primary">${formatPreciseCurrency(data.revenue)}</span><span class="value-secondary"><span class="${data.profit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(data.profit)} (${(data.revenue > 0 ? (data.profit / data.revenue) * 100 : 0).toFixed(1)}%)</span></span></div></li>`).join('');
             const overallMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
             
             contentEl.innerHTML = `
@@ -3334,7 +3401,7 @@
             let totalRevenue = 0, totalProfit = 0;
             Object.values(itemsSold).forEach(data => { totalRevenue += data.revenue; totalProfit += data.revenue - data.cost; });
             const overallMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
-            const itemsTableHtml = Object.entries(itemsSold).sort((a, b) => b[1].revenue - a[1].revenue).map(([itemName, data]) => { const profit = data.revenue - data.cost; const margin = data.revenue > 0 ? (profit / data.revenue) * 100 : 0; return `<tr><td>${itemName}</td><td class="numeric">${data.quantity} ${data.unit || ""}</td><td class="numeric">${formatPreciseCurrency(data.revenue)}</td><td class="numeric ${profit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(profit)}</td><td class="numeric ${margin >= 0 ? "profit" : "loss"}">${margin.toFixed(1)}%</td></tr>`; }).join('');
+            const itemsTableHtml = Object.entries(itemsSold).sort((a, b) => b.revenue - a.revenue).map(([itemName, data]) => { const profit = data.revenue - data.cost; const margin = data.revenue > 0 ? (profit / data.revenue) * 100 : 0; return `<tr><td>${itemName}</td><td class="numeric">${data.quantity} ${data.unit || ""}</td><td class="numeric">${formatPreciseCurrency(data.revenue)}</td><td class="numeric ${profit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(profit)}</td><td class="numeric ${margin >= 0 ? "profit" : "loss"}">${margin.toFixed(1)}%</td></tr>`; }).join('');
 
             contentEl.innerHTML = `<div class="report-header-card"><div><div class="label">Total Revenue</div><div class="value">${formatPreciseCurrency(totalRevenue)}</div></div><div><div class="label">Total Profit</div><div class="value ${totalProfit >= 0 ? "profit" : "loss"}">${formatPreciseCurrency(totalProfit)}</div></div><div><div class="label">Profit Margin</div><div class="value ${overallMargin >= 0 ? "profit" : "loss"}">${overallMargin.toFixed(1)}%</div></div></div><div class="card"><div class="table-responsive-wrapper"><table class="report-table"><thead><tr><th>Product</th><th class="numeric">Qty / Unit</th><th class="numeric">Revenue</th><th class="numeric">Profit</th><th class="numeric">Margin %</th></tr></thead><tbody>${itemsTableHtml}</tbody></table></div></div>`;
             showPage("page-customer-report");
@@ -4773,6 +4840,7 @@
             }
         });
        
+       // --- NEW, CORRECTED CODE ---
         document.getElementById('confirm-billing-btn').addEventListener('click', async () => {
             const btn = document.getElementById('confirm-billing-btn');
             btn.disabled = true;
@@ -4793,17 +4861,27 @@
             const startTime = new Date(billingOrder.billingStartTime);
             const billingDuration = endTime - startTime;
 
+            // 1. Calculate the final total from items that are NOT unchecked
+            const finalItemsTotal = billingOrder.items.reduce((acc, item) => {
+                return item.wasUnchecked ? acc : acc + (item.quantity * item.sellingPrice);
+            }, 0);
+
+            // 2. Get freight amount for cash bills, defaulting to 0
+            const freightAmount = (billingOrder.billType === 'cash') 
+                ? (parseFloat(document.getElementById('freight-amount').value) || 0) 
+                : 0;
+
             const updateData = {
                 status: 'billed',
                 billedItems: billingOrder.items,
-                billedBy: 'ARFATH', // Role Swap
+                billedBy: 'ARFATH',
                 billedAt: endTime.toISOString(),
                 billingDuration: billingDuration,
+                finalBilledTotal: finalItemsTotal + freightAmount, // 3. Save the final, authoritative total
             };
             
             if (billingOrder.billType === 'cash') {
-                const freight = parseFloat(document.getElementById('freight-amount').value) || 0;
-                updateData.freight = freight;
+                updateData.freight = freightAmount; // Also save the freight amount itself
             }
 
             try {
@@ -5115,7 +5193,7 @@
             });
             const grandTotal = totalCash + totalUPI;
 
-            const customerListHtml = Object.entries(customerCollections).sort((a,b) => b[1].total - a[1].total).map(([customer, data]) => `
+            const customerListHtml = Object.entries(customerCollections).sort((a,b) => b.total - a.total).map(([customer, data]) => `
                 <div class="customer-item-container">
                     <div class="customer-item-header">
                          <span class="info">${customer}</span>
@@ -5322,7 +5400,7 @@
             contentEl.innerHTML = kpiHtml + userStatusHtml + reportTableHtml;
         };
                 
-        const getUserStatusHtml = () => {
+                const getUserStatusHtml = () => {
             const users = ['UNNI', 'RIYAS', 'ANISHAD', 'MUFEEDA', 'ARFATH', 'SHAJU', 'BENNY'];
             let html = '<h3>Live Status</h3><div class="user-status-grid">';
             const allOrders = Object.values(appState.orders).flat();
@@ -5336,28 +5414,29 @@
                 if (appState.packerAssistants.includes(user)) {
                     const lastPackedOrder = allOrders
                         .filter(o => o.packerAssistant === user && o.packingEndTime)
-                        .sort((a, b) => new Date(b.packingEndTime) - new Date(a.packingEndTime))[0];
+                        .sort((a, b) => new Date(b.packingEndTime) - new Date(a.packingEndTime))[0]; // <-- ADD [0] HERE
                     if (lastPackedOrder) {
                         lastActivityInfo = `Packed for ${lastPackedOrder.customer.Customer} (${formatDDMMYYYYTime(lastPackedOrder.packingEndTime)})`;
                     }
-                } else if (user === 'ARFATH') { // Role Swap
+                } else if (user === 'ARFATH') {
                     const lastBilledOrder = allOrders
-                        .filter(o => o.billedAt)
-                        .sort((a, b) => new Date(b.billedAt) - new Date(a.billedAt))[0];
+                        .filter(o => o.billedBy === 'ARFATH' && o.billedAt)
+                        .sort((a, b) => new Date(b.billedAt) - new Date(a.billedAt))[0]; // <-- ADD [0] HERE
                     if (lastBilledOrder) {
                         lastActivityInfo = `Billed for ${lastBilledOrder.customer.Customer} (${formatDDMMYYYYTime(lastBilledOrder.billedAt)})`;
                     }
                 } else if (user === 'SHAJU') {
+                    // Note: Loading logic might need adjustment if it's batch-based
                     const lastLoadedOrder = allOrders
-                        .filter(o => o.loadedAt)
-                        .sort((a, b) => new Date(b.loadedAt) - new Date(a.loadedAt))[0];
+                        .filter(o => o.loadedAt) // Simplified for now
+                        .sort((a, b) => new Date(b.loadedAt) - new Date(a.loadedAt))[0]; // <-- ADD [0] HERE
                     if (lastLoadedOrder) {
                         lastActivityInfo = `Loaded for ${lastLoadedOrder.customer.Customer} (${formatDDMMYYYYTime(lastLoadedOrder.loadedAt)})`;
                     }
                 } else if (user === 'BENNY') {
                      const lastDeliveredOrder = allOrders
                         .filter(o => o.deliveredAt)
-                        .sort((a, b) => new Date(b.deliveredAt) - new Date(a.deliveredAt))[0];
+                        .sort((a, b) => new Date(b.deliveredAt) - new Date(a.deliveredAt))[0]; // <-- ADD [0] HERE
                     if(lastDeliveredOrder) {
                         lastActivityInfo = `Delivered to ${lastDeliveredOrder.customer.Customer} (${formatDDMMYYYYTime(lastDeliveredOrder.deliveredAt)})`;
                     }
@@ -5365,7 +5444,7 @@
                  else { // Salesmen
                     const lastOrder = allOrders
                         .filter(o => o.salesman === user && o.orderSavedAt)
-                        .sort((a,b) => new Date(b.orderSavedAt) - new Date(a.orderSavedAt))[0];
+                        .sort((a,b) => new Date(b.orderSavedAt) - new Date(a.orderSavedAt))[0]; // <-- ADD [0] HERE
                     if(lastOrder) {
                         lastActivityInfo = `Order for ${lastOrder.customer.Customer} (${formatDDMMYYYYTime(lastOrder.orderSavedAt)})`;
                     }
@@ -5427,7 +5506,7 @@
                     }
                 });
 
-                timelineHtml = Object.entries(batches).sort((a,b) => new Date(b[0]) - new Date(a[0])).map(([startTime, batch]) => `
+                timelineHtml = Object.entries(batches).sort((a,b) => new Date(b) - new Date(a)).map(([startTime, batch]) => `
                      <div class="timeline-order-card">
                         <h4>Batch of ${batch.orders.length} orders</h4>
                          <div class="detail-row"><span class="label">Start:</span> <span class="value">${formatDDMMYYYYTime(startTime)}</span></div>
@@ -5611,7 +5690,7 @@
                 return;
             }
 
-            container.innerHTML = Object.entries(batches).sort((a, b) => new Date(b[0]) - new Date(a[0])).map(([loadedAt, orders]) => `
+            container.innerHTML = Object.entries(batches).sort((a, b) => new Date(b) - new Date(a)).map(([loadedAt, orders]) => `
                 <div class="list-item">
                     <div class="info">
                         Batch from ${formatDDMMYYYYTime(loadedAt)} (${orders.length} orders)
@@ -5631,7 +5710,7 @@
                     id: batchId,
                     orders: ordersInBatch,
                     isStarted: isAlreadyStarted,
-                    startTime: isAlreadyStarted ? ordersInBatch[0].deliveryStartTime : null
+                    startTime: isAlreadyStarted ? ordersInBatch.deliveryStartTime : null
                 };
                 renderDeliveryInterface();
                 showPage('page-delivery-interface');
@@ -5735,7 +5814,7 @@
                 return;
             }
 
-             container.innerHTML = Object.entries(batches).sort((a,b) => new Date(b[0]) - new Date(a[0])).map(([startTime, batch]) => `
+             container.innerHTML = Object.entries(batches).sort((a,b) => new Date(b) - new Date(a)).map(([startTime, batch]) => `
                  <div class="history-card">
                     <div class="history-card-header">
                         <div class="info">
@@ -5759,36 +5838,13 @@
         });
         document.getElementById('back-to-delivery-home-from-history-btn').addEventListener('click', () => showPage('page-delivery-home'));
 
-                const renderPurchasePlanner = () => {
+        const renderPurchasePlanner = () => {
             document.querySelectorAll('#page-purchase-planner .footer-button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('purchase-items-tab').classList.add('active');
-            renderPurchaseItems();
-        };
-
-        const renderPurchaseItems = (filter = '') => {
-            const container = document.getElementById('purchase-item-list');
-            const lowerFilter = filter.toLowerCase();
-            let items = [...appState.items].filter(i => (i.ItemName || '').toLowerCase().includes(lowerFilter));
-
-            if (appState.purchaseItemSort === 'stock') {
-                items.sort((a, b) => (a.Clstock || 0) - (b.Clstock || 0));
-            } else { // 'alpha'
-                items.sort((a, b) => (a.ItemName || '').localeCompare(b.ItemName || ''));
-            }
-
-            if (items.length === 0) {
-                container.innerHTML = `<div class="card" style="text-align: center;">No items found.</div>`;
-                return;
-            }
-
-            container.innerHTML = items.map(item => `
-                <div class="list-item">
-                    <div class="info">${item.ItemName}</div>
-                    <span style="font-weight: 600; color: ${item.Clstock > 10 ? 'var(--success-color)' : 'var(--danger-color)'};">
-                        Stock: ${item.Clstock || 0}
-                    </span>
-                </div>
-            `).join('');
+            document.getElementById('purchase-vendors-tab').classList.add('active');
+            renderPurchaseVendors();
+            document.getElementById('purchase-vendors-view').classList.add('active');
+            document.getElementById('purchase-locations-view').classList.remove('active');
+            document.getElementById('purchase-planner-header').textContent = 'Vendors';
         };
 
         const renderPurchaseVendors = (filter = '') => {
@@ -5822,7 +5878,7 @@
                 </div>
             `).join('');
         };
-                const renderPurchaseDetailPage = async (type, id) => {
+        const renderPurchaseDetailPage = async (type, id) => {
             const isVendor = type === 'vendor';
             const sourceData = isVendor ? appState.purchaseVendors.find(v => v.id === id) : appState.purchaseLocations.find(l => l.id === id);
             if (!sourceData) {
@@ -5833,7 +5889,7 @@
             appState.currentPurchaseContext = { type, id, name: sourceData.name, frequency: sourceData.frequency };
             document.getElementById('purchase-detail-header').textContent = sourceData.name;
             const detailList = document.getElementById('purchase-detail-list');
-            detailList.innerHTML = `<div class="card">Loading items...</div>`;
+            detailList.innerHTML = `<div class="card">Loading details...</div>`;
             showPage('page-purchase-detail');
             
             // --- Sales Calculation Logic ---
@@ -5853,75 +5909,49 @@
                     });
                 }
             });
-                    const printPurchasePlanner = () => {
-            const context = appState.currentPurchaseContext;
-            if (!context) return;
-            
-            // --- FIX IS HERE ---
-            // First, find the table body element itself.
-            const tableBodyEl = document.querySelector('#page-purchase-detail .purchase-detail-table tbody');
 
-            // Check if the table body element actually exists.
-            if (!tableBodyEl) {
-                alert("There are no items to print.");
-                return; // Stop the function if there's no table.
+            // --- Fetch and Render Items/Vendors ---
+            if (isVendor) {
+                const itemsSnapshot = await getDocs(collection(db, 'purchaseVendors', id, 'vendorItems'));
+                const vendorItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                if (vendorItems.length === 0) {
+                    detailList.innerHTML = `<p class="card" style="text-align:center;">No items assigned to this vendor. Add one using the '+' button.</p>`;
+                    return;
+                }
+
+                const tableRowsHtml = vendorItems.map(pItem => {
+                    const masterItem = appState.items.find(i => i.Code === pItem.itemCode);
+                    if (!masterItem) return '';
+                    const totalSalesLast30Days = salesByItemCode[pItem.itemCode] || 0;
+                    const avgDailySales = totalSalesLast30Days / 30;
+                    const requiredStock = avgDailySales * sourceData.frequency * 1.25; // 25% buffer
+                    const suggestedPurchase = Math.max(0, Math.ceil(requiredStock - masterItem.Clstock));
+                    return `<tr>
+                                <td class="col-item-name">${masterItem.ItemName}</td>
+                                <td class="col-stock">${masterItem.Clstock || 0}</td>
+                                <td class="col-suggest">${suggestedPurchase}</td>
+                            </tr>`;
+                }).join('');
+
+                detailList.innerHTML = `<div class="card table-responsive-wrapper"><table class="purchase-detail-table"><thead><tr><th class="col-item-name">Item Name</th><th class="col-stock">Total Stock</th><th class="col-suggest">Suggested</th></tr></thead><tbody>${tableRowsHtml}</tbody></table></div>`;
+            } else { // Is Location
+                const vendorsSnapshot = await getDocs(collection(db, 'purchaseLocations', id, 'locationVendors'));
+                const locationVendors = vendorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                if (locationVendors.length === 0) {
+                    detailList.innerHTML = `<p class="card" style="text-align:center;">No vendors assigned to this location. Add one using the '+' button.</p>`;
+                    return;
+                }
+                
+                detailList.innerHTML = '<div class="tile-grid">' + locationVendors.map(lv => {
+                    const masterVendor = appState.purchaseVendors.find(v => v.id === lv.vendorId);
+                    if (!masterVendor) return '';
+                    return `<div class="purchase-tile" data-type="vendor" data-id="${masterVendor.id}"><h4>${masterVendor.name}</h4><p>Freq: ${masterVendor.frequency} days</p></div>`;
+                }).join('') + '</div>';
             }
-            
-            // If it exists, then get its innerHTML.
-            const tableBodyHtml = tableBodyEl.innerHTML;
-            // --- END OF FIX ---
-
-            const printContent = `
-                <div class="print-header">
-                    <h2>Purchase Planner</h2>
-                    <p><strong>${context.type.charAt(0).toUpperCase() + context.type.slice(1)}:</strong> ${context.name}</p>
-                    <p><strong>Date:</strong> ${formatDDMMYYYY(new Date())}</p>
-                </div>
-                <table class="print-table">
-                    <thead>
-                        <tr>
-                            <th class="col-item-name">Item Name</th>
-                            <th class="col-stock">Total Stock</th>
-                            <th class="col-suggest">Suggested</th>
-                            <th class="blank-col">Actual</th>
-                        </tr>
-                    </thead>
-                    <tbody>${tableBodyHtml}</tbody>
-                </table>`;
-
-            document.getElementById('purchase-planner-print-content').innerHTML = printContent;
-            document.body.classList.add('printing', 'printing-purchase-planner');
-            setTimeout(() => window.print(), 200);
         };
 
-            // --- Fetch and Render Items ---
-            const subCollectionName = isVendor ? 'vendorItems' : 'locationItems';
-            const itemsSnapshot = await getDocs(collection(db, isVendor ? 'purchaseVendors' : 'purchaseLocations', id, subCollectionName));
-            appState.currentPurchaseListItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            if (appState.currentPurchaseListItems.length === 0) {
-                detailList.innerHTML = `<p class="card" style="text-align:center;">No items found. Add one using the '+' button.</p>`;
-                return;
-            }
-
-            detailList.innerHTML = appState.currentPurchaseListItems.map(pItem => {
-                const masterItem = appState.items.find(i => i.Code === pItem.itemCode);
-                if (!masterItem) return ''; // Skip if master item not found
-
-                const totalSalesLast30Days = salesByItemCode[pItem.itemCode] || 0;
-                const avgDailySales = totalSalesLast30Days / 30;
-                const requiredStock = avgDailySales * sourceData.frequency * 1.25; // Added 25% buffer
-                const suggestedPurchase = Math.max(0, Math.ceil(requiredStock - pItem.stock));
-
-                return `
-                    <div class="list-item" style="flex-wrap: wrap; gap: 10px;">
-                        <div class="info" style="flex-basis: 100%; margin-bottom: 5px;">${masterItem.ItemName}</div>
-                        <div style="flex:1; text-align:center;"><strong>Stock:</strong> ${pItem.stock}</div>
-                        <div style="flex:1; text-align:center; color: var(--primary-color);"><strong>Suggest:</strong> ${suggestedPurchase}</div>
-                    </div>
-                `;
-            }).join('');
-        };
 
         const handlePurchaseTileClick = (e) => {
             const tile = e.target.closest('.purchase-tile');
@@ -5933,68 +5963,92 @@
 
         document.getElementById('purchase-vendor-list').addEventListener('click', handlePurchaseTileClick);
         document.getElementById('purchase-location-list').addEventListener('click', handlePurchaseTileClick);
+        document.getElementById('purchase-detail-list').addEventListener('click', handlePurchaseTileClick);
         document.getElementById('back-to-purchase-planner-btn').addEventListener('click', () => showPage('page-purchase-planner'));
-            const addItemToPurchaseListModal = document.getElementById('add-item-to-purchase-list-modal');
 
-        document.getElementById('add-item-to-purchase-list-fab').addEventListener('click', () => {
-            document.getElementById('purchase-item-search-input').value = '';
-            document.getElementById('purchase-item-search-results').innerHTML = '';
-            addItemToPurchaseListModal.classList.add('active');
-        });
+        const addItemToPurchaseListModal = document.getElementById('add-item-to-purchase-list-modal');
+        const addVendorToLocationModal = document.getElementById('add-vendor-to-location-modal');
         
-        addItemToPurchaseListModal.addEventListener('click', e => {
-            if (e.target === addItemToPurchaseListModal || e.target.closest('[data-action="close"]')) {
-                addItemToPurchaseListModal.classList.remove('active');
+        document.getElementById('add-item-to-purchase-list-fab').addEventListener('click', () => {
+             const context = appState.currentPurchaseContext;
+            if (context.type === 'vendor') {
+                document.getElementById('purchase-item-search-input').value = '';
+                document.getElementById('purchase-item-search-results').innerHTML = '';
+                addItemToPurchaseListModal.classList.add('active');
+            } else if (context.type === 'location') {
+                renderAddVendorToLocationModal();
+                addVendorToLocationModal.classList.add('active');
             }
         });
-        
+
+        [addItemToPurchaseListModal, addVendorToLocationModal].forEach(modal => {
+            modal.addEventListener('click', e => {
+                if (e.target === modal || e.target.closest('[data-action="close"]')) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
         document.getElementById('purchase-item-search-input').addEventListener('input', e => {
             renderItemSearchResults(e.target.value, 'purchase-item-search-results', false);
         });
-        
-                document.getElementById('purchase-item-search-results').addEventListener('click', async e => {
+
+        document.getElementById('purchase-item-search-results').addEventListener('click', async e => {
             const itemElement = e.target.closest('.search-result-item');
             if (itemElement) {
                 const itemCode = itemElement.dataset.itemCode;
-                const existingItem = appState.currentPurchaseListItems.find(i => i.itemCode === itemCode);
-
-                if (existingItem) {
-                    alert('This item is already in the list.');
-                    return;
-                }
-
-                // --- CHANGE IS HERE ---
-                // No longer asks for stock. Fetches it from the master list.
                 const masterItem = appState.items.find(i => i.Code === itemCode);
-                if (!masterItem) {
-                    alert("Error: Could not find item in the master list.");
-                    return;
-                }
-                const stock = masterItem.Clstock || 0; // Get stock from master list
-                // --- END OF CHANGE ---
-
+                if (!masterItem) return;
+                
                 addItemToPurchaseListModal.classList.remove('active');
 
                 try {
                     const { type, id } = appState.currentPurchaseContext;
-                    const subCollectionName = type === 'vendor' ? 'vendorItems' : 'locationItems';
-                    const parentCollectionName = type === 'vendor' ? 'purchaseVendors' : 'purchaseLocations';
-
-                    await addDoc(collection(db, parentCollectionName, id, subCollectionName), {
-                        itemCode: itemCode,
-                        stock: stock // Save the stock from the master list
-                    });
-
+                    if (type !== 'vendor') return;
+                    await addDoc(collection(db, 'purchaseVendors', id, 'vendorItems'), { itemCode });
                     showToast('Item added successfully.');
-                    // Re-render the detail page to show the new item
                     renderPurchaseDetailPage(type, id);
-
                 } catch (error) {
-                    console.error("Error adding item to purchase list:", error);
+                    console.error("Error adding item to vendor:", error);
                     alert("Failed to add item. Please try again.");
                 }
             }
         });
+
+        const renderAddVendorToLocationModal = async () => {
+            const modalBody = document.getElementById('add-vendor-to-location-modal-body');
+            modalBody.innerHTML = '<p>Loading vendors...</p>';
+            const locationId = appState.currentPurchaseContext.id;
+            const existingVendorsSnapshot = await getDocs(collection(db, 'purchaseLocations', locationId, 'locationVendors'));
+            const existingVendorIds = new Set(existingVendorsSnapshot.docs.map(doc => doc.data().vendorId));
+            
+            const availableVendors = appState.purchaseVendors.filter(v => !existingVendorIds.has(v.id));
+
+            if (availableVendors.length === 0) {
+                modalBody.innerHTML = '<p>All available vendors have already been added to this location.</p>';
+                return;
+            }
+            modalBody.innerHTML = availableVendors.map(v => `<div class="list-item"><div class="info">${v.name}</div><button class="list-item-action add-vendor-to-location-btn" data-vendor-id="${v.id}">Add</button></div>`).join('');
+        };
+        
+        document.getElementById('add-vendor-to-location-modal-body').addEventListener('click', async e => {
+            const addBtn = e.target.closest('.add-vendor-to-location-btn');
+            if (addBtn) {
+                const vendorId = addBtn.dataset.vendorId;
+                addVendorToLocationModal.classList.remove('active');
+                try {
+                    const { type, id } = appState.currentPurchaseContext;
+                    if (type !== 'location') return;
+                    await addDoc(collection(db, 'purchaseLocations', id, 'locationVendors'), { vendorId });
+                    showToast('Vendor added to location.');
+                    renderPurchaseDetailPage(type, id);
+                } catch (error) {
+                    console.error("Error adding vendor to location:", error);
+                    alert("Failed to add vendor. Please try again.");
+                }
+            }
+        });
+        
         const addVendorModal = document.getElementById('add-vendor-modal');
         const addLocationModal = document.getElementById('add-location-modal');
 
@@ -6072,29 +6126,18 @@
                 btn.textContent = 'Save Location';
             }
         });
-        document.getElementById('purchase-item-search').addEventListener('input', e => renderPurchaseItems(e.target.value));
+
         document.getElementById('purchase-vendor-search').addEventListener('input', e => renderPurchaseVendors(e.target.value));
         document.getElementById('purchase-location-search').addEventListener('input', e => renderPurchaseLocations(e.target.value));
 
         document.querySelector('#page-purchase-planner .footer').addEventListener('click', e => {
             const tab = e.target.closest('.footer-button');
             if (!tab) return;
-
             document.querySelectorAll('#page-purchase-planner .footer-button').forEach(btn => btn.classList.remove('active'));
             tab.classList.add('active');
-
             document.querySelectorAll('.purchase-view').forEach(view => view.classList.remove('active'));
-            
             const header = document.getElementById('purchase-planner-header');
-            const headerActions = document.getElementById('purchase-planner-header-actions');
-            headerActions.innerHTML = '';
-
-            if (tab.id === 'purchase-items-tab') {
-                document.getElementById('purchase-items-view').classList.add('active');
-                header.textContent = 'Items';
-                headerActions.innerHTML = `<button class="icon-button" id="sort-purchase-items-btn" title="Sort Items"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>`;
-                renderPurchaseItems();
-            } else if (tab.id === 'purchase-vendors-tab') {
+            if (tab.id === 'purchase-vendors-tab') {
                 document.getElementById('purchase-vendors-view').classList.add('active');
                 header.textContent = 'Vendors';
                 renderPurchaseVendors();
@@ -6104,6 +6147,37 @@
                 renderPurchaseLocations();
             }
         });
+        
+        const printPurchasePlanner = () => {
+            const context = appState.currentPurchaseContext;
+            if (!context) return;
+            const tableBodyEl = document.querySelector('#page-purchase-detail .purchase-detail-table tbody');
+            if (!tableBodyEl) { alert("There are no items to print."); return; }
+            const tableBodyHtml = tableBodyEl.innerHTML;
+            const printContent = `
+                <div class="print-header">
+                    <h2>Purchase Planner</h2>
+                    <p><strong>${context.type.charAt(0).toUpperCase() + context.type.slice(1)}:</strong> ${context.name}</p>
+                    <p><strong>Date:</strong> ${formatDDMMYYYY(new Date())}</p>
+                </div>
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th class="col-item-name">Item Name</th>
+                            <th class="col-stock">Total Stock</th>
+                            <th class="col-suggest">Suggested</th>
+                            <th class="blank-col">Actual</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableBodyHtml}</tbody>
+                </table>`;
+
+            document.getElementById('purchase-planner-print-content').innerHTML = printContent;
+            document.body.classList.add('printing', 'printing-purchase-planner');
+            setTimeout(() => window.print(), 200);
+        };
+        
+        document.getElementById('print-planner-btn').addEventListener('click', printPurchasePlanner);
 
         const renderPackingInterface = () => {
             const order = appState.packingOrder;
@@ -6206,21 +6280,21 @@
         });
         document.getElementById('back-to-packer-assistant-home-btn').addEventListener('click', () => showPage('page-packer-assistant'));
         
-        const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v8'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
+        const setupPWA = () => { const manifest = { name: "MF BigMarket Orders", short_name: "BigMarket", start_url: ".", display: "standalone", background_color: "#e0f7fa", theme_color: "#005f73", description: "An order and payment management app.", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }]}; const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'}); const manifestUrl = URL.createObjectURL(manifestBlob); document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`); if ('serviceWorker' in navigator && (location.protocol === 'https' || location.hostname === 'localhost')) { const swCode = `const CACHE_NAME = 'mf-bigmarket-v9'; const URLS_TO_CACHE = []; self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))));`; const swBlob = new Blob([swCode], { type: 'application/javascript' }); const swUrl = URL.createObjectURL(swBlob); window.addEventListener('load', () => { navigator.serviceWorker.register(swUrl).then(reg => console.log('SW registered.')).catch(err => console.log('SW registration failed: ', err)); }); } };
         
         // ===============================================
-        // START: HR ATTENDANCE FEATURE LOGIC
+        // START: HR ATTENDANCE FEATURE LOGIC (REVISED)
         // ===============================================
 
         const renderHRPage = async () => {
             const gridContainer = document.getElementById('hr-user-grid');
             gridContainer.innerHTML = '<p>Loading employee status...</p>';
 
-            const today = new Date().toISOString().split('T')[0];
+            const todayStr = new Date().toISOString().split('T')[0];
             let dailyStatus = {};
             
             try {
-                const statusDoc = await window.firebaseTools.getDoc(doc(db, "daily_attendance_status", today));
+                const statusDoc = await getDoc(doc(db, "daily_attendance_status", todayStr));
                 if (statusDoc.exists()) {
                     dailyStatus = statusDoc.data();
                 }
@@ -6230,17 +6304,18 @@
 
             const employees = ['UNNI', 'RIYAS', 'SUNNY', 'SHAJU', 'BENNY', 'ARFATH', 'NANDU', 'ANISHAD', 'MUFEEDA', 'FASAL'];
             
-            let tilesHtml = '';
-            
-            employees.forEach(name => {
-                const status = dailyStatus[name] || 'out';
-                tilesHtml += `
+            let tilesHtml = employees.map(name => {
+                const status = dailyStatus[name] || 'clock_out'; // Default to clocked out
+                return `
                 <div class="hr-user-tile" data-username="${name}" data-status="${status}">
+                    <button class="calendar-btn" title="View Calendar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    </button>
                     <span class="status-dot"></span>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     <span>${name}</span>
                 </div>`;
-            });
+            }).join('');
             
             tilesHtml += `
                 <div class="hr-user-tile admin-tile" data-username="ADMIN">
@@ -6250,210 +6325,286 @@
 
             gridContainer.innerHTML = tilesHtml;
         };
-        
+
         const openAttendanceModal = (username, status) => {
             const modal = document.getElementById('attendance-modal');
             const modalBody = document.getElementById('attendance-modal-body');
-            document.getElementById('attendance-modal-title').textContent = `Mark Attendance for ${username}`;
+            document.getElementById('attendance-modal-title').textContent = `Attendance for ${username}`;
+            const timeNow = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-            if (status === 'in') {
-                modalBody.innerHTML = `
-                    <p>This user is currently marked IN.</p>
-                    <button id="mark-out-btn" class="button" style="background: var(--danger-color); margin-top: 20px;" data-username="${username}">Mark OUT</button>
-                `;
-            } else { // 'out' or undefined
-                modalBody.innerHTML = `
-                    <p>This user is currently marked OUT.</p>
-                    <button id="mark-in-btn" class="button" style="background: var(--success-color); margin-top: 20px;" data-username="${username}">Mark IN</button>
-                `;
+            if (status === 'clock_in') {
+                modalBody.innerHTML = `<p>Clocked IN. Current time is ${timeNow}.</p><button id="clock-out-btn" class="button" style="background: var(--danger-color); margin-top: 20px;" data-username="${username}">Clock OUT</button>`;
+            } else {
+                modalBody.innerHTML = `<p>Clocked OUT. Current time is ${timeNow}.</p><button id="clock-in-btn" class="button" style="background: var(--success-color); margin-top: 20px;" data-username="${username}">Clock IN</button>`;
             }
-
             modal.classList.add('active');
         };
-
+        
         document.getElementById('hr-user-grid').addEventListener('click', e => {
             const tile = e.target.closest('.hr-user-tile');
             if (!tile) return;
-
             const username = tile.dataset.username;
-            if (username === 'ADMIN') {
-                showPage('page-hr-admin-report');
-                renderHRAttendanceReport();
-            } else {
-                const status = tile.dataset.status;
-                openAttendanceModal(username, status);
-            }
-        });
-        
-        document.getElementById('attendance-modal').addEventListener('click', async (e) => {
-            const modal = document.getElementById('attendance-modal');
-            const modalBody = document.getElementById('attendance-modal-body');
 
-            if (e.target === modal || e.target.closest('[data-action="close"]')) {
-                modal.classList.remove('active');
-                return;
-            }
+            if (e.target.closest('.calendar-btn')) {
+openAttendanceCalendar(username);
+} else if (username === 'ADMIN') {
+showPage('page-hr-admin-report');
+renderHRAttendanceReport();
+} else {
+const status = tile.dataset.status;
+openAttendanceModal(username, status);
+}
+});    document.getElementById('attendance-modal').addEventListener('click', async (e) => {
+        const modal = document.getElementById('attendance-modal');
+        const modalBody = document.getElementById('attendance-modal-body');
 
-            const markInBtn = e.target.closest('#mark-in-btn');
-            const markOutBtn = e.target.closest('#mark-out-btn');
+        if (e.target === modal || e.target.closest('[data-action="close-attendance"]')) {
+            modal.classList.remove('active');
+            return;
+        }
 
-            if (!markInBtn && !markOutBtn) return;
+        const clockInBtn = e.target.closest('#clock-in-btn');
+        const clockOutBtn = e.target.closest('#clock-out-btn');
+        if (!clockInBtn && !clockOutBtn) return;
 
-            const btn = markInBtn || markOutBtn;
-            const username = btn.dataset.username;
-            const type = markInBtn ? 'in' : 'out';
-            const usersToExcludeFromGeoFence = ['UNNI', 'RIYAS'];
+        const btn = clockInBtn || clockOutBtn;
+        const username = btn.dataset.username;
+        const type = clockInBtn ? 'clock_in' : 'clock_out';
+        const usersToExcludeFromGeoFence = ['UNNI', 'RIYAS'];
 
-            btn.disabled = true;
-            modalBody.innerHTML = '<p>Processing... Please wait.</p>';
+        btn.disabled = true;
+        modalBody.innerHTML = '<p>Processing... Please wait.</p>';
 
-            try {
-                if (!usersToExcludeFromGeoFence.includes(username)) {
-                    modalBody.innerHTML = '<p>Getting shop location...</p>';
-                    const shopLocationDoc = await window.firebaseTools.getDoc(doc(db, "app_config", "shop_location"));
-                    if (!shopLocationDoc.exists()) {
-                        throw new Error("Shop location is not set. Please ask an Admin to set it in the settings.");
-                    }
-                    const shopLocation = shopLocationDoc.data();
-
-                    modalBody.innerHTML = '<p>Getting your current location... Please approve the request.</p>';
-                    const userPosition = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 15000 });
-                    });
-                    const userLocation = { latitude: userPosition.coords.latitude, longitude: userPosition.coords.longitude };
-                    
-                    const distance = calculateDistance(shopLocation.latitude, shopLocation.longitude, userLocation.latitude, userLocation.longitude);
-
-                    if (distance > 200) { // 200 meters radius
-                        throw new Error(`You are ${distance.toFixed(0)} meters away from the shop. You must be within 200 meters to mark attendance.`);
-                    }
-                }
+        try {
+            if (!usersToExcludeFromGeoFence.includes(username)) {
+                modalBody.innerHTML = '<p>Getting shop location...</p>';
+                const shopLocationDoc = await getDoc(doc(db, "app_config", "shop_location"));
+                if (!shopLocationDoc.exists()) throw new Error("Shop location is not set. Admin must set it.");
                 
-                modalBody.innerHTML = '<p>Saving attendance...</p>';
-                const today = new Date().toISOString().split('T')[0];
-                const statusRef = doc(db, "daily_attendance_status", today);
-                const batch = writeBatch(db);
-                const logRef = doc(collection(db, "attendance_logs"));
-                batch.set(logRef, { username, type, timestamp: new Date().toISOString() });
-                batch.set(statusRef, { [username]: type }, { merge: true });
-                await batch.commit();
+                modalBody.innerHTML = '<p>Getting your current location... Please approve.</p>';
+                const userPosition = await getCurrentLocation();
+                const distance = calculateDistance(shopLocationDoc.data().latitude, shopLocationDoc.data().longitude, userPosition.lat, userPosition.lng);
 
-                showToast(`Successfully marked '${type}' for ${username}`);
-                modal.classList.remove('active');
-                await renderHRPage();
-
-            } catch (error) {
-                console.error("Attendance marking failed:", error);
-                modalBody.innerHTML = `
-                    <p style="color: var(--danger-color); font-weight: bold;">Error</p>
-                    <p>${error.message}</p>
-                `;
-            }
-        });
-
-                // Event listener for the back button on the report page
-        document.getElementById('back-to-hr-dashboard-btn').addEventListener('click', () => {
-            showPage('page-hr');
-        });
-        
-        // FINAL REPLACEMENT for the entire renderHRAttendanceReport function
-        const renderHRAttendanceReport = async () => {
-            // Target the correct container ID that matches the HTML
-            const container = document.getElementById('hr-report-table-container');
-            if (!container) {
-                console.error("Error: The report container 'hr-report-table-container' was not found in the HTML.");
-                return;
-            }
-            container.innerHTML = '<p>Loading report...</p>';
-
-            try {
-                // Fetch all attendance logs once
-                const logsSnapshot = await getDocs(collection(db, "attendance_logs"));
-                if (logsSnapshot.empty) {
-                    container.innerHTML = '<p style="text-align:center; padding: 20px;">No attendance records found in the database.</p>';
-                    return;
+                if (distance > 200) { // 200 meters radius
+                    throw new Error(`You are ${distance.toFixed(0)}m away. Must be within 200m.`);
                 }
-                const allLogs = logsSnapshot.docs.map(doc => doc.data());
-
-                // Get the date range from the filter
-                const { start, end } = getReportDateRange();
-
-                // Filter the logs based on the selected date range
-                const filteredLogs = allLogs.filter(log => {
-                    if (!log.timestamp) return false;
-                    const logDate = new Date(log.timestamp);
-                    const isAfterStart = !start || logDate >= start;
-                    const isBeforeEnd = !end || logDate <= end;
-                    return isAfterStart && isBeforeEnd;
-                });
-                
-                if (filteredLogs.length === 0) {
-                     container.innerHTML = '<p style="text-align:center; padding: 20px;">No attendance records found for the selected dates.</p>';
-                     return;
-                }
-
-                // --- 1. Process data to count unique working days ---
-                const employeeData = {};
-
-                filteredLogs.forEach(log => {
-                    const username = log.username;
-                    if (!username) return; // Skip logs without a username
-
-                    const date = new Date(log.timestamp).toISOString().split('T')[0];
-                    
-                    if (!employeeData[username]) {
-                        employeeData[username] = { workingDays: new Set() };
-                    }
-                    
-                    // A working day is any day with an "in" record.
-                    if (log.type === 'in') {
-                        employeeData[username].workingDays.add(date);
-                    }
-                });
-
-                // --- 2. Build the HTML for the summary table ---
-                const tableRowsHtml = Object.keys(employeeData).sort().map(username => {
-                    const workDays = employeeData[username].workingDays.size;
-                    return `
-                        <tr>
-                            <td>${username}</td>
-                            <td class="numeric" style="font-weight: bold; font-size: 1.1rem;">${workDays}</td>
-                        </tr>
-                    `;
-                }).join('');
-                
-                container.innerHTML = `
-                    <h3>Working Days Summary</h3>
-                    <table class="report-table">
-                        <thead>
-                            <tr>
-                                <th>Employee Name</th>
-                                <th class="numeric">Total Working Days</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${tableRowsHtml}
-                        </tbody>
-                    </table>
-                `;
-            } catch (error) {
-                console.error("Error generating attendance report:", error);
-                container.innerHTML = '<p style="color: var(--danger-color);">Could not load the report. Please try again.</p>';
             }
-        };
-        
-        // Setup date filter for the new report page
-        setupBetweenDateFilter('hr-report-date-filter', renderHRAttendanceReport);
-        
-        setupBetweenDateFilter('hr-report-date-filter', renderHRAttendanceReport);
-        
-        // ===============================================
-        // END: HR ATTENDANCE FEATURE LOGIC
-        // ===============================================
+            
+            modalBody.innerHTML = '<p>Saving attendance...</p>';
+const todayStr = new Date().toISOString().split('T')[0]; // Add [0] to get the date string
+const statusRef = doc(db, "daily_attendance_status", todayStr); // Use the correct string variable
+const batch = writeBatch(db);
+const logRef = doc(collection(db, "attendance_logs"));
+batch.set(logRef, { username, type, timestamp: new Date().toISOString() });
+batch.set(statusRef, { [username]: type }, { merge: true });
+await batch.commit();
 
-        setupPWA();
-        setupRealtimeListeners(); 
+            showToast(`Successfully ${type.replace('_', ' ')} for ${username}`);
+            modal.classList.remove('active');
+            await renderHRPage();
+
+        } catch (error) {
+            console.error("Attendance marking failed:", error);
+            modalBody.innerHTML = `<p style="color: var(--danger-color); font-weight: bold;">Error</p><p>${error.message}</p>`;
+        }
     });
-</script>
+
+    document.getElementById('back-to-hr-dashboard-btn').addEventListener('click', () => showPage('page-hr'));
+
+    const renderHRAttendanceReport = async () => {
+        const container = document.getElementById('hr-report-container');
+        container.innerHTML = '<p>Loading report...</p>';
+
+        try {
+            const logsSnapshot = await getDocs(collection(db, "attendance_logs"));
+            if (logsSnapshot.empty) {
+                container.innerHTML = '<p style="text-align:center; padding: 20px;">No attendance records found.</p>';
+                return;
+            }
+            const allLogs = logsSnapshot.docs.map(doc => doc.data());
+            const { start, end } = getReportDateRange();
+
+            const filteredLogs = allLogs.filter(log => {
+                const logDate = new Date(log.timestamp);
+                return logDate >= start && logDate <= end;
+            });
+            
+            if (filteredLogs.length === 0) {
+                 container.innerHTML = '<p style="text-align:center; padding: 20px;">No records for the selected dates.</p>';
+                 return;
+            }
+
+            const employeeData = {};
+            filteredLogs.forEach(log => {
+                if (!employeeData[log.username]) employeeData[log.username] = [];
+                employeeData[log.username].push({ type: log.type, time: new Date(log.timestamp) });
+            });
+
+            const reportData = {};
+            for (const username in employeeData) {
+                const userLogs = employeeData[username].sort((a, b) => a.time - b.time);
+                const dailyDurations = {};
+
+                userLogs.forEach(log => {
+                    const dateStr = log.time.toISOString().split('T');
+                    if (!dailyDurations[dateStr]) dailyDurations[dateStr] = { duration: 0, lastIn: null };
+                    
+                    if (log.type === 'clock_in') {
+                        if (!dailyDurations[dateStr].lastIn) dailyDurations[dateStr].lastIn = log.time;
+                    } else if (log.type === 'clock_out' && dailyDurations[dateStr].lastIn) {
+                        dailyDurations[dateStr].duration += log.time - dailyDurations[dateStr].lastIn;
+                        dailyDurations[dateStr].lastIn = null;
+                    }
+                });
+
+                // Handle cases where a user forgot to clock out
+                Object.keys(dailyDurations).forEach(dateStr => {
+                    if (dailyDurations[dateStr].lastIn) {
+                        const clockInTime = dailyDurations[dateStr].lastIn;
+                        const endOfDay = new Date(clockInTime);
+                        endOfDay.setHours(20, 0, 0, 0); // 8 PM
+                        if (endOfDay > clockInTime) {
+                            dailyDurations[dateStr].duration += endOfDay - clockInTime;
+                        }
+                    }
+                });
+
+                reportData[username] = { fullDays: 0, halfDays: 0, totalHours: 0 };
+                Object.values(dailyDurations).forEach(day => {
+                    const hours = day.duration / (1000 * 60 * 60);
+                    reportData[username].totalHours += hours;
+                    if (hours >= 5) reportData[username].fullDays++;
+                    else if (hours > 0) reportData[username].halfDays++;
+                });
+            }
+            
+            const formatTotalHours = (totalHours) => {
+                const h = Math.floor(totalHours);
+                const m = Math.round((totalHours - h) * 60);
+                return `${h}h ${m}m`;
+            };
+
+            const tableRowsHtml = Object.keys(reportData).sort().map(username => `
+                <tr>
+                    <td>${username}</td>
+                    <td class="numeric">${reportData[username].fullDays}</td>
+                    <td class="numeric">${reportData[username].halfDays}</td>
+                    <td class="numeric col-hours">${formatTotalHours(reportData[username].totalHours)}</td>
+                </tr>
+            `).join('');
+            
+            container.innerHTML = `
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Employee Name</th>
+                            <th class="numeric">Full Days</th>
+                            <th class="numeric">Half Days</th>
+                            <th class="numeric">Total Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableRowsHtml}</tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error("Error generating attendance report:", error);
+            container.innerHTML = '<p style="color: var(--danger-color);">Could not load the report. Please try again.</p>';
+        }
+    };
+
+    const openAttendanceCalendar = (username) => {
+        const now = new Date();
+        appState.calendarContext = { username, year: now.getFullYear(), month: now.getMonth() };
+        renderAttendanceCalendar();
+        document.getElementById('attendance-calendar-modal').classList.add('active');
+    };
+
+    const renderAttendanceCalendar = async () => {
+        const { username, year, month } = appState.calendarContext;
+        document.getElementById('calendar-modal-title').textContent = `${username}'s Calendar`;
+        document.getElementById('calendar-month-year').textContent = new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
+        
+        const grid = document.getElementById('calendar-grid');
+        grid.innerHTML = '<div class="day-name">Sun</div><div class="day-name">Mon</div><div class="day-name">Tue</div><div class="day-name">Wed</div><div class="day-name">Thu</div><div class="day-name">Fri</div><div class="day-name">Sat</div>';
+
+        const logsSnapshot = await getDocs(collection(db, "attendance_logs"));
+        const allLogs = logsSnapshot.docs.map(doc => doc.data());
+        const userLogs = allLogs.filter(log => log.username === username).sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        const dailyDurations = {};
+        userLogs.forEach(log => {
+            const logDate = new Date(log.timestamp);
+            if (logDate.getFullYear() === year && logDate.getMonth() === month) {
+                const dateStr = logDate.toISOString().split('T');
+                if (!dailyDurations[dateStr]) dailyDurations[dateStr] = { duration: 0, lastIn: null };
+                if (log.type === 'clock_in' && !dailyDurations[dateStr].lastIn) dailyDurations[dateStr].lastIn = logDate;
+                else if (log.type === 'clock_out' && dailyDurations[dateStr].lastIn) {
+                    dailyDurations[dateStr].duration += logDate - dailyDurations[dateStr].lastIn;
+                    dailyDurations[dateStr].lastIn = null;
+                }
+            }
+        });
+
+        Object.keys(dailyDurations).forEach(dateStr => {
+            if (dailyDurations[dateStr].lastIn) {
+                const clockInTime = dailyDurations[dateStr].lastIn;
+                const endOfDay = new Date(clockInTime);
+                endOfDay.setHours(20, 0, 0, 0);
+                if (endOfDay > clockInTime) dailyDurations[dateStr].duration += endOfDay - clockInTime;
+            }
+        });
+
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        for (let i = 0; i < firstDay.getDay(); i++) { grid.innerHTML += `<div class="day-cell other-month"></div>`; }
+
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+            const date = new Date(year, month, day);
+            const dateStr = date.toISOString().split('T');
+            const todayStr = new Date().toISOString().split('T');
+            let statusClass = 'absent';
+            if (date > new Date()) statusClass = ''; // Future dates
+            else if (dailyDurations[dateStr]) {
+                const hours = dailyDurations[dateStr].duration / (1000 * 60 * 60);
+                if (hours >= 5) statusClass = 'present';
+                else if (hours > 0) statusClass = 'half-day';
+            }
+            const todayClass = dateStr === todayStr ? 'today' : '';
+            grid.innerHTML += `<div class="day-cell ${statusClass} ${todayClass}">${day}</div>`;
+        }
+    };
+
+    document.getElementById('calendar-prev-month').addEventListener('click', () => {
+        appState.calendarContext.month--;
+        if (appState.calendarContext.month < 0) {
+            appState.calendarContext.month = 11;
+            appState.calendarContext.year--;
+        }
+        renderAttendanceCalendar();
+    });
+
+    document.getElementById('calendar-next-month').addEventListener('click', () => {
+        appState.calendarContext.month++;
+        if (appState.calendarContext.month > 11) {
+            appState.calendarContext.month = 0;
+            appState.calendarContext.year++;
+        }
+        renderAttendanceCalendar();
+    });
+    
+    document.getElementById('attendance-calendar-modal').addEventListener('click', e => {
+        if (e.target.closest('[data-action="close-calendar"]') || e.target === e.currentTarget) {
+            e.currentTarget.classList.remove('active');
+        }
+    });
+    
+    setupBetweenDateFilter('hr-report-date-filter', renderHRAttendanceReport);
+    // ===============================================
+    // END: HR ATTENDANCE FEATURE LOGIC
+    // ===============================================
+
+    setupPWA();
+    setupRealtimeListeners(); 
+});</script>
 </body>
 </html>
