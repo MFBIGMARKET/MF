@@ -4832,6 +4832,18 @@
                 const qty = prompt(`Enter quantity for ${item.ItemName}:`);
                 const qtyNum = parseFloat(qty);
                 if(qty && !isNaN(qtyNum) && qtyNum > 0) {
+                    
+                    // ADD THIS BLOCK TO PRESERVE CHECKBOX STATE
+                    document.querySelectorAll('#billing-item-list input[type="checkbox"]').forEach(checkbox => {
+                        const index = parseInt(checkbox.dataset.index);
+                        if (!checkbox.checked) {
+                            appState.billingOrder.items[index].wasUnchecked = true;
+                        } else {
+                            delete appState.billingOrder.items[index].wasUnchecked;
+                        }
+                    });
+                    // END OF ADDED BLOCK
+
                     appState.billingOrder.items.push({ item, quantity: qtyNum, sellingPrice: item.Price2, isNew: true });
                     renderBillingInterface();
                 }
@@ -6235,6 +6247,18 @@
                 const qty = prompt(`Enter quantity for ${item.ItemName}:`);
                 const qtyNum = parseFloat(qty);
                 if(qty && !isNaN(qtyNum) && qtyNum > 0) {
+                    
+                    // ADD THIS BLOCK TO PRESERVE CHECKBOX STATE
+                    document.querySelectorAll('#assistant-packing-item-list input[type="checkbox"]').forEach(checkbox => {
+                        const index = parseInt(checkbox.dataset.index);
+                        if (!checkbox.checked) {
+                            appState.packingOrder.items[index].wasUnchecked = true;
+                        } else {
+                            delete appState.packingOrder.items[index].wasUnchecked;
+                        }
+                    });
+                    // END OF ADDED BLOCK
+
                     appState.packingOrder.items.push({ item, quantity: qtyNum, sellingPrice: item.Price2, isNew: true });
                     renderPackingInterface();
                 }
