@@ -13,7 +13,8 @@
     <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
+    <!-- Add this line inside the <head> tag of your HTML file -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- LeafletJS for Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha2256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -1174,6 +1175,59 @@
             color: #666;
             margin-top: 5px;
         }
+        /* --- Add these new styles for the Purchase Planner --- */
+
+.purchase-tile {
+    /* This rule is updated */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.purchase-tile-info {
+    /* This is a new rule */
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+.purchase-tile-manage-btn {
+    /* This is a new rule */
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: var(--text-color-light);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.purchase-tile-manage-btn:hover {
+    /* This is a new rule */
+    background-color: var(--light-bg);
+    color: var(--primary-color);
+}
+
+.vendor-manage-options {
+    /* This is a new rule */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.button.button-danger {
+    /* This is a new rule */
+    background: white;
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+    box-shadow: none;
+}
+
+.button.button-danger:active {
+    /* This is a new rule */
+    background-color: #fff1f2;
+}
         #purchase-planner-print-content .print-header {
             border-bottom: 2px solid #333;
             padding-bottom: 10px;
@@ -1221,6 +1275,26 @@
         .purchase-detail-table .col-suggest {
             color: var(--primary-color);
         }
+        /* --- Add these new styles for the Vendor Items Page --- */
+
+#vendor-current-items-list .list-item .info {
+    flex-grow: 1; /* Allow the name to take up space */
+}
+
+#vendor-current-items-list .delete-vendor-item-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    flex-shrink: 0;
+}
+
+#vendor-current-items-list .delete-vendor-item-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--danger-color);
+    stroke-width: 2.5;
+}
 
         /* --- HR Dashboard Styles --- */
         #hr-user-grid {
@@ -2596,6 +2670,7 @@
             purchaseItemSort: 'alpha',
             currentPurchaseContext: null,
              pendingRole: null,
+            managingVendorId: null,
              calendarContext: { username: null, year: null, month: null },
         };
 
@@ -3296,7 +3371,7 @@
 
             let summaryHtml = '<div class="card"><h3>Last Activity Summary</h3><div id="location-summary-list">';
             allSalesmen.forEach(salesman => {
-                const lastOrder = filteredOrders.filter(o => o.salesman === salesman && o.location).sort((a, b) => new Date(b.date) - new Date(a.date));
+                const lastOrder = filteredOrders.filter(o => o.salesman === salesman && o.location).sort((a, b) => new Date(b.date) - new Date(a.date))[0];
                 if (lastOrder) {
                     summaryHtml += `<div class="list-item"><div class="info"><strong style="color: var(--primary-color); font-size: 1.1rem;">${salesman}</strong><p><strong>Last Order:</strong> ${lastOrder.customer.Customer} (${formatPreciseCurrency(lastOrder.total)})</p><p><strong>Time:</strong> ${formatDDMMYYYYTime(lastOrder.date)}</p></div><a href="https://www.google.com/maps?q=${lastOrder.location.lat},${lastOrder.location.lng}" target="_blank" class="button button-outline" style="width: auto; padding: 8px 15px; font-size: 0.9rem;">View Last Location</a></div>`;
                 } else {
@@ -4949,25 +5024,38 @@
             }).join('');
         };
         
-        const jsonToExcel = (jsonData, fileName) => {
-            let csv = Object.keys(jsonData[0]).join(',') + '\r\n';
-            jsonData.forEach(row => {
-                const values = Object.values(row).map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
-                csv += values + '\r\n';
-            });
+        // --- START OF NEW FUNCTION ---
+// This function creates a headerless, tab-separated file and gives it an .xls extension.
+// --- FIND AND DELETE your old 'downloadDataAsXls' function ---
 
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", fileName + '.csv');
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        };
+
+// --- ADD THIS NEW, REPLACEMENT function in its place ---
+const downloadDataAsXls = (jsonData, fileName) => {
+    if (!jsonData || jsonData.length === 0) {
+        alert("No data to export.");
+        return;
+    }
+
+    // 1. Convert the array of objects into an array of arrays (e.g., [['Value1', 'Value2'], ['Value3', 'Value4']]).
+    // This is necessary to create a sheet without headers, as your previous function did.
+    const dataAsArray = jsonData.map(rowObject => Object.values(rowObject));
+
+    // 2. Create a new worksheet from our array of arrays.
+    // The XLSX.utils.aoa_to_sheet function is perfect for this.
+    const worksheet = XLSX.utils.aoa_to_sheet(dataAsArray);
+
+    // 3. Create a new workbook. A workbook is the Excel file itself.
+    const workbook = XLSX.utils.book_new();
+
+    // 4. Append our worksheet to the workbook and give the sheet a name (e.g., "Sheet1").
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+    // 5. This is the most important step:
+    // Generate the file and trigger the download.
+    // The `bookType: 'xls'` option specifically creates the Excel 97-2003 Workbook (BIFF8) format.
+    XLSX.writeFile(workbook, fileName + '.xls', { bookType: 'xls' });
+};
+// --- END OF NEW FUNCTION ---
         
         const printLoadingSlip = (order) => {
              const highlightCategories = ['CATTLE FEED', 'RICE', 'SUGAR', 'VELLAM', 'SALT,SUGAR&JAGGERY'];
@@ -5060,7 +5148,7 @@
                     }));
                 if (itemsToExport.length > 0) {
                     const formattedDate = new Date(order.billedAt || order.date).toLocaleDateString('en-GB').replace(/\//g, '-');
-                    jsonToExcel(itemsToExport, `${order.salesman}-${order.customer.Customer}-${formattedDate}`);
+                    downloadDataAsXls(itemsToExport, `${order.salesman}-${order.customer.Customer}-${formattedDate}`);
                 } else {
                     alert('No items to export.');
                 }
@@ -5860,19 +5948,24 @@
         };
 
         const renderPurchaseVendors = (filter = '') => {
-            const container = document.getElementById('purchase-vendor-list');
-            const lowerFilter = filter.toLowerCase();
-            const vendors = appState.purchaseVendors.filter(v => (v.name || '').toLowerCase().includes(lowerFilter));
-            if (vendors.length === 0) {
-                container.innerHTML = `<p class="card" style="text-align:center; grid-column: 1 / -1;">No vendors found. Add one using the '+' button.</p>`;
-                return;
-            }
-            container.innerHTML = vendors.map(v => `
-                <div class="purchase-tile" data-type="vendor" data-id="${v.id}">
+        const container = document.getElementById('purchase-vendor-list');
+        const lowerFilter = filter.toLowerCase();
+        const vendors = appState.purchaseVendors.filter(v => (v.name || '').toLowerCase().includes(lowerFilter));
+        if (vendors.length === 0) {
+            container.innerHTML = `<p class="card" style="text-align:center; grid-column: 1 / -1;">No vendors found. Add one using the '+' button.</p>`;
+            return;
+        }
+        container.innerHTML = vendors.map(v => `
+            <div class="purchase-tile" data-type="vendor" data-id="${v.id}">
+                <div class="purchase-tile-info">
                     <h4>${v.name}</h4>
                     <p>Freq: ${v.frequency} days</p>
                 </div>
-            `).join('');
+                <button class="icon-button purchase-tile-manage-btn" data-vendor-id="${v.id}" title="Manage Vendor">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+            </div>
+        `).join('');
         };
 
         const renderPurchaseLocations = (filter = '') => {
@@ -6160,34 +6253,122 @@
             }
         });
         
-        const printPurchasePlanner = () => {
-            const context = appState.currentPurchaseContext;
-            if (!context) return;
-            const tableBodyEl = document.querySelector('#page-purchase-detail .purchase-detail-table tbody');
-            if (!tableBodyEl) { alert("There are no items to print."); return; }
-            const tableBodyHtml = tableBodyEl.innerHTML;
-            const printContent = `
-                <div class="print-header">
-                    <h2>Purchase Planner</h2>
-                    <p><strong>${context.type.charAt(0).toUpperCase() + context.type.slice(1)}:</strong> ${context.name}</p>
-                    <p><strong>Date:</strong> ${formatDDMMYYYY(new Date())}</p>
-                </div>
-                <table class="print-table">
-                    <thead>
-                        <tr>
-                            <th class="col-item-name">Item Name</th>
-                            <th class="col-stock">Total Stock</th>
-                            <th class="col-suggest">Suggested</th>
-                            <th class="blank-col">Actual</th>
-                        </tr>
-                    </thead>
-                    <tbody>${tableBodyHtml}</tbody>
-                </table>`;
+        // Find your existing printPurchasePlanner function and replace it with this.
+const printPurchasePlanner = async () => { // Note: Added 'async'
+    const context = appState.currentPurchaseContext;
+    if (!context) return;
 
-            document.getElementById('purchase-planner-print-content').innerHTML = printContent;
-            document.body.classList.add('printing', 'printing-purchase-planner');
-            setTimeout(() => window.print(), 200);
+    let tableBodyHtml;
+    
+    // Check if we are on a Location's detail page
+    if (context.type === 'location') {
+        // --- This is the NEW LOGIC for locations ---
+        const itemsToPrint = await generateLocationPlannerData(context.id);
+        
+        if (!itemsToPrint || itemsToPrint.length === 0) {
+            alert("There are no items associated with this location to print.");
+            return;
+        }
+
+        tableBodyHtml = itemsToPrint.map(item => `
+            <tr>
+                <td class="col-item-name">${item.itemName}</td>
+                <td class="col-stock">${item.stock}</td>
+                <td class="col-suggest">${item.suggested}</td>
+                <td class="blank-col"></td>
+            </tr>
+        `).join('');
+
+    } else { 
+        // --- This is the EXISTING LOGIC for a single vendor ---
+        const tableBodyEl = document.querySelector('#page-purchase-detail .purchase-detail-table tbody');
+        if (!tableBodyEl) { 
+            alert("There are no items to print."); 
+            return; 
+        }
+        tableBodyHtml = tableBodyEl.innerHTML;
+    }
+
+    // This final part remains the same for both cases
+    const printContent = `
+        <div class="print-header">
+            <h2>Purchase Planner</h2>
+            <p><strong>${context.type.charAt(0).toUpperCase() + context.type.slice(1)}:</strong> ${context.name}</p>
+            <p><strong>Date:</strong> ${formatDDMMYYYY(new Date())}</p>
+        </div>
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th class="col-item-name">Item Name</th>
+                    <th class="col-stock">Total Stock</th>
+                    <th class="col-suggest">Suggested</th>
+                    <th class="blank-col">Actual</th>
+                </tr>
+            </thead>
+            <tbody>${tableBodyHtml}</tbody>
+        </table>`;
+
+    document.getElementById('purchase-planner-print-content').innerHTML = printContent;
+    document.body.classList.add('printing', 'printing-purchase-planner');
+    setTimeout(() => window.print(), 200);
+};
+// Add this new helper function to your script
+const generateLocationPlannerData = async (locationId) => {
+    const location = appState.purchaseLocations.find(l => l.id === locationId);
+    if (!location) return [];
+
+    // 1. Get all vendors associated with this location
+    const vendorsSnapshot = await getDocs(collection(db, 'purchaseLocations', locationId, 'locationVendors'));
+    const vendorIds = vendorsSnapshot.docs.map(doc => doc.data().vendorId);
+    if (vendorIds.length === 0) return [];
+
+    // 2. Fetch all items for all those vendors at the same time
+    const itemPromises = vendorIds.map(vid => getDocs(collection(db, 'purchaseVendors', vid, 'vendorItems')));
+    const vendorItemSnapshots = await Promise.all(itemPromises);
+
+    // 3. Consolidate into a single list of unique item codes
+    const allItemCodes = vendorItemSnapshots.flat().map(snapshot => snapshot.docs.map(doc => doc.data().itemCode)).flat();
+    const uniqueItemCodes = [...new Set(allItemCodes)];
+
+    // 4. Calculate sales data from the last 30 days (this logic is similar to what you already have)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const salesByItemCode = {};
+    Object.values(appState.orders).flat().forEach(order => {
+        const orderDate = new Date(order.date);
+        if (orderDate >= thirtyDaysAgo && (order.status === 'billed' || order.status === 'loaded' || order.status === 'delivered')) {
+            (order.billedItems || order.items || []).forEach(item => {
+                if (!item.wasUnchecked) {
+                    const code = item.item.Code;
+                    if (!salesByItemCode[code]) salesByItemCode[code] = 0;
+                    salesByItemCode[code] += item.quantity;
+                }
+            });
+        }
+    });
+
+    // 5. Create the final data array for printing
+    const plannerData = uniqueItemCodes.map(code => {
+        const masterItem = appState.items.find(i => i.Code === code);
+        if (!masterItem) return null; // Skip if item not found in master list
+
+        const totalSalesLast30Days = salesByItemCode[code] || 0;
+        const avgDailySales = totalSalesLast30Days / 30;
+        
+        // IMPORTANT: Use the LOCATION's frequency for the calculation
+        const requiredStock = avgDailySales * location.frequency * 1.25; // 25% buffer
+        const suggestedPurchase = Math.max(0, Math.ceil(requiredStock - masterItem.Clstock));
+        
+        return {
+            itemName: masterItem.ItemName,
+            stock: masterItem.Clstock || 0,
+            suggested: suggestedPurchase
         };
+    }).filter(Boolean); // Filter out any null items
+
+    // Sort the final list alphabetically by item name for a clean printout
+    return plannerData.sort((a, b) => a.itemName.localeCompare(b.itemName));
+};
         
         document.getElementById('print-planner-btn').addEventListener('click', printPurchasePlanner);
 
@@ -6620,15 +6801,420 @@ await batch.commit();
         if (e.target.closest('[data-action="close-calendar"]') || e.target === e.currentTarget) {
             e.currentTarget.classList.remove('active');
         }
+        
     });
     
     setupBetweenDateFilter('hr-report-date-filter', renderHRAttendanceReport);
     // ===============================================
     // END: HR ATTENDANCE FEATURE LOGIC
     // ===============================================
+    const deleteVendor = async (vendorId) => {
+        const deleteButton = document.getElementById('manage-vendor-delete-btn');
+        deleteButton.disabled = true;
+        deleteButton.textContent = 'Deleting...';
 
+        try {
+            const vendorRef = doc(db, 'purchaseVendors', vendorId);
+            await deleteDoc(vendorRef);
+            document.getElementById('vendor-manage-modal').classList.remove('active');
+            showToast('Vendor deleted successfully.');
+        } catch (error) {
+            console.error("Error deleting vendor:", error);
+            alert('There was an error deleting the vendor. Please try again.');
+        } finally {
+            deleteButton.disabled = false;
+            deleteButton.textContent = 'Delete Vendor';
+            appState.managingVendorId = null;
+        }
+    };
+
+    const vendorManageModal = document.getElementById('vendor-manage-modal');
+
+    // Listener for opening the modal
+    document.getElementById('purchase-vendor-list').addEventListener('click', e => {
+        const manageBtn = e.target.closest('.purchase-tile-manage-btn');
+        if (manageBtn) {
+            e.stopPropagation(); 
+            const vendorId = manageBtn.dataset.vendorId;
+            const vendor = appState.purchaseVendors.find(v => v.id === vendorId);
+            if (vendor) {
+                appState.managingVendorId = vendorId;
+                document.getElementById('vendor-manage-modal-title').textContent = `Manage: ${vendor.name}`;
+                vendorManageModal.classList.add('active');
+            }
+        }
+    });
+
+    // Listener for actions inside the modal (close, delete, etc.)
+  // vvvv REPLACE your old 'vendorManageModal' listener with this complete version vvvv
+
+// Listener for actions inside the MAIN management modal (Edit, Delete, Manage Items)
+// ========================================================================
+// === COMPLETE EVENT LISTENER FOR THE MAIN VENDOR MANAGEMENT MODAL ===
+// ========================================================================
+//
+// Replace your existing 'vendorManageModal.addEventListener' with this block.
+// It handles all button clicks within that specific modal.
+
+vendorManageModal.addEventListener('click', e => {
+
+    // --- 1. Handle CLOSING the modal ---
+    // This triggers if the user clicks the dark background or the "Close" button.
+    if (e.target === vendorManageModal || e.target.closest('[data-action="close-vendor-modal"]')) {
+        vendorManageModal.classList.remove('active');
+        appState.managingVendorId = null; // Clear the state when closing
+    } 
+
+    // --- 2. Handle clicking the DELETE button ---
+    else if (e.target.closest('#manage-vendor-delete-btn')) {
+        const vendorId = appState.managingVendorId;
+        if (!vendorId) {
+            alert('Error: No vendor selected. Please close and try again.');
+            return;
+        }
+        const vendor = appState.purchaseVendors.find(v => v.id === vendorId);
+        const vendorName = vendor ? vendor.name : 'this vendor';
+
+        // Show a confirmation dialog before proceeding.
+        if (confirm(`Are you sure you want to permanently delete ${vendorName}? This action cannot be undone.`)) {
+            // Call the separate function that handles the database operation.
+            deleteVendor(vendorId);
+        }
+    }
+
+    // --- 3. Handle clicking the EDIT VENDOR DETAILS button ---
+    else if (e.target.closest('#manage-vendor-edit-btn')) {
+        const vendorId = appState.managingVendorId;
+        const vendor = appState.purchaseVendors.find(v => v.id === vendorId);
+
+        if (vendor) {
+            // Populate the input fields in the separate "edit" modal with the vendor's current data.
+            document.getElementById('edit-vendor-name').value = vendor.name;
+            document.getElementById('edit-vendor-frequency').value = vendor.frequency;
+            
+            // Show the "edit" modal.
+            document.getElementById('vendor-edit-modal').classList.add('active');
+            
+            // Hide the current management modal.
+            vendorManageModal.classList.remove('active');
+        } else {
+            alert('Error: Could not find vendor details.');
+        }
+    }
+
+    // --- 4. Handle clicking the MANAGE VENDOR ITEMS button ---
+    else if (e.target.closest('#manage-vendor-items-btn')) {
+        // This function opens the new page and fetches the items for the current vendor.
+        renderVendorItemsPage(); 
+        
+        // Hide the current management modal.
+        vendorManageModal.classList.remove('active');
+    }
+});
+// --- START OF NEW FUNCTION ---
+const uploadVendorItemsCSV = async (file, vendorId) => {
+    const uploadBtn = document.getElementById('bulk-upload-csv-btn');
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        Uploading...
+    `;
+
+    const fileReader = new FileReader();
+
+    // We wrap the FileReader in a Promise to use async/await
+    const fileContents = await new Promise((resolve, reject) => {
+        fileReader.onload = e => resolve(e.target.result);
+        fileReader.onerror = reject;
+        fileReader.readAsText(file);
+    });
+
+    try {
+        const data = parseCSV(fileContents);
+        if (!data || data.length === 0 || !data[0].item_code) {
+            throw new Error("Invalid CSV format. Please ensure it has an 'item_code' column and is not empty.");
+        }
+
+        // Get a clean list of unique item codes from the CSV
+        const itemCodes = [...new Set(data.map(row => row.item_code.trim()).filter(Boolean))];
+
+        if (itemCodes.length === 0) {
+            throw new Error("No valid item codes found in the CSV file.");
+        }
+
+        // Use a Firestore batch write for efficiency
+        const batch = writeBatch(db);
+        itemCodes.forEach(code => {
+            const newItemRef = doc(collection(db, 'purchaseVendors', vendorId, 'vendorItems'));
+            batch.set(newItemRef, { itemCode: code });
+        });
+
+        await batch.commit();
+
+        showToast(`${itemCodes.length} items uploaded successfully!`);
+        await renderVendorItemsPage(); // Refresh the item list on the page
+
+    } catch (error) {
+        console.error("Error during CSV upload:", error);
+        alert(`Upload failed: ${error.message}`);
+    } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Bulk Upload from CSV
+        `;
+    }
+};
+// --- START OF NEW EVENT LISTENERS ---
+
+// 1. Listen for clicks on the VISIBLE upload button
+document.getElementById('bulk-upload-csv-btn').addEventListener('click', () => {
+    // When the visible button is clicked, programmatically click the HIDDEN file input
+    document.getElementById('vendor-item-bulk-upload-input').click();
+});
+
+// 2. Listen for when a file is selected in the HIDDEN input
+document.getElementById('vendor-item-bulk-upload-input').addEventListener('change', e => {
+    const file = e.target.files[0];
+    const vendorId = appState.managingVendorId;
+
+    if (file && vendorId) {
+        // If a file was selected, call our main upload function
+        uploadVendorItemsCSV(file, vendorId);
+    }
+
+    // Reset the input value so the 'change' event fires even if the same file is selected again
+    e.target.value = '';
+});
+
+// --- END OF NEW EVENT LISTENERS ---
+// --- END OF NEW FUNCTION ---
+
+
+// ^^^^ The replacement block ends here ^^^^
+    // --- START OF NEW CODE BLOCK ---
+const vendorEditModal = document.getElementById('vendor-edit-modal');
+
+vendorEditModal.addEventListener('click', async e => {
+    // Handle closing the edit modal
+    if (e.target === vendorEditModal || e.target.closest('[data-action="close-vendor-edit-modal"]')) {
+        vendorEditModal.classList.remove('active');
+        return;
+    }
+
+    // Handle clicking the "Save Changes" button
+    const saveBtn = e.target.closest('#save-vendor-changes-btn');
+    if (saveBtn) {
+        const vendorId = appState.managingVendorId;
+        const newName = document.getElementById('edit-vendor-name').value.trim();
+        const newFrequency = parseInt(document.getElementById('edit-vendor-frequency').value);
+
+        if (!newName || isNaN(newFrequency) || newFrequency <= 0) {
+            alert('Please provide a valid name and a positive frequency number.');
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        try {
+            const vendorRef = doc(db, 'purchaseVendors', vendorId);
+            await updateDoc(vendorRef, {
+                name: newName,
+                frequency: newFrequency
+            });
+            
+            vendorEditModal.classList.remove('active');
+            showToast('Vendor details updated successfully.');
+
+        } catch (error) {
+            console.error("Error updating vendor:", error);
+            alert('Failed to update vendor. Please try again.');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Changes';
+            appState.managingVendorId = null; // Clear state after action is complete
+        }
+    }
+});
+// --- END OF NEW CODE BLOCK ---
+
+// --- START OF NEW CODE BLOCK FOR VENDOR ITEM MANAGEMENT ---
+
+const renderVendorItemsPage = async () => {
+    const vendorId = appState.managingVendorId;
+    if (!vendorId) return;
+
+    const vendor = appState.purchaseVendors.find(v => v.id === vendorId);
+    if (!vendor) return;
+
+    document.getElementById('vendor-items-header').textContent = `Items for ${vendor.name}`;
+    const listContainer = document.getElementById('vendor-current-items-list');
+    listContainer.innerHTML = '<p>Loading items...</p>';
+    showPage('page-vendor-items');
+
+    // Fetch the items from the subcollection
+    const itemsSnapshot = await getDocs(collection(db, 'purchaseVendors', vendorId, 'vendorItems'));
+    const vendorItems = itemsSnapshot.docs.map(doc => ({
+        docId: doc.id,
+        ...doc.data()
+    }));
+
+    if (vendorItems.length === 0) {
+        listContainer.innerHTML = '<p style="text-align:center; color:#888;">No items have been assigned to this vendor yet.</p>';
+        return;
+    }
+
+    listContainer.innerHTML = vendorItems.map(vItem => {
+        const masterItem = appState.items.find(i => i.Code === vItem.itemCode);
+        const itemName = masterItem ? masterItem.ItemName : `Unknown Item (Code: ${vItem.itemCode})`;
+        
+        return `
+            <div class="list-item">
+                <span class="info">${itemName}</span>
+                <button class="delete-vendor-item-btn" data-item-doc-id="${vItem.docId}" title="Remove Item">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+            </div>
+        `;
+    }).join('');
+};
+
+// Listener for the back button on the new page
+document.getElementById('back-to-purchase-planner-from-items-btn').addEventListener('click', () => {
+    showPage('page-purchase-planner');
+    appState.managingVendorId = null; // Clear state when going back
+});
+
+// Listener for the search input to add items
+document.getElementById('vendor-add-item-search-input').addEventListener('input', e => {
+    renderItemSearchResults(e.target.value, 'vendor-add-item-search-results', false);
+});
+
+// Listener for clicking a search result to add it
+document.getElementById('vendor-add-item-search-results').addEventListener('click', async e => {
+    const resultItem = e.target.closest('.search-result-item');
+    if (resultItem) {
+        const itemCode = resultItem.dataset.itemCode;
+        const vendorId = appState.managingVendorId;
+        if (!vendorId) return;
+
+        // Hide the search results
+        document.getElementById('vendor-add-item-search-input').value = '';
+        document.getElementById('vendor-add-item-search-results').innerHTML = '';
+
+        try {
+            await addDoc(collection(db, 'purchaseVendors', vendorId, 'vendorItems'), { itemCode });
+            showToast('Item added to vendor.');
+            await renderVendorItemsPage(); // Refresh the list
+        } catch (error) {
+            console.error("Error adding item to vendor:", error);
+            alert('Failed to add item. Please try again.');
+        }
+    }
+});
+
+// Listener for deleting an item from the vendor's list
+document.getElementById('vendor-current-items-list').addEventListener('click', async e => {
+    const deleteBtn = e.target.closest('.delete-vendor-item-btn');
+    if (deleteBtn) {
+        const itemDocId = deleteBtn.dataset.itemDocId;
+        const vendorId = appState.managingVendorId;
+        const listItem = deleteBtn.closest('.list-item');
+
+        if (confirm('Are you sure you want to remove this item from the vendor?')) {
+            try {
+                await deleteDoc(doc(db, 'purchaseVendors', vendorId, 'vendorItems', itemDocId));
+                
+                // Animate and remove the item from the view
+                listItem.classList.add('removing');
+                setTimeout(() => listItem.remove(), 500);
+
+                showToast('Item removed.');
+            } catch (error) {
+                console.error("Error removing item:", error);
+                alert('Failed to remove item. Please try again.');
+            }
+        }
+    }
+});
+
+// --- END OF NEW CODE BLOCK ---
     setupPWA();
     setupRealtimeListeners(); 
+
 });</script>
-</body>
+<!-- ======================= VENDOR ITEMS MANAGE PAGE (NEW) ======================= -->
+    <div id="page-vendor-items" class="page">
+        <div class="header">
+            <button class="icon-button" id="back-to-purchase-planner-from-items-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1 id="vendor-items-header">Manage Items</h1>
+            <div class="header-actions" style="width: 24px;"></div>
+        </div>
+        <div class="content">
+           <div class="card">
+     <h3>Add Items</h3>
+     <!-- Single Item Search -->
+     <div class="search-bar" style="position: relative; margin-bottom: 15px;">
+         <input type="text" id="vendor-add-item-search-input" placeholder="Search and add one item...">
+         <div id="vendor-add-item-search-results"></div>
+     </div>
+
+     <!-- Bulk Upload Button and Hidden Input -->
+     <button class="button button-outline" id="bulk-upload-csv-btn">
+         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+         Bulk Upload from CSV
+     </button>
+     <input type="file" id="vendor-item-bulk-upload-input" accept=".csv" style="display: none;">
+ </div>
+            <div class="card">
+                <h3>Current Vendor Items</h3>
+                <div id="vendor-current-items-list">
+                    <!-- Items will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- This is where your other modals like vendor-manage-modal are -->
+<!-- ======================= VENDOR MANAGE MODAL (NEW) ======================= -->
+    <div id="vendor-manage-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="vendor-manage-modal-title">Manage Vendor</h2>
+            <div class="modal-body">
+                <div class="vendor-manage-options">
+                    <button class="button button-outline" id="manage-vendor-edit-btn">Edit Vendor Details</button>
+                    <button class="button button-outline" id="manage-vendor-items-btn">Manage Vendor Items</button>
+                    <button class="button button-danger" id="manage-vendor-delete-btn">Delete Vendor</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="button button-outline" data-action="close-vendor-modal">Close</button>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= VENDOR EDIT MODAL (NEW) ======================= -->
+<div id="vendor-edit-modal" class="modal">
+    <div class="modal-content">
+        <h2>Edit Vendor Details</h2>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="edit-vendor-name">Vendor Name</label>
+                <input type="text" id="edit-vendor-name">
+            </div>
+            <div class="form-group">
+                <label for="edit-vendor-frequency">Landing Frequency (in days)</label>
+                <input type="number" id="edit-vendor-frequency">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="button button-outline" data-action="close-vendor-edit-modal">Cancel</button>
+            <button class="button" id="save-vendor-changes-btn">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+</body> <!-- <<< Add the code block just before this tag -->
 </html>
