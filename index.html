@@ -3789,7 +3789,7 @@
             const selectedRole = roleTile.dataset.role;
             
             // The list of roles that require a password
-            const protectedRoles = ['ADMIN', 'HR'];
+            const protectedRoles = ['ADMIN', 'HR', 'FASAL'];
 
             if (protectedRoles.includes(selectedRole)) {
                 // For protected roles, store the role and open the password modal
@@ -3821,7 +3821,8 @@
 
             const correctPasswords = {
                 ADMIN: 'ADMIN456',
-                HR: '1234'
+                HR: '1234',
+                FASAL: 'FASAL654'
             };
 
             if (enteredPassword === correctPasswords[role]) {
