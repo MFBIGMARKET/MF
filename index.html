@@ -380,7 +380,71 @@
         .search-view.active { display: block; }
 
         #offer-item-search-results, #offer-item-search-results-bulk, #info-salesman-item-search-results, #info-item-search-results, #packing-item-search-results, #billing-item-search-results, #assistant-packing-item-search-results, #purchase-item-search-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 var(--border-radius) var(--border-radius); max-height: 250px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-        
+        #item-finder-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+#item-finder-search-results .search-result-item {
+    padding: 15px;
+    cursor: pointer;
+    font-weight: 500;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+#item-finder-search-results .search-result-item:last-child {
+    border-bottom: none;
+}
+
+#item-finder-search-results .search-result-item:hover {
+    background-color: var(--light-bg);
+}
+
+#item-finder-display-card .price-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+#item-finder-display-card h3 {
+    text-align: center;
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    word-break: break-word;
+}
+
+#item-finder-display-card .price-item {
+    text-align: center;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+#item-finder-display-card .price-item .label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6c757d;
+}
+
+#item-finder-display-card .price-item .value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: 5px;
+    word-wrap: break-word;
+}
         .search-result-item { padding: 12px 15px; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; border-bottom: 1px solid #f0f0f0; }
         .search-result-item:last-child { border-bottom: none; }
         .search-result-item:hover { background-color: var(--light-bg); }
@@ -2387,6 +2451,16 @@
             <div class="header-actions" id="purchase-planner-header-actions" style="width: 24px;"></div>
         </div>
         <div class="content" style="padding-bottom: 80px;"> 
+            <div id="purchase-item-finder-view" class="purchase-view">
+    <div class="card" style="display: flex; flex-direction: column; align-items: center; padding-top: 30px; padding-bottom: 30px;">
+        <div class="search-bar" style="width: 100%; max-width: 500px; position: relative;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="item-finder-search-input" placeholder="Search any product...">
+            <div id="item-finder-search-results"></div>
+        </div>
+        <div id="item-finder-display-card" style="display: none; margin-top: 20px; width: 100%; max-width: 500px;"></div>
+    </div>
+</div>
             <div id="purchase-vendors-view" class="purchase-view active">
                 <div class="filter-bar">
                     <div class="search-bar">
@@ -2413,15 +2487,19 @@
             </div>
         </div>
         <div class="footer">
-            <button class="footer-button active" id="purchase-vendors-tab">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span>Vendors</span>
-            </button>
-            <button class="footer-button" id="purchase-locations-tab">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span>Locations</span>
-            </button>
-        </div>
+    <button class="footer-button active" id="purchase-item-finder-tab">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Item Finder</span>
+    </button>
+    <button class="footer-button" id="purchase-vendors-tab">
+         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        <span>Vendors</span>
+    </button>
+    <button class="footer-button" id="purchase-locations-tab">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        <span>Locations</span>
+    </button>
+</div>
     </div>
 
     <div id="page-purchase-detail" class="page">
@@ -5939,13 +6017,22 @@ const downloadDataAsXls = (jsonData, fileName) => {
         document.getElementById('back-to-delivery-home-from-history-btn').addEventListener('click', () => showPage('page-delivery-home'));
 
         const renderPurchasePlanner = () => {
-            document.querySelectorAll('#page-purchase-planner .footer-button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('purchase-vendors-tab').classList.add('active');
-            renderPurchaseVendors();
-            document.getElementById('purchase-vendors-view').classList.add('active');
-            document.getElementById('purchase-locations-view').classList.remove('active');
-            document.getElementById('purchase-planner-header').textContent = 'Vendors';
-        };
+    // Set "Item Finder" as the active tab by default
+    document.querySelectorAll('#page-purchase-planner .footer-button').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('purchase-item-finder-tab').classList.add('active');
+
+    // Show the "Item Finder" view and hide others
+    document.querySelectorAll('.purchase-view').forEach(view => view.classList.remove('active'));
+    document.getElementById('purchase-item-finder-view').classList.add('active');
+
+    // Update the header text
+    document.getElementById('purchase-planner-header').textContent = 'Item Finder';
+    
+    // Clear any previous search results
+    document.getElementById('item-finder-search-input').value = '';
+    document.getElementById('item-finder-search-results').innerHTML = '';
+    document.getElementById('item-finder-display-card').style.display = 'none';
+};
 
         const renderPurchaseVendors = (filter = '') => {
         const container = document.getElementById('purchase-vendor-list');
@@ -6237,22 +6324,100 @@ const downloadDataAsXls = (jsonData, fileName) => {
 
         document.querySelector('#page-purchase-planner .footer').addEventListener('click', e => {
             const tab = e.target.closest('.footer-button');
-            if (!tab) return;
-            document.querySelectorAll('#page-purchase-planner .footer-button').forEach(btn => btn.classList.remove('active'));
-            tab.classList.add('active');
-            document.querySelectorAll('.purchase-view').forEach(view => view.classList.remove('active'));
-            const header = document.getElementById('purchase-planner-header');
-            if (tab.id === 'purchase-vendors-tab') {
-                document.getElementById('purchase-vendors-view').classList.add('active');
-                header.textContent = 'Vendors';
-                renderPurchaseVendors();
-            } else if (tab.id === 'purchase-locations-tab') {
-                document.getElementById('purchase-locations-view').classList.add('active');
-                header.textContent = 'Locations';
-                renderPurchaseLocations();
+    if (!tab) return;
+    
+    document.querySelectorAll('#page-purchase-planner .footer-button').forEach(btn => btn.classList.remove('active'));
+    tab.classList.add('active');
+    
+    document.querySelectorAll('.purchase-view').forEach(view => view.classList.remove('active'));
+    const header = document.getElementById('purchase-planner-header');
+
+    if (tab.id === 'purchase-item-finder-tab') {
+        document.getElementById('purchase-item-finder-view').classList.add('active');
+        header.textContent = 'Item Finder';
+    } else if (tab.id === 'purchase-vendors-tab') {
+        document.getElementById('purchase-vendors-view').classList.add('active');
+        header.textContent = 'Vendors';
+        renderPurchaseVendors();
+    } else if (tab.id === 'purchase-locations-tab') {
+        document.getElementById('purchase-locations-view').classList.add('active');
+        header.textContent = 'Locations';
+        renderPurchaseLocations();
             }
         });
-        
+        const renderItemFinderSearchResults = (filter = '') => {
+    const resultsContainer = document.getElementById('item-finder-search-results');
+    const displayCard = document.getElementById('item-finder-display-card');
+    displayCard.style.display = 'none'; // Hide the details card while searching
+
+    if (!filter) {
+        resultsContainer.innerHTML = '';
+        return;
+    }
+
+    const lowerFilter = filter.toLowerCase();
+    const filteredItems = appState.items.filter(item =>
+        (item.ItemName || '').toLowerCase().includes(lowerFilter)
+    ).slice(0, 50); // Limit results for better performance
+
+    if (filteredItems.length === 0) {
+        resultsContainer.innerHTML = '<p style="text-align: center; padding: 20px;">No items found.</p>';
+        return;
+    }
+
+    resultsContainer.innerHTML = filteredItems.map(item => `
+        <div class="search-result-item" data-item-code="${item.Code}">
+            ${item.ItemName}
+        </div>
+    `).join('');
+};
+
+const renderItemFinderDisplayCard = (item) => {
+    const displayCard = document.getElementById('item-finder-display-card');
+    if (!item) {
+        displayCard.style.display = 'none';
+        return;
+    }
+
+    const margin = item.Price2 > 0 ? (((item.Price2 - item.CostRate) / item.Price2) * 100) : 0;
+    const marginClass = margin >= 0 ? 'profit' : 'loss';
+
+    displayCard.innerHTML = `
+        <h3>${item.ItemName}</h3>
+        <div class="price-grid">
+            <div class="price-item">
+                <div class="label">Cost</div>
+                <div class="value">${formatPreciseCurrency(item.CostRate)}</div>
+            </div>
+            <div class="price-item">
+                <div class="label">P2</div>
+                <div class="value">${formatPreciseCurrency(item.Price2)}</div>
+            </div>
+            <div class="price-item">
+                <div class="label">P2 Margin</div>
+                <div class="value ${marginClass}">${margin.toFixed(1)}%</div>
+            </div>
+        </div>
+    `;
+    displayCard.style.display = 'block';
+};
+
+document.getElementById('item-finder-search-input').addEventListener('input', e => {
+    renderItemFinderSearchResults(e.target.value);
+});
+
+document.getElementById('item-finder-search-results').addEventListener('click', e => {
+    const resultItem = e.target.closest('.search-result-item');
+    if (resultItem) {
+        const itemCode = resultItem.dataset.itemCode;
+        const selectedItem = appState.items.find(i => i.Code === itemCode);
+
+        // Hide the search list and show the details card
+        document.getElementById('item-finder-search-input').value = selectedItem.ItemName;
+        document.getElementById('item-finder-search-results').innerHTML = '';
+        renderItemFinderDisplayCard(selectedItem);
+    }
+});
         // Find your existing printPurchasePlanner function and replace it with this.
 const printPurchasePlanner = async () => { // Note: Added 'async'
     const context = appState.currentPurchaseContext;
