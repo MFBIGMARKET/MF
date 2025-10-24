@@ -3822,7 +3822,7 @@
             const correctPasswords = {
                 ADMIN: 'ADMIN456',
                 HR: '1234',
-                FASAL: 'FASAL654'
+                FASAL: '1788'
             };
 
             if (enteredPassword === correctPasswords[role]) {
@@ -6382,6 +6382,9 @@ const renderItemFinderDisplayCard = (item) => {
 
     const margin = item.Price2 > 0 ? (((item.Price2 - item.CostRate) / item.Price2) * 100) : 0;
     const marginClass = margin >= 0 ? 'profit' : 'loss';
+    
+    // Helper function for stock color, consistent with other parts of the app
+    const stockColor = (stock) => stock > 10 ? 'var(--success-color)' : (stock > 0 ? 'var(--warning-color)' : 'var(--danger-color)');
 
     displayCard.innerHTML = `
         <h3>${item.ItemName}</h3>
@@ -6397,6 +6400,14 @@ const renderItemFinderDisplayCard = (item) => {
             <div class="price-item">
                 <div class="label">P2 Margin</div>
                 <div class="value ${marginClass}">${margin.toFixed(1)}%</div>
+            </div>
+            <div class="price-item">
+                <div class="label">MRP</div>
+                <div class="value">${formatPreciseCurrency(item.Mrp)}</div>
+            </div>
+            <div class="price-item">
+                <div class="label">Stock</div>
+                <div class="value" style="color: ${stockColor(item.Clstock)};">${item.Clstock} ${item.Unit || ''}</div>
             </div>
         </div>
     `;
