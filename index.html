@@ -45,7 +45,6 @@
     </script>
     
     <style>
-
         :root {
             --primary-color: #005f73;
             --secondary-color: #0a9396;
@@ -124,26 +123,6 @@
             margin-bottom: 20px;
             box-shadow: var(--card-shadow);
         }
-
-        /* Add this new CSS to your main style block */
-
-.date-input-wrapper {
-    position: relative;
-    overflow: hidden; /* Ensures the oversized input doesn't spill out */
-    flex: 1; /* Make it fill space like the button did */
-    min-width: 120px;
-}
-
-.between-date-filter .date-input {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0; /* Make it completely transparent */
-    cursor: pointer; /* Ensure it has a pointer cursor */
-    border: none;
-}
         .between-date-filter .date-btn {
             flex: 1;
             min-width: 120px;
@@ -414,14 +393,6 @@
     overflow-y: auto;
     z-index: 1000;
     box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-}
-
-/*
-  Final Fix for Cart Icon Color:
-  Using maximum specificity to override any conflicting styles.
-*/
-body #page-order.page.active .header #cart-icon-btn svg {
-    stroke: var(--success-color) !important;
 }
 
 #item-finder-search-results .search-result-item {
@@ -1783,26 +1754,18 @@ body #page-order.page.active .header #cart-icon-btn svg {
         </div>
         <div class="content">
             <div id="order-history-date-filter" class="between-date-filter">
-    <!-- Start Date Wrapper -->
-    <div class="date-input-wrapper">
-        <button class="date-btn start-date-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <span class="date-label">Start Date</span>
-        </button>
-        <input type="date" class="date-input start-date-input">
-    </div>
-
-    <!-- End Date Wrapper -->
-    <div class="date-input-wrapper">
-        <button class="date-btn end-date-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <span class="date-label">End Date</span>
-        </button>
-        <input type="date" class="date-input end-date-input">
-    </div>
-
-    <button class="filter-action-btn clear-btn">Clear</button>
-</div>
+                <input type="date" class="date-input start-date-input">
+                <button class="date-btn start-date-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">Start Date</span>
+                </button>
+                <input type="date" class="date-input end-date-input">
+                <button class="date-btn end-date-btn">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="date-label">End Date</span>
+                </button>
+                <button class="filter-action-btn clear-btn">Clear</button>
+            </div>
             <div id="order-history-list"></div>
         </div>
     </div>
@@ -4600,7 +4563,8 @@ body #page-order.page.active .header #cart-icon-btn svg {
             const endInput = filterContainer.querySelector('.end-date-input');
             const clearBtn = filterContainer.querySelector('.clear-btn');
 
-            
+            startBtn.addEventListener('click', () => startInput.showPicker ? startInput.showPicker() : startInput.click());
+            endBtn.addEventListener('click', () => endInput.showPicker ? endInput.showPicker() : endInput.click());
 
             startInput.addEventListener('change', (e) => { appState.reporting.startDate = e.target.value; updateFilterUI(filterId); renderFn(); });
             endInput.addEventListener('change', (e) => { appState.reporting.endDate = e.target.value; updateFilterUI(filterId); renderFn(); });
