@@ -2461,7 +2461,18 @@
         <div id="item-finder-display-card" style="display: none; margin-top: 20px; width: 100%; max-width: 500px;"></div>
     </div>
 </div>
-            <div id="purchase-vendors-view" class="purchase-view active">
+        <!-- Add this inside <div class="content"> of #page-purchase-planner -->
+<div id="purchase-categories-view" class="purchase-view">
+    <div class="filter-bar">
+        <div class="search-bar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="purchase-category-search" placeholder="Search categories...">
+        </div>
+    </div>
+    <div id="purchase-category-list" class="tile-grid"></div>
+</div>    
+
+<div id="purchase-vendors-view" class="purchase-view active">
                 <div class="filter-bar">
                     <div class="search-bar">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -2491,6 +2502,11 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         <span>Item Finder</span>
     </button>
+    <!-- Add this inside the footer of #page-purchase-planner -->
+<button class="footer-button" id="purchase-categories-tab">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+    <span>Categories</span>
+</button>
     <button class="footer-button" id="purchase-vendors-tab">
          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         <span>Vendors</span>
@@ -2880,6 +2896,7 @@
                 );
             });
         };
+        document.getElementById('purchase-category-search').addEventListener('input', e => renderPurchaseCategories(e.target.value));
 
         const setupRealtimeListeners = () => {
             onSnapshot(collection(db, "customers"), (snapshot) => { 
@@ -3899,6 +3916,8 @@
         };
 
         // Add event listeners for the new password modal buttons
+        // Add this line where other listeners are defined
+
         document.getElementById('password-submit-btn').addEventListener('click', handlePasswordSubmit);
         document.getElementById('password-cancel-btn').addEventListener('click', () => {
             document.getElementById('password-modal').classList.remove('active');
@@ -4184,6 +4203,29 @@
                 renderItemTiles(filteredItems);
             } else { renderPreviousItemsAsTiles(); }
         };
+        const renderPurchaseCategories = (filter = '') => {
+    const container = document.getElementById('purchase-category-list');
+    const lowerFilter = filter.toLowerCase();
+    
+    // Extract unique categories from appState.items
+    const categories = [...new Set(appState.items.map(i => i.Category).filter(Boolean))].sort();
+    
+    const filteredCategories = categories.filter(c => c.toLowerCase().includes(lowerFilter));
+
+    if (filteredCategories.length === 0) {
+        container.innerHTML = `<p class="card" style="text-align:center; grid-column: 1 / -1;">No categories found.</p>`;
+        return;
+    }
+
+    container.innerHTML = filteredCategories.map(cat => `
+        <div class="purchase-tile" data-type="category" data-id="${cat}">
+            <div class="purchase-tile-info">
+                <h4>${cat}</h4>
+                <p>${appState.items.filter(i => i.Category === cat).length} Items</p>
+            </div>
+        </div>
+    `).join('');
+};
 
         document.querySelector('#page-order .search-toggle-buttons').addEventListener('click', e => { if (e.target.matches('.toggle-btn')) { const searchType = e.target.dataset.searchType; document.querySelectorAll('#page-order .toggle-btn').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('#page-order .search-view').forEach(view => view.classList.remove('active')); document.getElementById(`${searchType}-search-view`).classList.add('active'); handleSearchOrToggle(); } });
         document.getElementById('salesman-item-search-input').addEventListener('input', handleSearchOrToggle);
@@ -6072,78 +6114,137 @@ const downloadDataAsXls = (jsonData, fileName) => {
             `).join('');
         };
         const renderPurchaseDetailPage = async (type, id) => {
-            const isVendor = type === 'vendor';
-            const sourceData = isVendor ? appState.purchaseVendors.find(v => v.id === id) : appState.purchaseLocations.find(l => l.id === id);
-            if (!sourceData) {
-                alert('Error: Could not find the selected source.');
-                return;
-            }
+    const detailList = document.getElementById('purchase-detail-list');
+    const fab = document.getElementById('add-item-to-purchase-list-fab');
+    
+    detailList.innerHTML = `<div class="card">Loading details...</div>`;
+    showPage('page-purchase-detail');
 
-            appState.currentPurchaseContext = { type, id, name: sourceData.name, frequency: sourceData.frequency };
-            document.getElementById('purchase-detail-header').textContent = sourceData.name;
-            const detailList = document.getElementById('purchase-detail-list');
-            detailList.innerHTML = `<div class="card">Loading details...</div>`;
-            showPage('page-purchase-detail');
-            
-            // --- Sales Calculation Logic ---
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // ============================================
+    // 1. CATEGORY VIEW LOGIC
+    // ============================================
+    if (type === 'category') {
+        appState.currentPurchaseContext = { type, id, name: id };
+        document.getElementById('purchase-detail-header').textContent = id;
+        
+        // Hide the "Add Item" floating button for categories
+        if(fab) fab.style.display = 'none';
 
-            const salesByItemCode = {};
-            Object.values(appState.orders).flat().forEach(order => {
-                const orderDate = new Date(order.date);
-                if (orderDate >= thirtyDaysAgo) {
-                    (order.billedItems || order.items || []).forEach(item => {
-                        if (!item.wasUnchecked) {
-                            const code = item.item.Code;
-                            if (!salesByItemCode[code]) salesByItemCode[code] = 0;
-                            salesByItemCode[code] += item.quantity;
-                        }
-                    });
+        // Filter items by the selected category and sort alphabetically
+        const categoryItems = appState.items
+            .filter(i => i.Category === id)
+            .sort((a,b) => a.ItemName.localeCompare(b.ItemName));
+
+        if (categoryItems.length === 0) {
+            detailList.innerHTML = `<p class="card" style="text-align:center;">No items found in this category.</p>`;
+            return;
+        }
+
+        const tableRowsHtml = categoryItems.map(item => `
+            <tr>
+                <td class="col-item-name">${item.ItemName}</td>
+                <td class="col-stock">${item.Clstock || 0} ${item.Unit || ''}</td>
+            </tr>
+        `).join('');
+
+        detailList.innerHTML = `
+            <div class="card table-responsive-wrapper">
+                <table class="purchase-detail-table">
+                    <thead>
+                        <tr>
+                            <th class="col-item-name">Item Name</th>
+                            <th class="col-stock" style="text-align:right;">Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableRowsHtml}</tbody>
+                </table>
+            </div>`;
+        return; 
+    }
+
+    // ============================================
+    // 2. VENDOR & LOCATION VIEW LOGIC
+    // ============================================
+    
+    // Ensure FAB is visible for vendors/locations
+    if(fab) fab.style.display = 'flex';
+
+    const isVendor = type === 'vendor';
+    const sourceData = isVendor ? appState.purchaseVendors.find(v => v.id === id) : appState.purchaseLocations.find(l => l.id === id);
+
+    if (!sourceData) {
+        alert('Error: Could not find the selected source.');
+        showPage('page-purchase-planner');
+        return;
+    }
+
+    appState.currentPurchaseContext = { type, id, name: sourceData.name, frequency: sourceData.frequency };
+    document.getElementById('purchase-detail-header').textContent = sourceData.name;
+    
+    // --- Sales Calculation Logic ---
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const salesByItemCode = {};
+    Object.values(appState.orders).flat().forEach(order => {
+        const orderDate = new Date(order.date);
+        if (orderDate >= thirtyDaysAgo && (order.status === 'billed' || order.status === 'loaded' || order.status === 'delivered')) {
+            (order.billedItems || order.items || []).forEach(item => {
+                if (!item.wasUnchecked) {
+                    const code = item.item.Code;
+                    if (!salesByItemCode[code]) salesByItemCode[code] = 0;
+                    salesByItemCode[code] += item.quantity;
                 }
             });
+        }
+    });
 
-            // --- Fetch and Render Items/Vendors ---
-            if (isVendor) {
-                const itemsSnapshot = await getDocs(collection(db, 'purchaseVendors', id, 'vendorItems'));
-                const vendorItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // --- Fetch and Render Items/Vendors ---
+    if (isVendor) {
+        const itemsSnapshot = await getDocs(collection(db, 'purchaseVendors', id, 'vendorItems'));
+        const vendorItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                if (vendorItems.length === 0) {
-                    detailList.innerHTML = `<p class="card" style="text-align:center;">No items assigned to this vendor. Add one using the '+' button.</p>`;
-                    return;
-                }
+        if (vendorItems.length === 0) {
+            detailList.innerHTML = `<p class="card" style="text-align:center;">No items assigned to this vendor. Add one using the '+' button.</p>`;
+            return;
+        }
 
-                const tableRowsHtml = vendorItems.map(pItem => {
-                    const masterItem = appState.items.find(i => i.Code === pItem.itemCode);
-                    if (!masterItem) return '';
-                    const totalSalesLast30Days = salesByItemCode[pItem.itemCode] || 0;
-                    const avgDailySales = totalSalesLast30Days / 30;
-                    const requiredStock = avgDailySales * sourceData.frequency * 1.25; // 25% buffer
-                    const suggestedPurchase = Math.max(0, Math.ceil(requiredStock - masterItem.Clstock));
-                    return `<tr>
-                                <td class="col-item-name">${masterItem.ItemName}</td>
-                                <td class="col-stock">${masterItem.Clstock || 0}</td>
-                                <td class="col-suggest">${suggestedPurchase}</td>
-                            </tr>`;
-                }).join('');
+        // Sort items by Name before displaying
+        const sortedVendorItems = vendorItems.map(pItem => {
+            const masterItem = appState.items.find(i => i.Code === pItem.itemCode);
+            return { ...pItem, masterItem };
+        }).filter(i => i.masterItem).sort((a, b) => a.masterItem.ItemName.localeCompare(b.masterItem.ItemName));
 
-                detailList.innerHTML = `<div class="card table-responsive-wrapper"><table class="purchase-detail-table"><thead><tr><th class="col-item-name">Item Name</th><th class="col-stock">Total Stock</th><th class="col-suggest">Suggested</th></tr></thead><tbody>${tableRowsHtml}</tbody></table></div>`;
-            } else { // Is Location
-                const vendorsSnapshot = await getDocs(collection(db, 'purchaseLocations', id, 'locationVendors'));
-                const locationVendors = vendorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                if (locationVendors.length === 0) {
-                    detailList.innerHTML = `<p class="card" style="text-align:center;">No vendors assigned to this location. Add one using the '+' button.</p>`;
-                    return;
-                }
-                
-                detailList.innerHTML = '<div class="tile-grid">' + locationVendors.map(lv => {
-                    const masterVendor = appState.purchaseVendors.find(v => v.id === lv.vendorId);
-                    if (!masterVendor) return '';
-                    return `<div class="purchase-tile" data-type="vendor" data-id="${masterVendor.id}"><h4>${masterVendor.name}</h4><p>Freq: ${masterVendor.frequency} days</p></div>`;
-                }).join('') + '</div>';
-            }
-        };
+        const tableRowsHtml = sortedVendorItems.map(vItem => {
+            const masterItem = vItem.masterItem;
+            const totalSalesLast30Days = salesByItemCode[vItem.itemCode] || 0;
+            const avgDailySales = totalSalesLast30Days / 30;
+            const requiredStock = avgDailySales * sourceData.frequency * 1.25; // 25% buffer
+            const suggestedPurchase = Math.max(0, Math.ceil(requiredStock - masterItem.Clstock));
+            return `<tr>
+                        <td class="col-item-name">${masterItem.ItemName}</td>
+                        <td class="col-stock">${masterItem.Clstock || 0}</td>
+                        <td class="col-suggest">${suggestedPurchase}</td>
+                    </tr>`;
+        }).join('');
+
+        detailList.innerHTML = `<div class="card table-responsive-wrapper"><table class="purchase-detail-table"><thead><tr><th class="col-item-name">Item Name</th><th class="col-stock">Total Stock</th><th class="col-suggest">Suggested</th></tr></thead><tbody>${tableRowsHtml}</tbody></table></div>`;
+    } else { // Is Location
+        const vendorsSnapshot = await getDocs(collection(db, 'purchaseLocations', id, 'locationVendors'));
+        const locationVendors = vendorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        if (locationVendors.length === 0) {
+            detailList.innerHTML = `<p class="card" style="text-align:center;">No vendors assigned to this location. Add one using the '+' button.</p>`;
+            return;
+        }
+        
+        detailList.innerHTML = '<div class="tile-grid">' + locationVendors.map(lv => {
+            const masterVendor = appState.purchaseVendors.find(v => v.id === lv.vendorId);
+            if (!masterVendor) return '';
+            return `<div class="purchase-tile" data-type="vendor" data-id="${masterVendor.id}"><h4>${masterVendor.name}</h4><p>Freq: ${masterVendor.frequency} days</p></div>`;
+        }).join('') + '</div>';
+    }
+};
 
 
         const handlePurchaseTileClick = (e) => {
@@ -6340,6 +6441,12 @@ const downloadDataAsXls = (jsonData, fileName) => {
         document.getElementById('purchase-vendors-view').classList.add('active');
         header.textContent = 'Vendors';
         renderPurchaseVendors();
+        } else if (tab.id === 'purchase-categories-tab') {
+    document.getElementById('purchase-categories-view').classList.add('active');
+    header.textContent = 'Categories';
+    renderPurchaseCategories();
+
+        
     } else if (tab.id === 'purchase-locations-tab') {
         document.getElementById('purchase-locations-view').classList.add('active');
         header.textContent = 'Locations';
@@ -6431,15 +6538,48 @@ document.getElementById('item-finder-search-results').addEventListener('click', 
     }
 });
         // Find your existing printPurchasePlanner function and replace it with this.
-const printPurchasePlanner = async () => { // Note: Added 'async'
+const printPurchasePlanner = async () => {
     const context = appState.currentPurchaseContext;
     if (!context) return;
 
-    let tableBodyHtml;
+    let tableBodyHtml = '';
+    let headersHtml = '';
+
+    // ============================================
+    // 1. PRINT LAYOUT FOR CATEGORY
+    // ============================================
+    if (context.type === 'category') {
+        const categoryItems = appState.items
+            .filter(i => i.Category === context.id)
+            .sort((a,b) => a.ItemName.localeCompare(b.ItemName));
+
+        if (categoryItems.length === 0) {
+            alert("No items found in this category to print.");
+            return;
+        }
+
+        // Define Headers: Item, Stock, Blank Column
+        headersHtml = `
+            <tr>
+                <th class="col-item-name" style="text-align:left; border:1px solid #333; padding:5px;">Item Name</th>
+                <th class="col-stock" style="text-align:center; border:1px solid #333; padding:5px;">Current Stock</th>
+                <th class="blank-col" style="border: 1px solid #333; width: 120px; padding:5px;">Actual / Order</th>
+            </tr>`;
+
+        // Generate Rows
+        tableBodyHtml = categoryItems.map(item => `
+            <tr>
+                <td class="col-item-name" style="border:1px solid #ccc; padding:5px;">${item.ItemName}</td>
+                <td class="col-stock" style="text-align:center; border:1px solid #ccc; padding:5px;">${item.Clstock || 0}</td>
+                <td class="blank-col" style="border: 1px solid #ccc; padding:5px;"></td>
+            </tr>
+        `).join('');
+    } 
     
-    // Check if we are on a Location's detail page
-    if (context.type === 'location') {
-        // --- This is the NEW LOGIC for locations ---
+    // ============================================
+    // 2. PRINT LAYOUT FOR LOCATION
+    // ============================================
+    else if (context.type === 'location') {
         const itemsToPrint = await generateLocationPlannerData(context.id);
         
         if (!itemsToPrint || itemsToPrint.length === 0) {
@@ -6447,41 +6587,67 @@ const printPurchasePlanner = async () => { // Note: Added 'async'
             return;
         }
 
+        headersHtml = `
+            <tr>
+                <th class="col-item-name" style="text-align:left; border:1px solid #333; padding:5px;">Item Name</th>
+                <th class="col-stock" style="text-align:center; border:1px solid #333; padding:5px;">Total Stock</th>
+                <th class="col-suggest" style="text-align:center; border:1px solid #333; padding:5px;">Suggested</th>
+                <th class="blank-col" style="border: 1px solid #333; width: 80px; padding:5px;">Actual</th>
+            </tr>`;
+
         tableBodyHtml = itemsToPrint.map(item => `
             <tr>
-                <td class="col-item-name">${item.itemName}</td>
-                <td class="col-stock">${item.stock}</td>
-                <td class="col-suggest">${item.suggested}</td>
-                <td class="blank-col"></td>
+                <td class="col-item-name" style="border:1px solid #ccc; padding:5px;">${item.itemName}</td>
+                <td class="col-stock" style="text-align:center; border:1px solid #ccc; padding:5px;">${item.stock}</td>
+                <td class="col-suggest" style="text-align:center; border:1px solid #ccc; padding:5px;">${item.suggested}</td>
+                <td class="blank-col" style="border: 1px solid #ccc; padding:5px;"></td>
             </tr>
         `).join('');
-
-    } else { 
-        // --- This is the EXISTING LOGIC for a single vendor ---
+    } 
+    
+    // ============================================
+    // 3. PRINT LAYOUT FOR VENDOR (Default)
+    // ============================================
+    else { 
         const tableBodyEl = document.querySelector('#page-purchase-detail .purchase-detail-table tbody');
         if (!tableBodyEl) { 
             alert("There are no items to print."); 
             return; 
         }
-        tableBodyHtml = tableBodyEl.innerHTML;
+
+        headersHtml = `
+            <tr>
+                <th class="col-item-name" style="text-align:left; border:1px solid #333; padding:5px;">Item Name</th>
+                <th class="col-stock" style="text-align:center; border:1px solid #333; padding:5px;">Total Stock</th>
+                <th class="col-suggest" style="text-align:center; border:1px solid #333; padding:5px;">Suggested</th>
+                <th class="blank-col" style="border: 1px solid #333; width: 80px; padding:5px;">Actual</th>
+            </tr>`;
+
+        // Reconstruct rows from the visible table to grab calculated values
+        const rows = Array.from(tableBodyEl.querySelectorAll('tr'));
+        tableBodyHtml = rows.map(row => {
+            const cells = row.querySelectorAll('td');
+            return `
+                <tr>
+                    <td class="col-item-name" style="border:1px solid #ccc; padding:5px;">${cells[0].innerText}</td>
+                    <td class="col-stock" style="text-align:center; border:1px solid #ccc; padding:5px;">${cells[1].innerText}</td>
+                    <td class="col-suggest" style="text-align:center; border:1px solid #ccc; padding:5px;">${cells[2].innerText}</td>
+                    <td class="blank-col" style="border: 1px solid #ccc; padding:5px;"></td>
+                </tr>`;
+        }).join('');
     }
 
-    // This final part remains the same for both cases
+    // ============================================
+    // CONSTRUCT FINAL PRINT HTML
+    // ============================================
     const printContent = `
-        <div class="print-header">
-            <h2>Purchase Planner</h2>
-            <p><strong>${context.type.charAt(0).toUpperCase() + context.type.slice(1)}:</strong> ${context.name}</p>
-            <p><strong>Date:</strong> ${formatDDMMYYYY(new Date())}</p>
+        <div class="print-header" style="text-align:center; margin-bottom:20px;">
+            <h2 style="margin:0;">Stock Report</h2>
+            <p style="margin:5px 0;"><strong>Source:</strong> ${context.name}</p>
+            <p style="margin:0;"><strong>Date:</strong> ${formatDDMMYYYY(new Date())}</p>
         </div>
-        <table class="print-table">
-            <thead>
-                <tr>
-                    <th class="col-item-name">Item Name</th>
-                    <th class="col-stock">Total Stock</th>
-                    <th class="col-suggest">Suggested</th>
-                    <th class="blank-col">Actual</th>
-                </tr>
-            </thead>
+        <table class="print-table" style="width:100%; border-collapse: collapse; font-size: 12px; font-family: sans-serif;">
+            <thead>${headersHtml}</thead>
             <tbody>${tableBodyHtml}</tbody>
         </table>`;
 
@@ -6556,16 +6722,36 @@ const generateLocationPlannerData = async (locationId) => {
             
             itemList.innerHTML = order.items.map((itemData, index) => `
                 <div class="list-item">
-                    <input type="checkbox" data-index="${index}" ${itemData.wasUnchecked ? '' : 'checked'}>
-                    <div class="info">
+                    <!-- LEFT CHECKBOX: Controls inclusion in order (Default Color) -->
+                    <input type="checkbox" class="left-check" data-index="${index}" ${itemData.wasUnchecked ? '' : 'checked'}>
+                    
+                    <div class="info" style="margin-left: 10px;">
                         <span class="assistant-packing-item-name">${itemData.item.ItemName}</span>
                         <span class="assistant-packing-item-details">
                             QTY: ${itemData.quantity} ${itemData.item.Unit || ''} | MRP: ${formatPreciseCurrency(itemData.item.Mrp)}
                         </span>
                     </div>
+
+                    <!-- RIGHT CHECKBOX: Packing Tally (Green Color) -->
+                    <input type="checkbox" 
+                           class="right-check" 
+                           data-index="${index}" 
+                           ${itemData.isPacked ? 'checked' : ''} 
+                           style="width: 24px; height: 24px; margin-left: 15px; accent-color: #2ecc71; cursor: pointer;">
                 </div>
             `).join('');
         };
+        // Listener to save the "Right Checkbox" state immediately when clicked
+        document.getElementById('assistant-packing-item-list').addEventListener('change', e => {
+            if (e.target.classList.contains('right-check')) {
+                const index = parseInt(e.target.dataset.index);
+                if (e.target.checked) {
+                    appState.packingOrder.items[index].isPacked = true;
+                } else {
+                    delete appState.packingOrder.items[index].isPacked;
+                }
+            }
+        });
 
         document.getElementById('packer-assistant-order-list').addEventListener('click', async e => {
             const startBtn = e.target.closest('.start-pack-btn');
@@ -6606,8 +6792,10 @@ const generateLocationPlannerData = async (locationId) => {
                 const qtyNum = parseFloat(qty);
                 if(qty && !isNaN(qtyNum) && qtyNum > 0) {
                     
-                    // ADD THIS BLOCK TO PRESERVE CHECKBOX STATE
-                    document.querySelectorAll('#assistant-packing-item-list input[type="checkbox"]').forEach(checkbox => {
+                    // --- UPDATED BLOCK TO PRESERVE BOTH CHECKBOX STATES ---
+                    
+                    // 1. Save Left Checkbox State (Order Inclusion)
+                    document.querySelectorAll('#assistant-packing-item-list .left-check').forEach(checkbox => {
                         const index = parseInt(checkbox.dataset.index);
                         if (!checkbox.checked) {
                             appState.packingOrder.items[index].wasUnchecked = true;
@@ -6615,7 +6803,17 @@ const generateLocationPlannerData = async (locationId) => {
                             delete appState.packingOrder.items[index].wasUnchecked;
                         }
                     });
-                    // END OF ADDED BLOCK
+
+                    // 2. Save Right Checkbox State (Packing Tally)
+                    document.querySelectorAll('#assistant-packing-item-list .right-check').forEach(checkbox => {
+                        const index = parseInt(checkbox.dataset.index);
+                        if (checkbox.checked) {
+                            appState.packingOrder.items[index].isPacked = true;
+                        } else {
+                            delete appState.packingOrder.items[index].isPacked;
+                        }
+                    });
+                    // --- END OF UPDATED BLOCK ---
 
                     appState.packingOrder.items.push({ item, quantity: qtyNum, sellingPrice: item.Price2, isNew: true });
                     renderPackingInterface();
@@ -6632,10 +6830,14 @@ const generateLocationPlannerData = async (locationId) => {
             const packingOrder = appState.packingOrder;
             const orderId = packingOrder.id;
 
+            // UPDATED: Only look at .left-check for final order inclusion
             packingOrder.items.forEach((item, index) => {
-                const checkbox = document.querySelector(`#assistant-packing-item-list input[data-index="${index}"]`);
+                const checkbox = document.querySelector(`#assistant-packing-item-list .left-check[data-index="${index}"]`);
                 if (checkbox && !checkbox.checked) { item.wasUnchecked = true; } 
                 else { delete item.wasUnchecked; }
+                
+                // Cleanup internal "isPacked" flag before saving to DB to keep data clean
+                delete item.isPacked; 
             });
 
             const endTime = new Date();
@@ -7315,7 +7517,8 @@ document.getElementById('vendor-current-items-list').addEventListener('click', a
         }
     }
 });
-
+    document.getElementById('purchase-category-list').addEventListener('click', handlePurchaseTileClick);
+    document.getElementById('purchase-category-search').addEventListener('input', e => renderPurchaseCategories(e.target.value));
 // --- END OF NEW CODE BLOCK ---
     setupPWA();
     setupRealtimeListeners(); 
