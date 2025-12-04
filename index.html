@@ -445,6 +445,11 @@
     margin-top: 5px;
     word-wrap: break-word;
 }
+.target-item-card { border-bottom: 1px solid #eee; padding: 15px 0; }
+.target-inputs { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+.target-progress-bar { height: 8px; background-color: #eee; border-radius: 4px; margin-top: 8px; overflow: hidden; }
+.target-progress-fill { height: 100%; background-color: var(--secondary-color); transition: width 0.3s ease; }
+.target-stats { display: flex; justify-content: space-between; font-size: 0.8rem; color: #666; margin-top: 4px; }
         .search-result-item { padding: 12px 15px; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; border-bottom: 1px solid #f0f0f0; }
         .search-result-item:last-child { border-bottom: none; }
         .search-result-item:hover { background-color: var(--light-bg); }
@@ -1993,6 +1998,27 @@
                 </div>
                 <div id="admin-operations-content" class="operations-content"></div>
             </div>
+            <!-- START OF SALES TARGET VIEW -->
+<div id="admin-targets-view" style="display: none;">
+    <div class="card">
+        <div class="filter-bar" style="margin-bottom: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <input type="month" id="target-month-picker" style="margin-bottom: 0;">
+            </div>
+            <button class="button" id="load-targets-btn" style="width: auto; margin: 0; padding: 10px 20px;">Load Data</button>
+        </div>
+        
+        <h3>Set Targets</h3>
+        <div class="search-bar" style="position: relative; margin-bottom: 20px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="target-item-search" placeholder="Search item to set target...">
+            <div id="target-item-search-results" style="position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border-color); z-index: 1000; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+
+        <div id="target-list-container"></div>
+    </div>
+</div>
+<!-- END OF SALES TARGET VIEW -->
         </div>
         <div id="admin-footer" class="footer">
             <button class="footer-button active" id="admin-dashboard-tab">
@@ -2003,6 +2029,10 @@
                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                 <span>Operations</span>
             </button>
+            <button class="footer-button" id="admin-targets-tab">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>
+    <span>Targets</span>
+</button>
         </div>
     </div>
 
@@ -5517,32 +5547,49 @@ const downloadDataAsXls = (jsonData, fileName) => {
         setupBetweenDateFilter('accountant-date-filter', renderAccountantCollectionView);
 
 
-        document.getElementById('admin-footer').addEventListener('click', e => {
-            const clickedTab = e.target.closest('.footer-button');
-            if (!clickedTab) return;
+        // --- UNIFIED ADMIN NAVIGATION ---
+document.getElementById('admin-footer').addEventListener('click', e => {
+    const clickedTab = e.target.closest('.footer-button');
+    if (!clickedTab) return;
 
-            const dashboardView = document.getElementById('admin-dashboard-view');
-            const operationsView = document.getElementById('admin-operations-view');
-            const adminHeader = document.getElementById('admin-header');
+    // 1. Manage Active State
+    document.querySelectorAll('#admin-footer .footer-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    clickedTab.classList.add('active');
 
-            document.querySelectorAll('#admin-footer .footer-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
+    // 2. Get All Views
+    const dashboardView = document.getElementById('admin-dashboard-view');
+    const operationsView = document.getElementById('admin-operations-view');
+    const targetsView = document.getElementById('admin-targets-view'); // New View
+    const adminHeader = document.getElementById('admin-header');
 
-            clickedTab.classList.add('active');
+    // 3. Hide ALL Views first
+    dashboardView.style.display = 'none';
+    operationsView.style.display = 'none';
+    if(targetsView) targetsView.style.display = 'none';
 
-            if (clickedTab.id === 'admin-dashboard-tab') {
-                adminHeader.textContent = 'Admin Dashboard';
-                dashboardView.style.display = 'block';
-                operationsView.style.display = 'none';
-                renderAdminDashboard();
-            } else if (clickedTab.id === 'admin-operations-tab') {
-                adminHeader.textContent = 'Operations';
-                dashboardView.style.display = 'none';
-                operationsView.style.display = 'block';
-                renderAdminOperationsPage();
-            }
-        });
+    // 4. Show the Selected View
+    if (clickedTab.id === 'admin-dashboard-tab') {
+        adminHeader.textContent = 'Admin Dashboard';
+        dashboardView.style.display = 'block';
+        renderAdminDashboard();
+    } else if (clickedTab.id === 'admin-operations-tab') {
+        adminHeader.textContent = 'Operations';
+        operationsView.style.display = 'block';
+        renderAdminOperationsPage();
+    } else if (clickedTab.id === 'admin-targets-tab') {
+        adminHeader.textContent = 'Sales Targets';
+        if(targetsView) targetsView.style.display = 'block';
+        
+        // Auto-select current month if empty
+        const picker = document.getElementById('target-month-picker');
+        if(picker && !picker.value) picker.value = new Date().toISOString().slice(0, 7);
+        
+        // Render functions
+        if(typeof renderSalesTargets === 'function') renderSalesTargets();
+    }
+});
 
         const renderAdminOperationsPage = () => {
             const contentEl = document.getElementById('admin-operations-content');
@@ -6720,31 +6767,61 @@ const generateLocationPlannerData = async (locationId) => {
             document.getElementById('packing-interface-order-customer').textContent = `Packing for ${order.customer.Customer}`;
             const itemList = document.getElementById('assistant-packing-item-list');
             
-            itemList.innerHTML = order.items.map((itemData, index) => `
-                <div class="list-item">
-                    <!-- LEFT CHECKBOX: Controls inclusion in order (Default Color) -->
-                    <input type="checkbox" class="left-check" data-index="${index}" ${itemData.wasUnchecked ? '' : 'checked'}>
+            // Initialize a counter for the serial numbers
+            let serialCounter = 0;
+
+            itemList.innerHTML = order.items.map((itemData, index) => {
+                const isChecked = !itemData.wasUnchecked;
+                
+                // Only calculate serial number if the item is checked (Blue tick)
+                let serialDisplay = '';
+                if (isChecked) {
+                    serialCounter++; // Increment count
+                    serialDisplay = `<span style="font-weight:bold; color:var(--primary-color); margin-right:6px; font-size:1.1rem;">${serialCounter}.</span>`;
+                }
+
+                return `
+                <div class="list-item" style="${isChecked ? '' : 'opacity: 0.6; background-color: #f9f9f9;'}">
+                    <!-- LEFT CHECKBOX: Controls Order Inclusion -->
+                    <input type="checkbox" class="left-check" data-index="${index}" ${isChecked ? 'checked' : ''} style="width: 20px; height: 20px;">
                     
                     <div class="info" style="margin-left: 10px;">
-                        <span class="assistant-packing-item-name">${itemData.item.ItemName}</span>
+                        <!-- Serial Number is displayed here -->
+                        <span class="assistant-packing-item-name">${serialDisplay} ${itemData.item.ItemName}</span>
                         <span class="assistant-packing-item-details">
                             QTY: ${itemData.quantity} ${itemData.item.Unit || ''} | MRP: ${formatPreciseCurrency(itemData.item.Mrp)}
                         </span>
                     </div>
 
-                    <!-- RIGHT CHECKBOX: Packing Tally (Green Color) -->
+                    <!-- RIGHT CHECKBOX: Visual Green Tally -->
                     <input type="checkbox" 
                            class="right-check" 
                            data-index="${index}" 
                            ${itemData.isPacked ? 'checked' : ''} 
                            style="width: 24px; height: 24px; margin-left: 15px; accent-color: #2ecc71; cursor: pointer;">
                 </div>
-            `).join('');
+            `}).join('');
         };
-        // Listener to save the "Right Checkbox" state immediately when clicked
+
+        // Listener for Checkbox interactions in Packing Interface
         document.getElementById('assistant-packing-item-list').addEventListener('change', e => {
-            if (e.target.classList.contains('right-check')) {
-                const index = parseInt(e.target.dataset.index);
+            const index = parseInt(e.target.dataset.index);
+
+            // 1. LEFT CHECKBOX LOGIC (Blue/Default)
+            // When clicked, we must update state and RE-RENDER to fix serial numbers
+            if (e.target.classList.contains('left-check')) {
+                if (!e.target.checked) {
+                    appState.packingOrder.items[index].wasUnchecked = true;
+                } else {
+                    delete appState.packingOrder.items[index].wasUnchecked;
+                }
+                // Trigger re-render to update serial numbers sequentially
+                renderPackingInterface(); 
+            }
+
+            // 2. RIGHT CHECKBOX LOGIC (Green)
+            // Just update the data state, no need to re-render the whole list
+            else if (e.target.classList.contains('right-check')) {
                 if (e.target.checked) {
                     appState.packingOrder.items[index].isPacked = true;
                 } else {
@@ -7520,6 +7597,86 @@ document.getElementById('vendor-current-items-list').addEventListener('click', a
     document.getElementById('purchase-category-list').addEventListener('click', handlePurchaseTileClick);
     document.getElementById('purchase-category-search').addEventListener('input', e => renderPurchaseCategories(e.target.value));
 // --- END OF NEW CODE BLOCK ---
+
+
+    const renderSalesTargets = async () => {
+        const container = document.getElementById('target-list-container');
+        const month = document.getElementById('target-month-picker').value;
+        if (!month) return;
+        container.innerHTML = '<p>Loading targets...</p>';
+
+        try {
+            const snapshot = await getDocs(collection(db, 'monthly_targets', month, 'items'));
+            const targets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            if (targets.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#888;">No data found. Ensure sync script has run.</p>';
+                return;
+            }
+
+            container.innerHTML = targets.map(t => {
+                const masterItem = appState.items.find(i => String(i.Code) === String(t.id));
+                const itemName = masterItem ? masterItem.ItemName : `Unknown Item (${t.id})`;
+                const actual = t.actualAmount || 0;
+                const target = t.targetAmount || 0;
+                const percent = target > 0 ? Math.min(100, (actual / target) * 100) : 0;
+                const barColor = percent < 50 ? 'var(--danger-color)' : (percent < 90 ? 'var(--warning-color)' : 'var(--success-color)');
+
+                return `
+                <div class="target-item-card" data-code="${t.id}">
+                    <div style="font-weight:600;">${itemName}</div>
+                    <div class="target-inputs">
+                        <div style="flex:1;">
+                            <label style="font-size:0.75rem; color:#666;">Target (₹)</label>
+                            <input type="number" class="target-input-field" value="${target}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" placeholder="Set Target">
+                        </div>
+                        <button class="button save-target-btn" style="width:auto; padding:8px 15px; font-size:0.9rem; margin:0; align-self:flex-end;">Save</button>
+                    </div>
+                    <div class="target-progress-bar"><div class="target-progress-fill" style="width: ${percent}%; background-color: ${barColor};"></div></div>
+                    <div class="target-stats"><span>Actual: ${formatCurrency(actual)}</span><span>${percent.toFixed(1)}%</span></div>
+                </div>`;
+            }).join('');
+        } catch (error) {
+            console.error("Error loading targets:", error);
+            container.innerHTML = '<p style="color:red;">Error loading data.</p>';
+        }
+    };
+
+    document.getElementById('target-list-container').addEventListener('click', async e => {
+        const btn = e.target.closest('.save-target-btn');
+        if (btn) {
+            const card = btn.closest('.target-item-card');
+            const itemCode = card.dataset.code;
+            const targetAmount = parseFloat(card.querySelector('.target-input-field').value);
+            const month = document.getElementById('target-month-picker').value;
+
+            btn.textContent = '...'; btn.disabled = true;
+            try {
+                await setDoc(doc(db, 'monthly_targets', month, 'items', itemCode), { targetAmount: targetAmount }, { merge: true });
+                showToast('Target Saved');
+                renderSalesTargets();
+            } catch (err) { alert('Error saving'); btn.disabled = false; btn.textContent = 'Save'; }
+        }
+    });
+
+    document.getElementById('load-targets-btn').addEventListener('click', renderSalesTargets);
+    
+    document.getElementById('target-item-search').addEventListener('input', e => {
+        renderItemSearchResults(e.target.value, 'target-item-search-results', false);
+    });
+
+    document.getElementById('target-item-search-results').addEventListener('click', async e => {
+        const res = e.target.closest('.search-result-item');
+        if (res) {
+            const itemCode = res.dataset.itemCode;
+            const month = document.getElementById('target-month-picker').value;
+            await setDoc(doc(db, 'monthly_targets', month, 'items', itemCode), { targetAmount: 0 }, { merge: true });
+            document.getElementById('target-item-search').value = '';
+            document.getElementById('target-item-search-results').innerHTML = '';
+            renderSalesTargets();
+        }
+    });
+    // --- SALES TARGET LOGIC END ---
     setupPWA();
     setupRealtimeListeners(); 
 
