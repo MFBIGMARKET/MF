@@ -1572,101 +1572,102 @@
     </div>
 
     <div id="page-main-view" class="page">
-        <div class="header">
-            <button class="icon-button" id="logout-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+    <div class="header">
+        <button class="icon-button" id="logout-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+        </button>
+        <h1 id="main-view-header">Customers</h1>
+        <div class="header-actions">
+            <button class="icon-button" id="product-info-icon-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
             </button>
-            <h1 id="main-view-header">Customers</h1>
-            <div class="header-actions">
-                <button class="icon-button" id="product-info-icon-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
-                </button>
-                 <button class="icon-button" id="pending-balance-btn" style="display: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                </button>
-                <button class="icon-button" id="billed-orders-btn" style="display: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                </button>
-                <button class="icon-button" id="history-icon-btn">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
-                </button>
-                <button class="icon-button" id="settings-icon-btn" style="display: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                </button>
-            </div>
+                <button class="icon-button" id="pending-balance-btn" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </button>
+            <button class="icon-button" id="billed-orders-btn" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </button>
+            <button class="icon-button" id="history-icon-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            </button>
+            <button class="icon-button" id="settings-icon-btn" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
         </div>
-        <div class="content">
-            <div id="customer-view">
-                <div class="filter-bar">
-                    <div class="search-bar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="customer-search-input" placeholder="Search customers...">
-                    </div>
-                    <div class="form-group">
-                        <select id="customer-route-filter">
-                            <option value="ALL">All Routes</option>
-                        </select>
-                    </div>
+    </div>
+    <div class="content">
+        <div id="customer-view">
+            <div class="filter-bar">
+                <div class="search-bar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="customer-search-input" placeholder="Search customers...">
                 </div>
-                <div id="customer-list-container"></div>
-                        <button class="fab-button" id="add-customer-fab" style="display: none;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <div class="form-group">
+                    <select id="customer-route-filter">
+                        <option value="ALL">All Routes</option>
+                    </select>
+                </div>
+            </div>
+            <div id="customer-list-container"></div>
+            <!-- FAB Button Here -->
+            <button class="fab-button" id="add-customer-fab" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+        </div>
+        <div id="payment-view" style="display:none;">
+                <div class="filter-bar">
+                <div class="search-bar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="payment-customer-search-input" placeholder="Search customers...">
+                </div>
+                    <div class="form-group">
+                    <select id="payment-route-filter">
+                        <option value="ALL">All Routes</option>
+                    </select>
+                </div>
+            </div>
+            <div id="payment-customer-list-container"></div>
+        </div>
+        <div id="cash-bill-view" style="display:none;">
+            <div class="filter-bar">
+                <div class="search-bar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="cash-bill-customer-search-input" placeholder="Search customers...">
+                </div>
+            </div>
+            <div id="cash-bill-customer-list-container"></div>
+        </div>
+
+        <div id="cash-bill-collection-view" style="display:none;">
+            <div class="filter-bar">
+                <div class="search-bar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="cash-collection-customer-search-input" placeholder="Search pending collections...">
+                </div>
+            </div>
+            <div id="cash-bill-collection-list-container"></div>
+        </div>
+    </div>
+    <!-- FOOTER RESTORED HERE -->
+    <div id="footer" class="footer">
+        <button class="footer-button active" id="orders-tab-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span>Customers</span>
+        </button>
+        <button class="footer-button" id="payments-tab-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+            <span>Credit Pay</span>
+        </button>
+        <button class="footer-button" id="cash-bill-tab-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+            <span>Cash Bill</span>
+        </button>
+        <button class="footer-button" id="cash-collection-tab-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span>Collection</span>
         </button>
     </div>
-            </div>
-            <div id="payment-view" style="display:none;">
-                 <div class="filter-bar">
-                    <div class="search-bar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="payment-customer-search-input" placeholder="Search customers...">
-                    </div>
-                     <div class="form-group">
-                        <select id="payment-route-filter">
-                            <option value="ALL">All Routes</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="payment-customer-list-container"></div>
-            </div>
-            <div id="cash-bill-view" style="display:none;">
-                <div class="filter-bar">
-                    <div class="search-bar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="cash-bill-customer-search-input" placeholder="Search customers...">
-                    </div>
-                </div>
-                <div id="cash-bill-customer-list-container"></div>
-            </div>
-
-            <div id="cash-bill-collection-view" style="display:none;">
-                <div class="filter-bar">
-                    <div class="search-bar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="cash-collection-customer-search-input" placeholder="Search pending collections...">
-                    </div>
-                </div>
-                <div id="cash-bill-collection-list-container"></div>
-            </div>
-        </div>
-        <div id="footer" class="footer">
-            <button class="footer-button active" id="orders-tab-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span>Customers</span>
-            </button>
-            <button class="footer-button" id="payments-tab-btn">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                <span>Credit Pay</span>
-            </button>
-            <button class="footer-button" id="cash-bill-tab-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-                <span>Cash Bill</span>
-            </button>
-            <button class="footer-button" id="cash-collection-tab-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                <span>Collection</span>
-            </button>
-        </div>
-    </div>
+</div>
 
     <div id="page-order" class="page">
         <div class="header">
@@ -4003,13 +4004,20 @@
         const pendingBalanceBtn = document.getElementById('pending-balance-btn');
 
         const renderCurrentView = () => {
-             if (!appState.salesman || ['ADMIN', 'SUNNY', 'ARFATH', 'NANDU', 'SHAJU', 'BENNY', 'FASAL', 'HR', ...appState.packerAssistants].includes(appState.salesman)) return; 
-             
-            customerView.style.display = 'none';
-            paymentView.style.display = 'none';
-            cashBillView.style.display = 'none';
-            cashBillCollectionView.style.display = 'none';
-                // NEW: Get FAB reference
+    // Only run if user is a standard salesman (UNNI/RIYAS)
+    if (!appState.salesman || ['ADMIN', 'SUNNY', 'ARFATH', 'NANDU', 'SHAJU', 'BENNY', 'FASAL', 'HR', ...appState.packerAssistants].includes(appState.salesman)) return; 
+    
+    // SAFETY CHECK: Ensure footer is visible
+    const footer = document.getElementById('footer');
+    if (footer) footer.style.display = 'flex';
+
+    // Hide all view containers first
+    customerView.style.display = 'none';
+    paymentView.style.display = 'none';
+    cashBillView.style.display = 'none';
+    cashBillCollectionView.style.display = 'none';
+    
+    // Get FAB reference
     const addCustomerFab = document.getElementById('add-customer-fab');
 
     if (appState.currentView === 'customers') { 
@@ -4019,45 +4027,38 @@
         document.getElementById('billed-orders-btn').style.display = 'flex';
         customerView.style.display = 'block';
         
-        // NEW: Show FAB only in customers view
+        // Show FAB only in customers view
         if(addCustomerFab) addCustomerFab.style.display = 'flex';
         
         renderCustomerList(); 
     } else {
-        // NEW: Hide FAB in other views
+        // Hide FAB in other views
         if(addCustomerFab) addCustomerFab.style.display = 'none';
-    }
 
-             if (appState.currentView === 'customers') { 
-                 mainHeader.textContent = 'Customers';
-                 productInfoBtn.style.display = 'flex';
-                 pendingBalanceBtn.style.display = 'none';
-                 document.getElementById('billed-orders-btn').style.display = 'flex';
-                 customerView.style.display = 'block';
-                 renderCustomerList(); 
-            } else if (appState.currentView === 'payments') {
-                mainHeader.textContent = 'Credit Payments'; 
-                productInfoBtn.style.display = 'none';
-                pendingBalanceBtn.style.display = 'flex';
-                document.getElementById('billed-orders-btn').style.display = 'none';
-                paymentView.style.display = 'block';
-                renderPaymentCustomerList();
-             } else if (appState.currentView === 'cashBill') {
-                mainHeader.textContent = 'Cash Bill';
-                productInfoBtn.style.display = 'flex';
-                pendingBalanceBtn.style.display = 'none';
-                document.getElementById('billed-orders-btn').style.display = 'none';
-                cashBillView.style.display = 'block';
-                renderCashBillView();
-            } else if (appState.currentView === 'cashBillCollection') {
-                mainHeader.textContent = 'Cash Collection';
-                productInfoBtn.style.display = 'none';
-                pendingBalanceBtn.style.display = 'none';
-                document.getElementById('billed-orders-btn').style.display = 'none';
-                cashBillCollectionView.style.display = 'block';
-                renderCashBillCollectionView();
-            }
-        };
+        if (appState.currentView === 'payments') {
+            mainHeader.textContent = 'Credit Payments'; 
+            productInfoBtn.style.display = 'none';
+            pendingBalanceBtn.style.display = 'flex';
+            document.getElementById('billed-orders-btn').style.display = 'none';
+            paymentView.style.display = 'block';
+            renderPaymentCustomerList();
+        } else if (appState.currentView === 'cashBill') {
+            mainHeader.textContent = 'Cash Bill';
+            productInfoBtn.style.display = 'flex';
+            pendingBalanceBtn.style.display = 'none';
+            document.getElementById('billed-orders-btn').style.display = 'none';
+            cashBillView.style.display = 'block';
+            renderCashBillView();
+        } else if (appState.currentView === 'cashBillCollection') {
+            mainHeader.textContent = 'Cash Collection';
+            productInfoBtn.style.display = 'none';
+            pendingBalanceBtn.style.display = 'none';
+            document.getElementById('billed-orders-btn').style.display = 'none';
+            cashBillCollectionView.style.display = 'block';
+            renderCashBillCollectionView();
+        }
+    }
+};
         
         document.getElementById('customer-search-input').addEventListener('input', () => renderCustomerList());
         document.getElementById('customer-route-filter').addEventListener('change', () => renderCustomerList());
