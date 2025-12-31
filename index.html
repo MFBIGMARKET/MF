@@ -113,16 +113,19 @@
         .filter-bar select { border-radius: 50px; }
 
         .between-date-filter {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-            padding: 10px;
-            background-color: #fff;
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            box-shadow: var(--card-shadow);
-        }
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    box-shadow: var(--card-shadow);
+    /* NEW: Needed to anchor the inputs properly */
+    position: relative; 
+    z-index: 1;
+}
         .between-date-filter .date-btn {
             flex: 1;
             min-width: 120px;
@@ -164,15 +167,39 @@
         .between-date-filter .clear-btn:active {
             background-color: #fff1f2;
         }
-        .between-date-filter .date-input {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-            border: 0;
-            padding: 0;
-            pointer-events: none;
-        }
+        /* ... inside <style> ... */
+
+/* Find this block and Update it */
+.between-date-filter {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    box-shadow: var(--card-shadow);
+    /* NEW: Needed to anchor the inputs properly */
+    position: relative; 
+    z-index: 1;
+}
+
+/* Find this block and Update it */
+.between-date-filter .date-input {
+    position: absolute;
+    opacity: 0;
+    /* NEW: iOS requires non-zero size for pickers to work */
+    width: 1px; 
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    border: 0;
+    padding: 0;
+    pointer-events: none;
+    z-index: -1;
+    visibility: visible;
+}
                 #password-error-message {
             margin-top: 10px;
             font-weight: 500;
@@ -4662,28 +4689,47 @@
             }
         };
 
-        const setupBetweenDateFilter = (filterId, renderFn) => {
-            const filterContainer = document.getElementById(filterId);
-            if (!filterContainer) return;
-            const startBtn = filterContainer.querySelector('.start-date-btn');
-            const endBtn = filterContainer.querySelector('.end-date-btn');
-            const startInput = filterContainer.querySelector('.start-date-input');
-            const endInput = filterContainer.querySelector('.end-date-input');
-            const clearBtn = filterContainer.querySelector('.clear-btn');
+        // ... inside <script type="module"> ...
 
-            startBtn.addEventListener('click', () => startInput.showPicker ? startInput.showPicker() : startInput.click());
-            endBtn.addEventListener('click', () => endInput.showPicker ? endInput.showPicker() : endInput.click());
+const setupBetweenDateFilter = (filterId, renderFn) => {
+    const filterContainer = document.getElementById(filterId);
+    if (!filterContainer) return;
+    const startBtn = filterContainer.querySelector('.start-date-btn');
+    const endBtn = filterContainer.querySelector('.end-date-btn');
+    const startInput = filterContainer.querySelector('.start-date-input');
+    const endInput = filterContainer.querySelector('.end-date-input');
+    const clearBtn = filterContainer.querySelector('.clear-btn');
 
-            startInput.addEventListener('change', (e) => { appState.reporting.startDate = e.target.value; updateFilterUI(filterId); renderFn(); });
-            endInput.addEventListener('change', (e) => { appState.reporting.endDate = e.target.value; updateFilterUI(filterId); renderFn(); });
+    // NEW: Robust picker trigger for iPhones
+    const openPicker = (input) => {
+        try {
+            // Try standard modern API (iOS 16+)
+            if (typeof input.showPicker === 'function') {
+                input.showPicker();
+            } else {
+                // Fallback for older devices
+                input.focus();
+                input.click();
+            }
+        } catch (e) {
+            console.warn("Picker failed, trying fallback click", e);
+            input.click(); 
+        }
+    };
 
-            clearBtn.addEventListener('click', () => {
-                const { startDate, endDate } = getDefaultDateRange();
-                appState.reporting.startDate = startDate; appState.reporting.endDate = endDate;
-                startInput.value = startDate; endInput.value = endDate;
-                updateFilterUI(filterId); renderFn();
-            });
-        };
+    startBtn.addEventListener('click', () => openPicker(startInput));
+    endBtn.addEventListener('click', () => openPicker(endInput));
+
+    startInput.addEventListener('change', (e) => { appState.reporting.startDate = e.target.value; updateFilterUI(filterId); renderFn(); });
+    endInput.addEventListener('change', (e) => { appState.reporting.endDate = e.target.value; updateFilterUI(filterId); renderFn(); });
+
+    clearBtn.addEventListener('click', () => {
+        const { startDate, endDate } = getDefaultDateRange();
+        appState.reporting.startDate = startDate; appState.reporting.endDate = endDate;
+        startInput.value = startDate; endInput.value = endDate;
+        updateFilterUI(filterId); renderFn();
+    });
+};
 
         setupBetweenDateFilter('admin-date-filter', renderAdminDashboard);
         setupBetweenDateFilter('order-history-date-filter', renderHistoryTabs);
