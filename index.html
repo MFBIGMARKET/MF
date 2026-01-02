@@ -113,19 +113,16 @@
         .filter-bar select { border-radius: 50px; }
 
         .between-date-filter {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-    padding: 10px;
-    background-color: #fff;
-    border-radius: var(--border-radius);
-    margin-bottom: 20px;
-    box-shadow: var(--card-shadow);
-    /* NEW: Needed to anchor the inputs properly */
-    position: relative; 
-    z-index: 1;
-}
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+        }
         .between-date-filter .date-btn {
             flex: 1;
             min-width: 120px;
@@ -167,39 +164,15 @@
         .between-date-filter .clear-btn:active {
             background-color: #fff1f2;
         }
-        /* ... inside <style> ... */
-
-/* Find this block and Update it */
-.between-date-filter {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-    padding: 10px;
-    background-color: #fff;
-    border-radius: var(--border-radius);
-    margin-bottom: 20px;
-    box-shadow: var(--card-shadow);
-    /* NEW: Needed to anchor the inputs properly */
-    position: relative; 
-    z-index: 1;
-}
-
-/* Find this block and Update it */
-.between-date-filter .date-input {
-    position: absolute;
-    opacity: 0;
-    /* NEW: iOS requires non-zero size for pickers to work */
-    width: 1px; 
-    height: 1px;
-    bottom: 0;
-    left: 0;
-    border: 0;
-    padding: 0;
-    pointer-events: none;
-    z-index: -1;
-    visibility: visible;
-}
+        .between-date-filter .date-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            border: 0;
+            padding: 0;
+            pointer-events: none;
+        }
                 #password-error-message {
             margin-top: 10px;
             font-weight: 500;
@@ -2783,6 +2756,10 @@
             return { startDate: today, endDate: today };
         };
 
+        // Hide the date filter on Order History page
+    const historyFilter = document.getElementById('order-history-date-filter');
+    if (historyFilter) historyFilter.style.display = 'none';
+
         const { startDate, endDate } = getDefaultDateRange();
         
         let appState = {
@@ -2802,6 +2779,8 @@
             reporting: { 
                 salesman: null, 
                 customer: null, 
+                billedOrdersLimit: 50,
+                historyLimit: 50,
                 startDate: startDate, 
                 endDate: endDate,
                 accountantSalesman: 'UNNI',
@@ -3292,30 +3271,29 @@
             const isPaymentHistory = document.getElementById('page-payment-history').classList.contains('active');
             const container = isPaymentHistory ? document.getElementById('payment-history-list') : document.getElementById('order-history-list');
             
-            let historyData;
+            // 1. Get Data Source
+            let rawData;
             if (isPaymentHistory) {
-                historyData = appState.payments[appState.salesman] || [];
+                rawData = appState.payments[appState.salesman] || [];
             } else {
-                historyData = appState.orders[appState.salesman] || [];
+                rawData = appState.orders[appState.salesman] || [];
             }
             
-            const { start, end } = getReportDateRange();
-            if (start && end) {
-                historyData = historyData.filter(item => {
-                    const itemDate = new Date(item.date);
-                    return itemDate >= start && itemDate <= end;
-                });
-            }
+            // 2. Sort Descending (Newest First) - No Date Filtering
+            rawData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            if (historyData.length === 0) {
-                container.innerHTML = `<p class="card" style="text-align:center;">No history found for the selected dates.</p>`;
+            // 3. Slice based on dynamic limit
+            const displayData = rawData.slice(0, appState.historyLimit);
+
+            if (displayData.length === 0) {
+                container.innerHTML = `<p class="card" style="text-align:center;">No history found.</p>`;
                 return;
             }
 
-            historyData.sort((a, b) => new Date(b.date) - new Date(a.date));
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
-            container.innerHTML = historyData.map((item) => {
+            // 4. Render Items
+            let htmlContent = displayData.map((item) => {
                 const isOrderType = !isPaymentHistory;
                 const itemCount = isOrderType && item.items ? item.items.length : 0;
                 
@@ -3356,12 +3334,12 @@
 
                     let statusBadge = '';
                     if (isDelivered) {
-                        statusBadge = `<span style="display:flex; align-items:center; gap: 5px; color: var(--delivery-accent);" title="This order has been Delivered."><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Delivered</span>`;
+                        statusBadge = `<span style="display:flex; align-items:center; gap: 5px; color: var(--delivery-accent);" title="Delivered"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Delivered</span>`;
                     }
                     else if (isLoaded) {
-                        statusBadge = `<span style="display:flex; align-items:center; gap: 5px; color: #2980b9;" title="This order has been loaded."><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg> Loaded</span>`;
+                        statusBadge = `<span style="display:flex; align-items:center; gap: 5px; color: #2980b9;" title="Loaded"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg> Loaded</span>`;
                     } else if (isBilled) {
-                         statusBadge = `<span style="display:flex; align-items:center; gap: 5px; color: var(--success-color);" title="This order has been billed."><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Billed</span>`;
+                         statusBadge = `<span style="display:flex; align-items:center; gap: 5px; color: var(--success-color);" title="Billed"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Billed</span>`;
                     }
 
                     if (isBilled || isLoaded || isDelivered) {
@@ -3387,6 +3365,19 @@
                             ${isOrderType ? `<div class="history-card-body" id="details-${item.id}"><div class="table-responsive-wrapper"><table class="history-item-table"><thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead><tbody>${itemDetailsHtml}</tbody></table></div></div><a class="toggle-details" data-target="details-${item.id}">View Details</a>` : ""}
                         </div>`;
             }).join('');
+
+            // 5. Append "Load Next 50" Button
+            if (rawData.length > appState.historyLimit) {
+                const remaining = rawData.length - appState.historyLimit;
+                htmlContent += `
+                    <div style="padding: 10px; text-align: center;">
+                        <button class="button load-more-history-btn" style="width: auto; padding: 10px 30px;">
+                            Load Next 50 (${remaining} remaining)
+                        </button>
+                    </div>`;
+            }
+
+            container.innerHTML = htmlContent;
         };
         
         const getReportDateRange = () => {
@@ -4167,6 +4158,10 @@
         document.getElementById('history-icon-btn').addEventListener('click', () => {
             const isOrder = ['customers', 'cashBill', 'cashBillCollection'].includes(appState.currentView);
             const pageId = isOrder ? 'page-order-history' : 'page-payment-history';
+            
+            // RESET LIMIT
+            appState.historyLimit = 50; 
+            
             showPage(pageId);
             renderHistoryTabs();
         });
@@ -4587,6 +4582,11 @@
 
                 // MODIFIED: Complete and corrected function to handle all history card clicks
         const handleHistoryClick = async (e) => {
+            if (e.target.classList.contains('load-more-history-btn')) {
+                appState.historyLimit += 50;
+                renderHistoryTabs();
+                return;
+            }
             const card = e.target.closest('.history-card');
             if (!card) return;
             const id = card.dataset.id;
@@ -4689,47 +4689,28 @@
             }
         };
 
-        // ... inside <script type="module"> ...
+        const setupBetweenDateFilter = (filterId, renderFn) => {
+            const filterContainer = document.getElementById(filterId);
+            if (!filterContainer) return;
+            const startBtn = filterContainer.querySelector('.start-date-btn');
+            const endBtn = filterContainer.querySelector('.end-date-btn');
+            const startInput = filterContainer.querySelector('.start-date-input');
+            const endInput = filterContainer.querySelector('.end-date-input');
+            const clearBtn = filterContainer.querySelector('.clear-btn');
 
-const setupBetweenDateFilter = (filterId, renderFn) => {
-    const filterContainer = document.getElementById(filterId);
-    if (!filterContainer) return;
-    const startBtn = filterContainer.querySelector('.start-date-btn');
-    const endBtn = filterContainer.querySelector('.end-date-btn');
-    const startInput = filterContainer.querySelector('.start-date-input');
-    const endInput = filterContainer.querySelector('.end-date-input');
-    const clearBtn = filterContainer.querySelector('.clear-btn');
+            startBtn.addEventListener('click', () => startInput.showPicker ? startInput.showPicker() : startInput.click());
+            endBtn.addEventListener('click', () => endInput.showPicker ? endInput.showPicker() : endInput.click());
 
-    // NEW: Robust picker trigger for iPhones
-    const openPicker = (input) => {
-        try {
-            // Try standard modern API (iOS 16+)
-            if (typeof input.showPicker === 'function') {
-                input.showPicker();
-            } else {
-                // Fallback for older devices
-                input.focus();
-                input.click();
-            }
-        } catch (e) {
-            console.warn("Picker failed, trying fallback click", e);
-            input.click(); 
-        }
-    };
+            startInput.addEventListener('change', (e) => { appState.reporting.startDate = e.target.value; updateFilterUI(filterId); renderFn(); });
+            endInput.addEventListener('change', (e) => { appState.reporting.endDate = e.target.value; updateFilterUI(filterId); renderFn(); });
 
-    startBtn.addEventListener('click', () => openPicker(startInput));
-    endBtn.addEventListener('click', () => openPicker(endInput));
-
-    startInput.addEventListener('change', (e) => { appState.reporting.startDate = e.target.value; updateFilterUI(filterId); renderFn(); });
-    endInput.addEventListener('change', (e) => { appState.reporting.endDate = e.target.value; updateFilterUI(filterId); renderFn(); });
-
-    clearBtn.addEventListener('click', () => {
-        const { startDate, endDate } = getDefaultDateRange();
-        appState.reporting.startDate = startDate; appState.reporting.endDate = endDate;
-        startInput.value = startDate; endInput.value = endDate;
-        updateFilterUI(filterId); renderFn();
-    });
-};
+            clearBtn.addEventListener('click', () => {
+                const { startDate, endDate } = getDefaultDateRange();
+                appState.reporting.startDate = startDate; appState.reporting.endDate = endDate;
+                startInput.value = startDate; endInput.value = endDate;
+                updateFilterUI(filterId); renderFn();
+            });
+        };
 
         setupBetweenDateFilter('admin-date-filter', renderAdminDashboard);
         setupBetweenDateFilter('order-history-date-filter', renderHistoryTabs);
@@ -5053,7 +5034,11 @@ const setupBetweenDateFilter = (filterId, renderFn) => {
         
         document.getElementById('packer-history-btn').addEventListener('click', () => { showPage('page-packer-history'); renderPackerHistory(); });
         document.getElementById('back-to-packer-home-from-history-btn').addEventListener('click', () => showPage('page-packer-home'));
-        document.getElementById('billed-orders-btn').addEventListener('click', () => { showPage('page-billed-orders'); renderBilledOrders(); });
+        document.getElementById('billed-orders-btn').addEventListener('click', () => { 
+            appState.billedOrdersLimit = 50; // Reset limit when opening tab
+            showPage('page-billed-orders'); 
+            renderBilledOrders(); 
+        });
         document.getElementById('back-to-main-from-billed-orders-btn').addEventListener('click', () => showPage('page-main-view'));
         setupBetweenDateFilter('packer-date-filter', renderPackerHome);
 
@@ -5398,15 +5383,24 @@ const downloadDataAsXls = (jsonData, fileName) => {
 
         const renderBilledOrders = () => {
             const container = document.getElementById('billed-orders-list');
-            const salesmanOrders = (appState.orders[appState.salesman] || []).filter(o => o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered').sort((a, b) => new Date(b.billedAt || b.date) - new Date(a.billedAt || a.date));
+            
+            // 1. Filter and Sort ALL relevant orders first
+            const allSalesmanOrders = (appState.orders[appState.salesman] || [])
+                .filter(o => o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered')
+                .sort((a, b) => new Date(b.billedAt || b.date) - new Date(a.billedAt || a.date));
+
+            // 2. Slice based on the current dynamic limit
+            const ordersToShow = allSalesmanOrders.slice(0, appState.billedOrdersLimit);
+
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
-            if (salesmanOrders.length === 0) {
+            if (ordersToShow.length === 0) {
                 container.innerHTML = `<p class="card" style="text-align:center;">No billed orders to display.</p>`;
                 return;
             }
 
-            container.innerHTML = salesmanOrders.map(order => {
+            // 3. Generate HTML for the visible orders
+            let htmlContent = ordersToShow.map(order => {
                 let finalTotal = 0;
                 let finalCost = 0;
                 const itemsToProcess = order.billedItems || order.items;
@@ -5450,6 +5444,11 @@ const downloadDataAsXls = (jsonData, fileName) => {
                                <p><strong>Time Taken to Order:</strong> ${formatDuration(order.salesDuration)}</p>
                                <p class="date-display">${formatDDMMYYYYTime(order.billedAt || order.date)}</p>
                             </div>
+                            <div class="actions">
+                                <button class="history-action-btn print-pro-bill-btn" data-id="${order.id}" title="Download Professional Bill" style="color: var(--primary-color);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                </button>
+                            </div>
                         </div>
                         <div class="history-card-body" id="billed-details-${order.id}">
                             <div class="table-responsive-wrapper">
@@ -5462,7 +5461,21 @@ const downloadDataAsXls = (jsonData, fileName) => {
                         <a class="toggle-details" data-target="billed-details-${order.id}">View Details</a>
                     </div>`;
             }).join('');
+
+            // 4. Add "Load Next 50" button if there are more orders
+            if (allSalesmanOrders.length > appState.billedOrdersLimit) {
+                const remaining = allSalesmanOrders.length - appState.billedOrdersLimit;
+                htmlContent += `
+                    <div style="padding: 10px; text-align: center;">
+                        <button class="button load-more-billed-btn" style="width: auto; padding: 10px 30px;">
+                            Load Next 50 (${remaining} remaining)
+                        </button>
+                    </div>`;
+            }
+
+            container.innerHTML = htmlContent;
             
+            // Re-attach toggle listeners for details
             container.querySelectorAll('.toggle-details').forEach(btn => {
                 btn.addEventListener('click', e => {
                     e.preventDefault();
@@ -5471,6 +5484,34 @@ const downloadDataAsXls = (jsonData, fileName) => {
                 });
             });
         };
+
+        // NEW EVENT LISTENER FOR BILLED ORDERS LIST
+        // UPDATED EVENT LISTENER FOR BILLED ORDERS LIST
+        document.getElementById('billed-orders-list').addEventListener('click', e => {
+            // 1. Handle Professional Bill Download
+            const printBtn = e.target.closest('.print-pro-bill-btn');
+            if (printBtn) {
+                const orderId = printBtn.dataset.id;
+                printSaleBill(orderId);
+                return;
+            }
+
+            // 2. Handle "Load More" Button
+            if (e.target.classList.contains('load-more-billed-btn')) {
+                appState.billedOrdersLimit += 50; // Increase limit
+                renderBilledOrders(); // Re-render list
+                return;
+            }
+
+            // 3. Handle "View Details" Toggle (backup check if not handled in render)
+            const toggleBtn = e.target.closest('.toggle-details');
+            if (toggleBtn) {
+                e.preventDefault();
+                const targetId = toggleBtn.dataset.target;
+                const target = document.getElementById(targetId);
+                if (target) target.classList.toggle('visible');
+            }
+        });
 
         const accountantLedgerView = document.getElementById('accountant-ledger-view');
         const accountantCollectionView = document.getElementById('accountant-collection-view');
