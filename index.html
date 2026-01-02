@@ -1920,6 +1920,19 @@
         </div>
         <div class="content">
             <div class="card">
+                <!-- ADD THIS NEW CARD FOR QR SETTINGS -->
+            <div class="card">
+                <h3>Bill Settings</h3>
+                <div class="form-group">
+                    <label>Upload QR Code (Top Left of Bill)</label>
+                    <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                        <input type="file" id="qr-code-upload" accept="image/*">
+                        <button id="save-qr-btn" class="button" style="width: auto; padding: 8px 15px; margin: 0;">Save</button>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #666; margin-top: 5px;">Recommended: Small square image (JPG/PNG).</p>
+                </div>
+            </div>
+            <!-- END NEW CARD -->
                 <h3>Upload New Data</h3>
                 <p style="margin-bottom: 15px; font-style: italic; color: #555;">Uploading will replace existing data.</p>
                 <div class="file-upload-wrapper"><div class="file-upload-area"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><p>Upload Customer CSV</p><input type="file" id="customer-file-upload" accept=".csv"></div></div>
@@ -2781,6 +2794,7 @@
                 customer: null, 
                 billedOrdersLimit: 50,
                 historyLimit: 50,
+                qrCodeImage: null,
                 startDate: startDate, 
                 endDate: endDate,
                 accountantSalesman: 'UNNI',
@@ -2935,6 +2949,16 @@
         document.getElementById('purchase-category-search').addEventListener('input', e => renderPurchaseCategories(e.target.value));
 
         const setupRealtimeListeners = () => {
+            // ... inside setupRealtimeListeners() ...
+            
+            // Listener for General Settings (QR Code)
+            onSnapshot(doc(db, "app_config", "general_settings"), (docSnap) => {
+                if (docSnap.exists()) {
+                    appState.qrCodeImage = docSnap.data().qrCode;
+                } else {
+                    appState.qrCodeImage = null;
+                }
+            });
             onSnapshot(collection(db, "customers"), (snapshot) => { 
                 appState.customers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
                 if(appState.salesman && !['ADMIN', 'SUNNY', 'ARFATH', 'NANDU', 'SHAJU', 'BENNY', 'FASAL', 'HR', ...appState.packerAssistants].includes(appState.salesman)) renderCurrentView();
@@ -3230,6 +3254,47 @@
             badge.style.display = count > 0 ? 'block' : 'none';
             badge.textContent = count;
         };
+
+        // LOGIC TO SAVE QR CODE
+        document.getElementById('save-qr-btn').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            const input = document.getElementById('qr-code-upload');
+            const file = input.files[0];
+
+            if (!file) {
+                alert("Please select an image file first.");
+                return;
+            }
+
+            // Limit file size to prevent database issues (approx 150KB limit)
+            if (file.size > 150000) {
+                alert("Image is too large. Please upload a smaller image (under 150KB).");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const base64String = event.target.result;
+                try {
+                    await setDoc(doc(db, "app_config", "general_settings"), { 
+                        qrCode: base64String 
+                    }, { merge: true });
+                    
+                    showToast("QR Code updated successfully!");
+                    input.value = ''; // Clear input
+                } catch (error) {
+                    console.error("Error saving QR:", error);
+                    alert("Failed to save QR code.");
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Save";
+                }
+            };
+            reader.readAsDataURL(file);
+        });
 
         const renderOrderSummaryPage = () => { 
             const listCont = document.getElementById('order-summary-list');
@@ -3784,6 +3849,11 @@
                 pages.push(itemsToPrint.slice(i, i + ITEMS_PER_PAGE));
             }
 
+            // QR Code Logic
+            const qrImgHtml = appState.qrCodeImage 
+                ? `<img src="${appState.qrCodeImage}" style="position: absolute; top: 0; left: 10px; width: 80px; height: 80px; object-fit: contain;">` 
+                : '';
+
             let billHtml = '';
             pages.forEach((pageItems, pageIndex) => {
                 const pageClass = pageIndex > 0 ? 'bill-page-break' : '';
@@ -3806,8 +3876,13 @@
                        </div>` 
                     : '';
 
+                // Header styles modified to accommodate QR code
                 billHtml += `<div class="${pageClass}">
-                                <div class="bill-header"><h2>MF BIGMARKET</h2><p>Sale Bill</p></div>
+                                <div class="bill-header" style="position: relative; min-height: 90px; padding-top: 10px;">
+                                    ${qrImgHtml}
+                                    <h2 style="margin-top: 10px;">MF BIGMARKET</h2>
+                                    <p>Sale Bill</p>
+                                </div>
                                 <div class="bill-details">
                                     <div><strong>Customer:</strong> ${orderToPrint.customer.Customer}<br><strong>Salesman:</strong> ${orderToPrint.salesman}</div>
                                     <div style="text-align: right;"><strong>Bill No:</strong> ${orderToPrint.id.slice(-6).toUpperCase()}<br><strong>Date:</strong> ${formatDDMMYYYY(orderToPrint.date)}</div>
