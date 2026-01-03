@@ -2909,6 +2909,16 @@
                 </div>`;
         };
 
+        // Ensure Date Filter visibility is correct on load/refresh
+    const orderFilter = document.getElementById('order-history-date-filter');
+    const paymentFilter = document.getElementById('payment-history-date-filter');
+    
+    // Hide Order filter (uses Load More button)
+    if (orderFilter) orderFilter.style.display = 'none';
+    
+    // Ensure Payment filter is VISIBLE (uses Date Range)
+    if (paymentFilter) paymentFilter.style.display = 'flex';
+
         const showProfessionalModal = (title, message, onCloseCallback) => {
             const modal = document.getElementById('professional-modal');
             document.getElementById('professional-modal-title').textContent = title;
@@ -3336,20 +3346,44 @@
             const isPaymentHistory = document.getElementById('page-payment-history').classList.contains('active');
             const container = isPaymentHistory ? document.getElementById('payment-history-list') : document.getElementById('order-history-list');
             
-            // 1. Get Data Source
-            let rawData;
+            // 1. Get Raw Data Source
+            let allData;
             if (isPaymentHistory) {
-                rawData = appState.payments[appState.salesman] || [];
+                allData = appState.payments[appState.salesman] || [];
             } else {
-                rawData = appState.orders[appState.salesman] || [];
+                allData = appState.orders[appState.salesman] || [];
             }
-            
-            // 2. Sort Descending (Newest First) - No Date Filtering
-            rawData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            // 3. Slice based on dynamic limit
-            const displayData = rawData.slice(0, appState.historyLimit);
+            // 2. Prepare Display Data based on View Type
+            let displayData;
 
+            if (isPaymentHistory) {
+                // --- PAYMENT HISTORY LOGIC: DATE FILTER ---
+                const { start, end } = getReportDateRange();
+                
+                // Filter by Date
+                if (start && end) {
+                    displayData = allData.filter(item => {
+                        const itemDate = new Date(item.date);
+                        return itemDate >= start && itemDate <= end;
+                    });
+                } else {
+                    displayData = [...allData];
+                }
+                
+                // Sort by Date (Newest First)
+                displayData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            } else {
+                // --- ORDER HISTORY LOGIC: LOAD LAST 50 ---
+                // Sort first
+                allData.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Slice based on dynamic limit
+                displayData = allData.slice(0, appState.historyLimit);
+            }
+
+            // 3. Handle Empty State
             if (displayData.length === 0) {
                 container.innerHTML = `<p class="card" style="text-align:center;">No history found.</p>`;
                 return;
@@ -3392,7 +3426,7 @@
                 let actionsHtml = '';
                 if (isPaymentHistory) {
                      actionsHtml = `<button class="history-action-btn delete-history-btn" data-type="payments" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
-                } else { // Packing Slips
+                } else { // Packing Slips (Orders)
                     const isBilled = item.status === 'billed';
                     const isLoaded = item.status === 'loaded';
                     const isDelivered = item.status === 'delivered';
@@ -3413,7 +3447,7 @@
                          actionsHtml = `
                             <button class="history-action-btn edit-packing-slip-btn" title="Edit Slip"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
                             <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
-                            <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
+                            <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`;
                     }
                 }
                 
@@ -3431,9 +3465,9 @@
                         </div>`;
             }).join('');
 
-            // 5. Append "Load Next 50" Button
-            if (rawData.length > appState.historyLimit) {
-                const remaining = rawData.length - appState.historyLimit;
+            // 5. Append "Load Next 50" Button (ONLY FOR ORDERS)
+            if (!isPaymentHistory && allData.length > appState.historyLimit) {
+                const remaining = allData.length - appState.historyLimit;
                 htmlContent += `
                     <div style="padding: 10px; text-align: center;">
                         <button class="button load-more-history-btn" style="width: auto; padding: 10px 30px;">
