@@ -2793,7 +2793,7 @@
                 salesman: null, 
                 customer: null, 
                 billedOrdersLimit: 50,
-                historyLimit: 50,
+                historyLimit: 25,
                 qrCodeImage: null,
                 startDate: startDate, 
                 endDate: endDate,
@@ -3354,36 +3354,30 @@
                 allData = appState.orders[appState.salesman] || [];
             }
 
-            // 2. Prepare Display Data based on View Type
-            let displayData;
+            // 2. Sort Descending (Newest First)
+            allData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            if (isPaymentHistory) {
-                // --- PAYMENT HISTORY LOGIC: DATE FILTER ---
+            // 3. Apply User-Specific Filtering Logic
+            let displayData;
+            const isUnni = appState.salesman === 'UNNI';
+
+            if (isUnni) {
+                // --- UNNI LOGIC: DATE FILTERED ---
                 const { start, end } = getReportDateRange();
-                
-                // Filter by Date
                 if (start && end) {
                     displayData = allData.filter(item => {
                         const itemDate = new Date(item.date);
                         return itemDate >= start && itemDate <= end;
                     });
                 } else {
-                    displayData = [...allData];
+                    displayData = allData;
                 }
-                
-                // Sort by Date (Newest First)
-                displayData.sort((a, b) => new Date(b.date) - new Date(a.date));
-
             } else {
-                // --- ORDER HISTORY LOGIC: LOAD LAST 50 ---
-                // Sort first
-                allData.sort((a, b) => new Date(b.date) - new Date(a.date));
-                
-                // Slice based on dynamic limit
+                // --- RIYAS (AND OTHERS) LOGIC: LIMIT 25 ---
                 displayData = allData.slice(0, appState.historyLimit);
             }
 
-            // 3. Handle Empty State
+            // 4. Handle Empty State
             if (displayData.length === 0) {
                 container.innerHTML = `<p class="card" style="text-align:center;">No history found.</p>`;
                 return;
@@ -3391,7 +3385,7 @@
 
             const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
-            // 4. Render Items
+            // 5. Render Items
             let htmlContent = displayData.map((item) => {
                 const isOrderType = !isPaymentHistory;
                 const itemCount = isOrderType && item.items ? item.items.length : 0;
@@ -3423,9 +3417,12 @@
                 
                 const billTypeBadge = item.billType === 'cash' ? '<span class="bill-type-badge">Cash Bill</span>' : '';
 
+                // NEW CLEANER TRASH ICON SVG
+                const deleteIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+
                 let actionsHtml = '';
                 if (isPaymentHistory) {
-                     actionsHtml = `<button class="history-action-btn delete-history-btn" data-type="payments" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
+                     actionsHtml = `<button class="history-action-btn delete-history-btn" data-type="payments" title="Delete">${deleteIconSvg}</button>`;
                 } else { // Packing Slips (Orders)
                     const isBilled = item.status === 'billed';
                     const isLoaded = item.status === 'loaded';
@@ -3434,8 +3431,7 @@
                     let statusBadge = '';
                     if (isDelivered) {
                         statusBadge = `<span style="display:flex; align-items:center; gap: 5px; color: var(--delivery-accent);" title="Delivered"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Delivered</span>`;
-                    }
-                    else if (isLoaded) {
+                    } else if (isLoaded) {
                         statusBadge = `<span style="display:flex; align-items:center; gap: 5px; color: #2980b9;" title="Loaded"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg> Loaded</span>`;
                     } else if (isBilled) {
                          statusBadge = `<span style="display:flex; align-items:center; gap: 5px; color: var(--success-color);" title="Billed"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Billed</span>`;
@@ -3447,7 +3443,7 @@
                          actionsHtml = `
                             <button class="history-action-btn edit-packing-slip-btn" title="Edit Slip"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
                             <button class="history-action-btn print-history-btn" title="Print Packing Slip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
-                            <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>`;
+                            <button class="history-action-btn delete-history-btn" data-type="orders" title="Delete">${deleteIconSvg}</button>`;
                     }
                 }
                 
@@ -3465,13 +3461,13 @@
                         </div>`;
             }).join('');
 
-            // 5. Append "Load Next 50" Button (ONLY FOR ORDERS)
-            if (!isPaymentHistory && allData.length > appState.historyLimit) {
+            // 6. Append "Load Next 25" Button (ONLY for RIYAS)
+            if (!isUnni && allData.length > appState.historyLimit) {
                 const remaining = allData.length - appState.historyLimit;
                 htmlContent += `
                     <div style="padding: 10px; text-align: center;">
                         <button class="button load-more-history-btn" style="width: auto; padding: 10px 30px;">
-                            Load Next 50 (${remaining} remaining)
+                            Load Next 25 (${remaining} remaining)
                         </button>
                     </div>`;
             }
@@ -4268,8 +4264,23 @@
             const isOrder = ['customers', 'cashBill', 'cashBillCollection'].includes(appState.currentView);
             const pageId = isOrder ? 'page-order-history' : 'page-payment-history';
             
-            // RESET LIMIT
-            appState.historyLimit = 50; 
+            // 1. Reset Limit for RIYAS
+            appState.historyLimit = 25; 
+
+            // 2. Manage Filter Visibility
+            const orderFilter = document.getElementById('order-history-date-filter');
+            const paymentFilter = document.getElementById('payment-history-date-filter');
+            const isUnni = appState.salesman === 'UNNI';
+
+            if (isUnni) {
+                // UNNI: Show Date Filters
+                if (orderFilter) orderFilter.style.display = 'flex';
+                if (paymentFilter) paymentFilter.style.display = 'flex';
+            } else {
+                // RIYAS: Hide Date Filters (Uses Load More)
+                if (orderFilter) orderFilter.style.display = 'none';
+                if (paymentFilter) paymentFilter.style.display = 'none';
+            }
             
             showPage(pageId);
             renderHistoryTabs();
@@ -4692,7 +4703,7 @@
                 // MODIFIED: Complete and corrected function to handle all history card clicks
         const handleHistoryClick = async (e) => {
             if (e.target.classList.contains('load-more-history-btn')) {
-                appState.historyLimit += 50;
+                appState.historyLimit += 25;
                 renderHistoryTabs();
                 return;
             }
