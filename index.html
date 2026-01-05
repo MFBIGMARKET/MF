@@ -13,6 +13,9 @@
     <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI5NiIgZmlsbD0iIzAwNWY3MyIvPjx0ZXh0IHg9Ijk2IiB5PSIxMzYiIGZvbnQtZm1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5NRjwvdGV4dD48L3N2Zz4=">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- HTML2PDF Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <!-- Add this line inside the <head> tag of your HTML file -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- LeafletJS for Maps -->
@@ -3866,6 +3869,97 @@
             showPage('page-customer-ledger');
         };
 
+        const downloadSaleBillPDF = (orderId) => {
+            const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
+            if (!order) { alert('Could not find order to download.'); return; }
+
+            // Show toast to indicate processing
+            showToast("Generating PDF...");
+
+            const itemsToPrint = (order.billedItems || order.items || []).filter(item => !item.wasUnchecked);
+            const finalTotal = itemsToPrint.reduce((acc, item) => acc + (item.quantity * item.sellingPrice), 0);
+            
+            // Use same pagination logic as print
+            const ITEMS_PER_PAGE = 25; 
+            const pages = [];
+            for (let i = 0; i < itemsToPrint.length; i += ITEMS_PER_PAGE) {
+                pages.push(itemsToPrint.slice(i, i + ITEMS_PER_PAGE));
+            }
+
+            const qrImgHtml = appState.qrCodeImage 
+                ? `<img src="${appState.qrCodeImage}" style="position: absolute; top: 0; left: 10px; width: 80px; height: 80px; object-fit: contain;">` 
+                : '';
+
+            let allPagesHtml = '';
+
+            pages.forEach((pageItems, pageIndex) => {
+                const tableBodyHtml = pageItems.map((item, itemIndex) => { 
+                    const serialNumber = (pageIndex * ITEMS_PER_PAGE) + itemIndex + 1;
+                    const total = item.quantity * item.sellingPrice;
+                    return `<tr>
+                                <td>${serialNumber}</td>
+                                <td class="col-item-name">${item.item.ItemName}</td>
+                                <td class="col-mrp">${formatPreciseCurrency(item.item.Mrp)}</td>
+                                <td class="col-qty">${item.quantity} ${item.item.Unit || ''}</td>
+                                <td class="col-price">${formatPreciseCurrency(item.sellingPrice)}</td>
+                                <td class="col-total">${formatPreciseCurrency(total)}</td>
+                            </tr>`; 
+                }).join('');
+
+                const footerHtml = pageIndex === pages.length - 1 
+                    ? `<div class="bill-footer">
+                           <div><strong>Grand Total: ${formatPreciseCurrency(finalTotal)}</strong></div>
+                       </div>` 
+                    : '';
+
+                // Note: We use 'page-break-after: always' for PDF generation
+                allPagesHtml += `
+                    <div style="position: relative; padding: 20px; background: white; height: 100%; box-sizing: border-box; page-break-after: always;">
+                        <div class="bill-header" style="position: relative; min-height: 90px; padding-top: 10px; text-align: center;">
+                            ${qrImgHtml}
+                            <h2 style="margin-top: 10px; font-size: 1.8rem; font-weight: 700;">MF BIGMARKET</h2>
+                            <p style="margin: 0;">Sale Bill</p>
+                        </div>
+                        <div class="bill-details" style="display: flex; justify-content: space-between; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 10px;">
+                            <div style="text-align: left;"><strong>Customer:</strong> ${order.customer.Customer}<br><strong>Salesman:</strong> ${order.salesman}</div>
+                            <div style="text-align: right;"><strong>Bill No:</strong> ${order.id.slice(-6).toUpperCase()}<br><strong>Date:</strong> ${formatDDMMYYYY(order.date)}</div>
+                        </div>
+                        <div class="slip-page-number" style="text-align: right; font-size: 0.8rem; color: #555;">Page ${pageIndex + 1} of ${pages.length}</div>
+                        <table class="bill-table" style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="border-bottom: 1px solid #333; padding: 5px; text-align: left;">S.No.</th>
+                                    <th style="border-bottom: 1px solid #333; padding: 5px; text-align: left; width: 45%;">ITEM</th>
+                                    <th style="border-bottom: 1px solid #333; padding: 5px; text-align: right;">MRP</th>
+                                    <th style="border-bottom: 1px solid #333; padding: 5px; text-align: right;">QTY</th>
+                                    <th style="border-bottom: 1px solid #333; padding: 5px; text-align: right;">RATE</th>
+                                    <th style="border-bottom: 1px solid #333; padding: 5px; text-align: right;">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>${tableBodyHtml}</tbody>
+                        </table>
+                        ${footerHtml}
+                    </div>`;
+            });
+
+            // Create a temporary container for PDF generation
+            const element = document.createElement('div');
+            element.innerHTML = allPagesHtml;
+            // Apply specific width to ensure layout matches A4
+            element.style.width = '750px'; 
+
+            const opt = {
+                margin:       0,
+                filename:     `Bill-${order.customer.Customer}-${formatDDMMYYYY(order.date)}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'pt', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Generate and Save
+            html2pdf().set(opt).from(element).save();
+        };
+
         const printSaleBill = (orderId) => {
             const orderToPrint = Object.values(appState.orders).flat().find(o => o.id === orderId);
             if (!orderToPrint) { alert('Could not find order to print.'); return; }
@@ -5504,7 +5598,7 @@ const downloadDataAsXls = (jsonData, fileName) => {
         const renderBilledOrders = () => {
             const container = document.getElementById('billed-orders-list');
             
-            // 1. Filter and Sort ALL relevant orders first
+            // 1. Filter, Sort (Newest First)
             const allSalesmanOrders = (appState.orders[appState.salesman] || [])
                 .filter(o => o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered')
                 .sort((a, b) => new Date(b.billedAt || b.date) - new Date(a.billedAt || a.date));
@@ -5519,7 +5613,7 @@ const downloadDataAsXls = (jsonData, fileName) => {
                 return;
             }
 
-            // 3. Generate HTML for the visible orders
+            // 3. Generate HTML
             let htmlContent = ordersToShow.map(order => {
                 let finalTotal = 0;
                 let finalCost = 0;
@@ -5561,12 +5655,13 @@ const downloadDataAsXls = (jsonData, fileName) => {
                                <p><strong>Customer:</strong> ${order.customer.Customer} ${billTypeBadge}</p>
                                <p><strong>Final Total:</strong> ${formatPreciseCurrency(finalTotal)}</p>
                                ${profitHtml}
-                               <p><strong>Time Taken to Order:</strong> ${formatDuration(order.salesDuration)}</p>
+                               <p><strong>Time Taken:</strong> ${formatDuration(order.salesDuration)}</p>
                                <p class="date-display">${formatDDMMYYYYTime(order.billedAt || order.date)}</p>
                             </div>
                             <div class="actions">
-                                <button class="history-action-btn print-pro-bill-btn" data-id="${order.id}" title="Download Professional Bill" style="color: var(--primary-color);">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                <!-- DOWNLOAD PDF BUTTON -->
+                                <button class="history-action-btn download-pdf-bill-btn" data-id="${order.id}" title="Download PDF Bill" style="color: var(--primary-color);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                 </button>
                             </div>
                         </div>
@@ -5582,7 +5677,7 @@ const downloadDataAsXls = (jsonData, fileName) => {
                     </div>`;
             }).join('');
 
-            // 4. Add "Load Next 50" button if there are more orders
+            // 4. Add "Load Next 50" button
             if (allSalesmanOrders.length > appState.billedOrdersLimit) {
                 const remaining = allSalesmanOrders.length - appState.billedOrdersLimit;
                 htmlContent += `
@@ -5595,7 +5690,7 @@ const downloadDataAsXls = (jsonData, fileName) => {
 
             container.innerHTML = htmlContent;
             
-            // Re-attach toggle listeners for details
+            // Re-attach toggle listeners
             container.querySelectorAll('.toggle-details').forEach(btn => {
                 btn.addEventListener('click', e => {
                     e.preventDefault();
@@ -5605,25 +5700,23 @@ const downloadDataAsXls = (jsonData, fileName) => {
             });
         };
 
-        // NEW EVENT LISTENER FOR BILLED ORDERS LIST
-        // UPDATED EVENT LISTENER FOR BILLED ORDERS LIST
         document.getElementById('billed-orders-list').addEventListener('click', e => {
-            // 1. Handle Professional Bill Download
-            const printBtn = e.target.closest('.print-pro-bill-btn');
-            if (printBtn) {
-                const orderId = printBtn.dataset.id;
-                printSaleBill(orderId);
+            // 1. Handle PDF Download
+            const downloadBtn = e.target.closest('.download-pdf-bill-btn');
+            if (downloadBtn) {
+                const orderId = downloadBtn.dataset.id;
+                downloadSaleBillPDF(orderId); // Call the new function
                 return;
             }
 
             // 2. Handle "Load More" Button
             if (e.target.classList.contains('load-more-billed-btn')) {
-                appState.billedOrdersLimit += 50; // Increase limit
-                renderBilledOrders(); // Re-render list
+                appState.billedOrdersLimit += 50;
+                renderBilledOrders();
                 return;
             }
 
-            // 3. Handle "View Details" Toggle (backup check if not handled in render)
+            // 3. Handle "View Details" Toggle
             const toggleBtn = e.target.closest('.toggle-details');
             if (toggleBtn) {
                 e.preventDefault();
