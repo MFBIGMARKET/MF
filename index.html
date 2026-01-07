@@ -6037,76 +6037,7 @@ const downloadDataAsXls = (jsonData, fileName) => {
 
     // --- END: Bill Rate Editing Logic ---
 
-    // 5. Close Modal Handler
-    const closeBillEditModal = () => {
-        billRateEditModal.classList.remove('active');
-        currentEditingOrder = null;
-    };
-
-    billRateEditModal.addEventListener('click', e => {
-        if (e.target === billRateEditModal || e.target.closest('[data-action="close-bill-edit"]')) {
-            closeBillEditModal();
-        }
-    });
-
-    // 6. Save & Download Handler
-    document.getElementById('save-and-download-bill-btn').addEventListener('click', async (e) => {
-        const btn = e.target;
-        btn.disabled = true;
-        btn.textContent = 'Saving...';
-
-        try {
-            // A. Update the main items array with new prices
-            const originalItems = currentEditingOrder.billedItems || currentEditingOrder.items;
-            
-            // Map the changes back to the original structure using the originalIndex we saved
-            currentEditingOrder._activeItemsRefs.forEach(activeItem => {
-                if (originalItems[activeItem.originalIndex]) {
-                    originalItems[activeItem.originalIndex].sellingPrice = parseFloat(activeItem.sellingPrice);
-                }
-            });
-
-            // B. Prepare update data
-            const updateData = {
-                billedItems: originalItems, // Save the updated array
-                items: originalItems, // Ensure legacy support
-                finalBilledTotal: currentEditingOrder._tempGrandTotal
-            };
-
-            // C. Update Firestore
-            await updateDoc(doc(db, "orders", currentEditingOrder.id), updateData);
-
-            // D. Refresh UI locally (optional, as onSnapshot will trigger eventually, but good for UX)
-            showToast('Rates updated successfully!');
-            billRateEditModal.classList.remove('active');
-
-            // E. Trigger Download
-            // We need to pass the *updated* order ID to the download function.
-            // Since onSnapshot takes a ms to update appState, we can just trigger it.
-            // However, downloadSaleBillPDF fetches from appState.orders. 
-            // We should ensure appState is updated or force the update logic.
-            
-            // Quick local update to appState to ensure download uses new data immediately
-            const orderInState = Object.values(appState.orders).flat().find(o => o.id === currentEditingOrder.id);
-            if (orderInState) {
-                orderInState.billedItems = originalItems;
-                orderInState.items = originalItems;
-                orderInState.finalBilledTotal = currentEditingOrder._tempGrandTotal;
-            }
-
-            // Call the existing download function
-            downloadSaleBillPDF(currentEditingOrder.id);
-
-        } catch (error) {
-            console.error("Error saving bill rates:", error);
-            alert("Failed to save changes. Please try again.");
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Save & Download PDF';
-        }
-    });
-
-    // --- END: Bill Rate Editing Logic ---
+    
 
         const accountantLedgerView = document.getElementById('accountant-ledger-view');
         const accountantCollectionView = document.getElementById('accountant-collection-view');
