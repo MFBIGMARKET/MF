@@ -3906,11 +3906,16 @@
                             </tr>`; 
                 }).join('');
 
-                const footerHtml = pageIndex === pages.length - 1 
-                    ? `<div class="bill-footer">
-                           <div><strong>Grand Total: ${formatPreciseCurrency(finalTotal)}</strong></div>
-                       </div>` 
-                    : '';
+                // ... inside downloadSaleBillPDF ...
+
+// --- REPLACEMENT BLOCK START ---
+const footerHtml = pageIndex === pages.length - 1 
+    ? `<div class="bill-footer">
+           ${order.freight > 0 ? `<div style="border-bottom:1px solid #ccc; margin-bottom:5px; padding-bottom:5px;">Freight / Extra: ${formatPreciseCurrency(order.freight)}</div>` : ''}
+           <div><strong>Grand Total: ${formatPreciseCurrency(order.finalBilledTotal || finalTotal)}</strong></div>
+       </div>` 
+    : '';
+// --- REPLACEMENT BLOCK END ---
 
                 // Note: We use 'page-break-after: always' for PDF generation
                 allPagesHtml += `
@@ -5596,109 +5601,111 @@ const downloadDataAsXls = (jsonData, fileName) => {
 
 
         const renderBilledOrders = () => {
-            const container = document.getElementById('billed-orders-list');
-            
-            // 1. Filter, Sort (Newest First)
-            const allSalesmanOrders = (appState.orders[appState.salesman] || [])
-                .filter(o => o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered')
-                .sort((a, b) => new Date(b.billedAt || b.date) - new Date(a.billedAt || a.date));
+    const container = document.getElementById('billed-orders-list');
+    
+    // 1. Filter and Sort (Newest First)
+    const allSalesmanOrders = (appState.orders[appState.salesman] || [])
+        .filter(o => o.status === 'billed' || o.status === 'loaded' || o.status === 'delivered')
+        .sort((a, b) => new Date(b.billedAt || b.date) - new Date(a.billedAt || a.date));
 
-            // 2. Slice based on the current dynamic limit
-            const ordersToShow = allSalesmanOrders.slice(0, appState.billedOrdersLimit);
+    // 2. Slice based on the current dynamic limit
+    const ordersToShow = allSalesmanOrders.slice(0, appState.billedOrdersLimit);
 
-            const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
+    // Create a cost map for profit calculation
+    const costMap = new Map(appState.items.map(i => [String(i.Code), parseFloat(i.CostRate) || 0]));
 
-            if (ordersToShow.length === 0) {
-                container.innerHTML = `<p class="card" style="text-align:center;">No billed orders to display.</p>`;
-                return;
+    if (ordersToShow.length === 0) {
+        container.innerHTML = `<p class="card" style="text-align:center;">No billed orders to display.</p>`;
+        return;
+    }
+
+    // 3. Generate HTML
+    let htmlContent = ordersToShow.map(order => {
+        let finalTotal = 0;
+        let finalCost = 0;
+        const itemsToProcess = order.billedItems || order.items;
+        
+        const itemDetailsHtml = (itemsToProcess).map(i => {
+            let style = '';
+            if (i.wasUnchecked) {
+                style = 'background-color: #ffebee; color: #c62828;';
+            } else if (i.isNew) {
+                    style = 'background-color: #e8f5e9; color: #2e7d32;';
             }
 
-            // 3. Generate HTML
-            let htmlContent = ordersToShow.map(order => {
-                let finalTotal = 0;
-                let finalCost = 0;
-                const itemsToProcess = order.billedItems || order.items;
-                
-                const itemDetailsHtml = (itemsToProcess).map(i => {
-                    let style = '';
-                    if (i.wasUnchecked) {
-                        style = 'background-color: #ffebee; color: #c62828;';
-                    } else if (i.isNew) {
-                         style = 'background-color: #e8f5e9; color: #2e7d32;';
-                    }
+            if (!i.wasUnchecked) {
+                const lineTotal = (i.quantity || 0) * (i.sellingPrice || 0);
+                const lineCost = (i.quantity || 0) * (costMap.get(String(i.item.Code)) || 0);
+                finalTotal += lineTotal;
+                finalCost += lineCost;
+            }
+            
+            return `<tr style="${style}">
+                        <td class="col-item-name">${i.item.ItemName}</td>
+                        <td class="numeric">${i.wasUnchecked ? 'REMOVED' : `${i.quantity} ${i.item.Unit || ""}`}</td>
+                        <td class="numeric">${i.wasUnchecked ? '-' : formatPreciseCurrency(i.sellingPrice)}</td>
+                        <td class="numeric"><strong>${i.wasUnchecked ? '-' : formatPreciseCurrency((i.quantity || 0) * (i.sellingPrice || 0))}</strong></td>
+                    </tr>`;
+        }).join('');
 
-                    if (!i.wasUnchecked) {
-                        const lineTotal = (i.quantity || 0) * (i.sellingPrice || 0);
-                        const lineCost = (i.quantity || 0) * (costMap.get(String(i.item.Code)) || 0);
-                        finalTotal += lineTotal;
-                        finalCost += lineCost;
-                    }
-                    
-                    return `<tr style="${style}">
-                                <td class="col-item-name">${i.item.ItemName}</td>
-                                <td class="numeric">${i.wasUnchecked ? 'REMOVED' : `${i.quantity} ${i.item.Unit || ""}`}</td>
-                                <td class="numeric">${i.wasUnchecked ? '-' : formatPreciseCurrency(i.sellingPrice)}</td>
-                                <td class="numeric"><strong>${i.wasUnchecked ? '-' : formatPreciseCurrency((i.quantity || 0) * (i.sellingPrice || 0))}</strong></td>
-                            </tr>`;
-                }).join('');
+        // Apply freight if cash bill
+        if (order.billType === 'cash' && order.freight) {
+            finalTotal += parseFloat(order.freight);
+        }
 
-                const totalProfit = finalTotal - finalCost;
-                const margin = finalTotal > 0 ? (totalProfit / finalTotal) * 100 : 0;
-                const profitClass = totalProfit >= 0 ? 'profit' : 'loss';
-                const profitHtml = `<p><strong>Profit:</strong> <span class="${profitClass}">${formatPreciseCurrency(totalProfit)} (${margin.toFixed(1)}%)</span></p>`;
-                const billTypeBadge = order.billType === 'cash' ? '<span class="bill-type-badge">Cash Bill</span>' : '';
+        const totalProfit = finalTotal - finalCost;
+        const margin = finalTotal > 0 ? (totalProfit / finalTotal) * 100 : 0;
+        const profitClass = totalProfit >= 0 ? 'profit' : 'loss';
+        const profitHtml = `<p><strong>Profit:</strong> <span class="${profitClass}">${formatPreciseCurrency(totalProfit)} (${margin.toFixed(1)}%)</span></p>`;
+        const billTypeBadge = order.billType === 'cash' ? '<span class="bill-type-badge">Cash Bill</span>' : '';
 
-                return `
-                    <div class="history-card">
-                        <div class="history-card-header">
-                            <div class="info">
-                               <p><strong>Customer:</strong> ${order.customer.Customer} ${billTypeBadge}</p>
-                               <p><strong>Final Total:</strong> ${formatPreciseCurrency(finalTotal)}</p>
-                               ${profitHtml}
-                               <p><strong>Time Taken:</strong> ${formatDuration(order.salesDuration)}</p>
-                               <p class="date-display">${formatDDMMYYYYTime(order.billedAt || order.date)}</p>
-                            </div>
-                            <div class="actions">
-                                <!-- DOWNLOAD PDF BUTTON -->
-                                <button class="history-action-btn download-pdf-bill-btn" data-id="${order.id}" title="Download PDF Bill" style="color: var(--primary-color);">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="history-card-body" id="billed-details-${order.id}">
-                            <div class="table-responsive-wrapper">
-                                <table class="history-item-table">
-                                    <thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead>
-                                    <tbody>${itemDetailsHtml}</tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <a class="toggle-details" data-target="billed-details-${order.id}">View Details</a>
-                    </div>`;
-            }).join('');
-
-            // 4. Add "Load Next 50" button
-            if (allSalesmanOrders.length > appState.billedOrdersLimit) {
-                const remaining = allSalesmanOrders.length - appState.billedOrdersLimit;
-                htmlContent += `
-                    <div style="padding: 10px; text-align: center;">
-                        <button class="button load-more-billed-btn" style="width: auto; padding: 10px 30px;">
-                            Load Next 50 (${remaining} remaining)
+        return `
+            <div class="history-card" data-order-id="${order.id}">
+                <div class="history-card-header">
+                    <div class="info">
+                       <p><strong>Customer:</strong> ${order.customer.Customer} ${billTypeBadge}</p>
+                       <p><strong>Final Total:</strong> ${formatPreciseCurrency(finalTotal)}</p>
+                       ${profitHtml}
+                       <p><strong>Time Taken:</strong> ${formatDuration(order.salesDuration)}</p>
+                       <p class="date-display">${formatDDMMYYYYTime(order.billedAt || order.date)}</p>
+                    </div>
+                    <div class="actions" style="flex-direction: column; gap: 5px;">
+                        <!-- NEW: EDIT RATES BUTTON -->
+                        <button class="button button-outline open-bill-edit-btn" data-id="${order.id}" style="padding: 5px 10px; font-size: 0.8rem; width: 100%;">
+                            Edit Rates
                         </button>
-                    </div>`;
-            }
 
-            container.innerHTML = htmlContent;
-            
-            // Re-attach toggle listeners
-            container.querySelectorAll('.toggle-details').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.preventDefault();
-                    const target = document.getElementById(e.currentTarget.dataset.target);
-                    if (target) target.classList.toggle('visible');
-                });
-            });
-        };
+                        <!-- EXISTING: DOWNLOAD PDF BUTTON -->
+                        <button class="history-action-btn download-pdf-bill-btn" data-id="${order.id}" title="Download PDF Bill" style="color: var(--primary-color); align-self: flex-end;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="history-card-body" id="billed-details-${order.id}">
+                    <div class="table-responsive-wrapper">
+                        <table class="history-item-table">
+                            <thead><tr><th class="col-item-name">Item</th><th class="numeric">Qty / Unit</th><th class="numeric">Price</th><th class="numeric">Total</th></tr></thead>
+                            <tbody>${itemDetailsHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+                <a class="toggle-details" data-target="billed-details-${order.id}">View Details</a>
+            </div>`;
+    }).join('');
+
+    // 4. Add "Load Next 50" button
+    if (allSalesmanOrders.length > appState.billedOrdersLimit) {
+        const remaining = allSalesmanOrders.length - appState.billedOrdersLimit;
+        htmlContent += `
+            <div style="padding: 10px; text-align: center;">
+                <button class="button load-more-billed-btn" style="width: auto; padding: 10px 30px;">
+                    Load Next 50 (${remaining} remaining)
+                </button>
+            </div>`;
+    }
+
+    container.innerHTML = htmlContent;
+};
 
         document.getElementById('billed-orders-list').addEventListener('click', e => {
             // 1. Handle PDF Download
@@ -5725,6 +5732,381 @@ const downloadDataAsXls = (jsonData, fileName) => {
                 if (target) target.classList.toggle('visible');
             }
         });
+
+    // --- START: Bill Rate Editing Logic (Final Version with Search) ---
+
+    const billRateEditModal = document.getElementById('bill-rate-edit-modal');
+    let currentEditingOrder = null;
+
+    // 1. Open Modal Listener
+    document.getElementById('billed-orders-list').addEventListener('click', e => {
+        const editBtn = e.target.closest('.open-bill-edit-btn');
+        if (editBtn) {
+            const orderId = editBtn.dataset.id;
+            const order = Object.values(appState.orders).flat().find(o => o.id === orderId);
+            if (order) {
+                openBillRateEditModal(order);
+            }
+        }
+    });
+
+    // 2. Render Modal
+    const openBillRateEditModal = (order) => {
+        currentEditingOrder = JSON.parse(JSON.stringify(order));
+        
+        if (!currentEditingOrder.billedItems && currentEditingOrder.items) {
+            currentEditingOrder.billedItems = currentEditingOrder.items;
+        }
+
+        const tbody = document.getElementById('bill-rate-edit-tbody');
+        tbody.innerHTML = '';
+
+        // Reset Search Input
+        document.getElementById('bill-edit-item-search').value = '';
+        document.getElementById('bill-edit-search-results').style.display = 'none';
+
+        // Render Existing Items
+        currentEditingOrder.billedItems.forEach((item, idx) => {
+            if (item.wasUnchecked) return;
+
+            const row = document.createElement('tr');
+            row.className = 'item-row';
+            row.dataset.type = 'existing';
+            row.dataset.index = idx;
+
+            row.innerHTML = `
+                <td style="font-size: 0.85rem;">
+                    <div style="font-weight:600;">${item.item.ItemName}</div>
+                </td>
+                <td class="numeric">
+                    <input type="number" class="edit-qty-input" value="${item.quantity}" step="0.1" min="0" style="width: 60px; padding: 4px; text-align: right;">
+                </td>
+                <td class="numeric">
+                    <input type="number" class="edit-rate-input" value="${item.sellingPrice}" step="0.01" min="0" style="width: 80px; padding: 4px; text-align: right;">
+                </td>
+                <td class="numeric item-total-display">0.00</td>
+                <td>
+                    <button class="remove-row-btn" style="color:red; background:none; border:none; cursor:pointer;">&times;</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Set Freight
+        const freightVal = parseFloat(currentEditingOrder.freight) || 0;
+        document.getElementById('bill-edit-freight-input').value = freightVal;
+
+        recalculateBillEditTotal();
+        billRateEditModal.classList.add('active');
+    };
+
+    // 3. Search Logic
+    const searchInput = document.getElementById('bill-edit-item-search');
+    const searchResults = document.getElementById('bill-edit-search-results');
+
+    searchInput.addEventListener('input', e => {
+        const val = e.target.value.trim().toLowerCase();
+        if (!val) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        const matches = appState.items.filter(i => (i.ItemName || '').toLowerCase().includes(val)).slice(0, 20);
+        
+        if (matches.length === 0) {
+            searchResults.innerHTML = '<div style="padding:10px; color:#888;">No items found</div>';
+        } else {
+            searchResults.innerHTML = matches.map(i => `
+                <div class="search-result-item" data-code="${i.Code}" style="padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;">
+                    <div style="font-weight:600; font-size: 0.9rem;">${i.ItemName}</div>
+                    <div style="font-size:0.75rem; color:#666;">
+                        MRP: ${i.Mrp} | P2: ${i.Price2} | Stock: ${i.Clstock}
+                    </div>
+                </div>
+            `).join('');
+        }
+        searchResults.style.display = 'block';
+    });
+
+    // 4. Select Item Logic
+    searchResults.addEventListener('click', e => {
+        const itemDiv = e.target.closest('.search-result-item');
+        if (itemDiv) {
+            const code = itemDiv.dataset.code;
+            const item = appState.items.find(i => i.Code == code);
+            
+            if (item) {
+                addItemToBillTable(item);
+            }
+
+            // Cleanup
+            searchInput.value = '';
+            searchResults.style.display = 'none';
+        }
+    });
+
+    // 5. Add Item Helper (Updated to add to TOP)
+    const addItemToBillTable = (item) => {
+        const tbody = document.getElementById('bill-rate-edit-tbody');
+        const row = document.createElement('tr');
+        row.className = 'item-row';
+        row.dataset.type = 'new-from-list'; 
+        row.dataset.itemCode = item.Code;   
+
+        row.innerHTML = `
+            <td style="font-size: 0.85rem;">
+                <div style="font-weight:600;">${item.ItemName}</div>
+                <div style="font-size: 0.7rem; color: var(--success-color);">New Addition</div>
+            </td>
+            <td class="numeric">
+                <input type="number" class="edit-qty-input" value="1" step="1" min="0" style="width: 60px; padding: 4px; text-align: right;">
+            </td>
+            <td class="numeric">
+                <input type="number" class="edit-rate-input" value="${item.Price2 || 0}" step="0.01" min="0" style="width: 80px; padding: 4px; text-align: right;">
+            </td>
+            <td class="numeric item-total-display">0.00</td>
+            <td>
+                <button class="remove-row-btn" style="color:red; background:none; border:none; cursor:pointer;">&times;</button>
+            </td>
+        `;
+        
+        // CHANGED: Use prepend to add to the TOP of the table
+        tbody.prepend(row); 
+        
+        recalculateBillEditTotal();
+        
+        // Auto-scroll to top to ensure the user sees the new item
+        const wrapper = document.querySelector('#bill-rate-edit-modal .table-responsive-wrapper');
+        if(wrapper) wrapper.scrollTop = 0;
+    };
+
+    // 6. Remove Row
+    document.getElementById('bill-rate-edit-tbody').addEventListener('click', e => {
+        if (e.target.closest('.remove-row-btn')) {
+            const row = e.target.closest('tr');
+            if (row.dataset.type === 'existing') {
+                row.style.display = 'none';
+                row.classList.add('marked-for-deletion');
+            } else {
+                row.remove();
+            }
+            recalculateBillEditTotal();
+        }
+    });
+
+    // 7. Recalculation
+    const recalculateBillEditTotal = () => {
+        let subTotal = 0;
+        const rows = document.querySelectorAll('#bill-rate-edit-tbody tr.item-row');
+
+        rows.forEach(row => {
+            if (row.classList.contains('marked-for-deletion')) return;
+
+            const qty = parseFloat(row.querySelector('.edit-qty-input').value) || 0;
+            const rate = parseFloat(row.querySelector('.edit-rate-input').value) || 0;
+            const total = qty * rate;
+
+            row.querySelector('.item-total-display').textContent = total.toFixed(2);
+            subTotal += total;
+        });
+
+        const freight = parseFloat(document.getElementById('bill-edit-freight-input').value) || 0;
+        const grandTotal = subTotal + freight;
+
+        document.getElementById('bill-edit-sub-total').textContent = formatPreciseCurrency(subTotal);
+        document.getElementById('bill-edit-grand-total').textContent = formatPreciseCurrency(grandTotal);
+        
+        currentEditingOrder._tempSubTotal = subTotal;
+        currentEditingOrder._tempFreight = freight;
+        currentEditingOrder._tempGrandTotal = grandTotal;
+    };
+
+    document.getElementById('bill-rate-edit-modal').addEventListener('input', e => {
+        if (e.target.matches('.edit-qty-input, .edit-rate-input, #bill-edit-freight-input')) {
+            recalculateBillEditTotal();
+        }
+    });
+
+    // 8. Save Logic
+    document.getElementById('save-and-download-bill-btn').addEventListener('click', async (e) => {
+        const btn = e.target;
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        try {
+            const originalItems = currentEditingOrder.billedItems || [];
+            const finalItemsList = [];
+
+            const rows = document.querySelectorAll('#bill-rate-edit-tbody tr.item-row');
+            
+            rows.forEach(row => {
+                if (row.classList.contains('marked-for-deletion')) {
+                    if (row.dataset.type === 'existing') {
+                        const originalIndex = parseInt(row.dataset.index);
+                        const itemObj = originalItems[originalIndex];
+                        itemObj.wasUnchecked = true;
+                        finalItemsList.push(itemObj);
+                    }
+                    return;
+                }
+
+                const qty = parseFloat(row.querySelector('.edit-qty-input').value) || 0;
+                const rate = parseFloat(row.querySelector('.edit-rate-input').value) || 0;
+
+                if (row.dataset.type === 'existing') {
+                    const originalIndex = parseInt(row.dataset.index);
+                    const itemObj = originalItems[originalIndex];
+                    itemObj.quantity = qty;
+                    itemObj.sellingPrice = rate;
+                    finalItemsList.push(itemObj);
+                } 
+                else if (row.dataset.type === 'new-from-list') {
+                    const code = row.dataset.itemCode;
+                    // Fetch full item details from state to ensure data integrity
+                    const masterItem = appState.items.find(i => String(i.Code) === String(code));
+                    
+                    if (masterItem) {
+                        finalItemsList.push({
+                            item: {
+                                ItemName: masterItem.ItemName,
+                                Code: masterItem.Code,
+                                Mrp: masterItem.Mrp,
+                                Unit: masterItem.Unit,
+                                CostRate: masterItem.CostRate,
+                                Price1: masterItem.Price1,
+                                Price2: masterItem.Price2,
+                                Price3: masterItem.Price3
+                            },
+                            quantity: qty,
+                            sellingPrice: rate,
+                            isNew: true
+                        });
+                    }
+                }
+            });
+
+            // Keep pre-existing unchecked items
+            originalItems.forEach(item => {
+                if (item.wasUnchecked && !finalItemsList.includes(item)) {
+                    finalItemsList.push(item);
+                }
+            });
+
+            const updateData = {
+                billedItems: finalItemsList,
+                items: finalItemsList,
+                freight: currentEditingOrder._tempFreight,
+                finalBilledTotal: currentEditingOrder._tempGrandTotal
+            };
+
+            await updateDoc(doc(db, "orders", currentEditingOrder.id), updateData);
+
+            // Update local state
+            const orderInState = Object.values(appState.orders).flat().find(o => o.id === currentEditingOrder.id);
+            if (orderInState) {
+                Object.assign(orderInState, updateData);
+            }
+
+            showToast('Bill updated & Saved!');
+            billRateEditModal.classList.remove('active');
+
+            // Download
+            downloadSaleBillPDF(currentEditingOrder.id);
+
+        } catch (error) {
+            console.error("Error saving bill:", error);
+            alert("Failed to save changes. " + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Save & Download';
+        }
+    });
+
+    document.querySelector('[data-action="close-bill-edit"]').addEventListener('click', () => {
+        billRateEditModal.classList.remove('active');
+    });
+
+    // Close search results if clicked outside
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#bill-edit-item-search') && !e.target.closest('#bill-edit-search-results')) {
+            document.getElementById('bill-edit-search-results').style.display = 'none';
+        }
+    });
+
+    // --- END: Bill Rate Editing Logic ---
+
+    // --- END: Bill Rate Editing Logic ---
+
+    // 5. Close Modal Handler
+    const closeBillEditModal = () => {
+        billRateEditModal.classList.remove('active');
+        currentEditingOrder = null;
+    };
+
+    billRateEditModal.addEventListener('click', e => {
+        if (e.target === billRateEditModal || e.target.closest('[data-action="close-bill-edit"]')) {
+            closeBillEditModal();
+        }
+    });
+
+    // 6. Save & Download Handler
+    document.getElementById('save-and-download-bill-btn').addEventListener('click', async (e) => {
+        const btn = e.target;
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        try {
+            // A. Update the main items array with new prices
+            const originalItems = currentEditingOrder.billedItems || currentEditingOrder.items;
+            
+            // Map the changes back to the original structure using the originalIndex we saved
+            currentEditingOrder._activeItemsRefs.forEach(activeItem => {
+                if (originalItems[activeItem.originalIndex]) {
+                    originalItems[activeItem.originalIndex].sellingPrice = parseFloat(activeItem.sellingPrice);
+                }
+            });
+
+            // B. Prepare update data
+            const updateData = {
+                billedItems: originalItems, // Save the updated array
+                items: originalItems, // Ensure legacy support
+                finalBilledTotal: currentEditingOrder._tempGrandTotal
+            };
+
+            // C. Update Firestore
+            await updateDoc(doc(db, "orders", currentEditingOrder.id), updateData);
+
+            // D. Refresh UI locally (optional, as onSnapshot will trigger eventually, but good for UX)
+            showToast('Rates updated successfully!');
+            billRateEditModal.classList.remove('active');
+
+            // E. Trigger Download
+            // We need to pass the *updated* order ID to the download function.
+            // Since onSnapshot takes a ms to update appState, we can just trigger it.
+            // However, downloadSaleBillPDF fetches from appState.orders. 
+            // We should ensure appState is updated or force the update logic.
+            
+            // Quick local update to appState to ensure download uses new data immediately
+            const orderInState = Object.values(appState.orders).flat().find(o => o.id === currentEditingOrder.id);
+            if (orderInState) {
+                orderInState.billedItems = originalItems;
+                orderInState.items = originalItems;
+                orderInState.finalBilledTotal = currentEditingOrder._tempGrandTotal;
+            }
+
+            // Call the existing download function
+            downloadSaleBillPDF(currentEditingOrder.id);
+
+        } catch (error) {
+            console.error("Error saving bill rates:", error);
+            alert("Failed to save changes. Please try again.");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Save & Download PDF';
+        }
+    });
+
+    // --- END: Bill Rate Editing Logic ---
 
         const accountantLedgerView = document.getElementById('accountant-ledger-view');
         const accountantCollectionView = document.getElementById('accountant-collection-view');
@@ -8069,6 +8451,69 @@ document.getElementById('save-new-customer-btn').addEventListener('click', async
         </div>
     </div>
 </div>
+<!-- ======================= BILL EDIT MODAL (UPDATED) ======================= -->
+<!-- ======================= BILL EDIT MODAL (WITH SEARCH) ======================= -->
+<div id="bill-rate-edit-modal" class="modal">
+    <div class="modal-content" style="max-width: 700px; max-height: 90vh; display: flex; flex-direction: column;">
+        <h2>Edit Bill Details</h2>
+        
+        <div class="modal-body" style="padding: 0; overflow-y: auto; flex-grow: 1;">
+            
+            <!-- NEW: ADD ITEM SEARCH BAR -->
+            <div style="padding: 10px; background-color: #f1f3f4; border-bottom: 1px solid #ddd; position: relative;">
+                <label style="font-size: 0.8rem; font-weight: 600; color: #555; margin-bottom: 4px; display: block;">Add Item from List:</label>
+                <input type="text" id="bill-edit-item-search" placeholder="Type to search product..." 
+                       style="width: 100%; margin-bottom: 0; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                
+                <!-- Search Results Dropdown -->
+                <div id="bill-edit-search-results" 
+                     style="position: absolute; top: 100%; left: 10px; right: 10px; background: #fff; border: 1px solid #ccc; border-top: none; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none;">
+                </div>
+            </div>
 
+            <!-- ITEMS TABLE -->
+            <div class="table-responsive-wrapper">
+                <table class="report-table" id="bill-rate-edit-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th class="numeric" style="width: 70px;">Qty</th>
+                            <th class="numeric" style="width: 90px;">Rate</th>
+                            <th class="numeric" style="width: 90px;">Total</th>
+                            <th style="width: 40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="bill-rate-edit-tbody">
+                        <!-- Items injected here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- SUMMARY SECTION -->
+            <div style="margin-top: 15px; padding: 15px; background-color: #f8f9fa; border-top: 1px solid #ddd;">
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 8px;">
+                    <label style="margin-right: 10px; font-weight: 500;">Sub Total:</label>
+                    <span id="bill-edit-sub-total" style="font-weight: 600; width: 100px; text-align: right;">0.00</span>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px;">
+                    <label style="margin-right: 10px; font-weight: 500;">Freight / Extra:</label>
+                    <input type="number" id="bill-edit-freight-input" value="0" min="0" step="1" 
+                           style="width: 100px; padding: 6px; text-align: right; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 0;">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; align-items: center; border-top: 1px solid #ddd; padding-top: 10px;">
+                    <label style="margin-right: 10px; font-size: 1.2rem; font-weight: bold; color: var(--primary-color);">Grand Total:</label>
+                    <span id="bill-edit-grand-total" style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color); width: 100px; text-align: right;">0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer" style="margin-top: 0; border-top: 1px solid #eee; padding-top: 15px;">
+            <button class="button button-outline" data-action="close-bill-edit">Cancel</button>
+            <button class="button" id="save-and-download-bill-btn">Save & Download</button>
+        </div>
+    </div>
+</div>
 </body> <!-- <<< Add the code block just before this tag -->
 </html>
