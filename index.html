@@ -2450,7 +2450,12 @@
         </div>
         <div class="content">
             <div class="card">
-                <h3>Add Product</h3>
+                <!-- UPDATED HEADER ROW WITH COUNT DISPLAY -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                    <h3 style="margin:0;">Add Product</h3>
+                    <span id="packing-total-count" style="font-size: 0.9rem; font-weight: 700; color: var(--primary-color); background-color: var(--light-bg); padding: 5px 10px; border-radius: 50px;">Items: 0</span>
+                </div>
+                <!-- END UPDATE -->
                 <div class="search-bar">
                     <input type="text" id="assistant-packing-item-search" placeholder="Search for an item...">
                     <div id="assistant-packing-item-search-results"></div>
@@ -7437,6 +7442,14 @@ const generateLocationPlannerData = async (locationId) => {
             document.getElementById('packing-interface-order-customer').textContent = `Packing for ${order.customer.Customer}`;
             const itemList = document.getElementById('assistant-packing-item-list');
             
+            // --- NEW LOGIC: Calculate Total Active Items ---
+            const activeItemsCount = order.items.filter(i => !i.wasUnchecked).length;
+            const countDisplay = document.getElementById('packing-total-count');
+            if (countDisplay) {
+                countDisplay.textContent = `Items: ${activeItemsCount}`;
+            }
+            // -----------------------------------------------
+
             // Initialize a counter for the serial numbers
             let serialCounter = 0;
 
